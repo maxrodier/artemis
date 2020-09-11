@@ -17,23 +17,21 @@ public class SecondaryCommandBuffer extends CommandBuffer {
         super(device, createHandle(device, commandPool));
     }
     
-    public void beginRecording(int flags, RenderPass renderPass, Framebuffer framebuffer) {
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkCommandBufferInheritanceInfo pInheritanceInfo = VkCommandBufferInheritanceInfo.callocStack(stack)
-                .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
-                .renderPass(renderPass.getHandle())
-                .subpass(0)
-                .framebuffer(framebuffer.getHandle());
-            
-            VkCommandBufferBeginInfo pBeginInfo = VkCommandBufferBeginInfo.callocStack(stack)
-                .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
-                .flags(flags)
-                .pInheritanceInfo(pInheritanceInfo);
+    public void beginRecording(MemoryStack stack, int flags, RenderPass renderPass, Framebuffer framebuffer) {
+        VkCommandBufferInheritanceInfo pInheritanceInfo = VkCommandBufferInheritanceInfo.callocStack(stack)
+            .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
+            .renderPass(renderPass.getHandle())
+            .subpass(0)
+            .framebuffer(framebuffer.getHandle());
+        
+        VkCommandBufferBeginInfo pBeginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+            .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+            .flags(flags)
+            .pInheritanceInfo(pInheritanceInfo);
 
-            int error = VK11.vkBeginCommandBuffer(commandBuffer, pBeginInfo);
-            if(error != VK11.VK_SUCCESS)
-                throw new AssertionError("Failed to begin recording command buffer");
-        }
+        int error = VK11.vkBeginCommandBuffer(commandBuffer, pBeginInfo);
+        if(error != VK11.VK_SUCCESS)
+            throw new AssertionError("Failed to begin recording command buffer");
     }
 
     private static long createHandle(VulkanDevice device, CommandPool commandPool) {

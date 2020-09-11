@@ -50,17 +50,15 @@ public class CommandBuffer {
         VK11.vkResetCommandBuffer(commandBuffer, 0);
     }
 
-    public void beginRenderPassCmd(long renderPass, long framebuffer, int width, int height, VkClearValue.Buffer pClearValues, int flags) {
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkRenderPassBeginInfo pRenderPassBegin = VkRenderPassBeginInfo.callocStack(stack)
-                .sType(VK11.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
-                .renderPass(renderPass)
-                .framebuffer(framebuffer)
-                .renderArea(ra -> ra.extent(it -> it.width(width).height(height)))
-                .pClearValues(pClearValues);
+    public void beginRenderPassCmd(MemoryStack stack, long renderPass, long framebuffer, int width, int height, VkClearValue.Buffer pClearValues, int flags) {
+        VkRenderPassBeginInfo pRenderPassBegin = VkRenderPassBeginInfo.callocStack(stack)
+            .sType(VK11.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
+            .renderPass(renderPass)
+            .framebuffer(framebuffer)
+            .renderArea(ra -> ra.extent(it -> it.width(width).height(height)))
+            .pClearValues(pClearValues);
 
-            VK11.vkCmdBeginRenderPass(commandBuffer, pRenderPassBegin, flags);
-        }
+        VK11.vkCmdBeginRenderPass(commandBuffer, pRenderPassBegin, flags);
     }
 
     public void endRenderPassCmd() {
@@ -71,30 +69,26 @@ public class CommandBuffer {
         VK11.vkCmdBindPipeline(commandBuffer, pipelineBindPoint, pipeline.getHandle());
     }
 
-    public void bindVertexBufferCmd(VulkanBuffer vertexBuffer) {
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            LongBuffer pBuffers = stack.callocLong(1);
-            pBuffers.put(0, vertexBuffer.getHandle());
+    public void bindVertexBufferCmd(MemoryStack stack, VulkanBuffer vertexBuffer) {
+        LongBuffer pBuffers = stack.callocLong(1);
+        pBuffers.put(0, vertexBuffer.getHandle());
 
-            LongBuffer pOffsets = stack.callocLong(1);
-            pOffsets.put(0, 0L);
-   
-            VK11.vkCmdBindVertexBuffers(commandBuffer, 0, pBuffers, pOffsets);
-        }
+        LongBuffer pOffsets = stack.callocLong(1);
+        pOffsets.put(0, 0L);
+
+        VK11.vkCmdBindVertexBuffers(commandBuffer, 0, pBuffers, pOffsets);
     }
 
     public void bindIndexBufferCmd(VulkanBuffer indexBuffer) {
         VK11.vkCmdBindIndexBuffer(commandBuffer, indexBuffer.getHandle(), 0, VK11.VK_INDEX_TYPE_UINT32);
     }
 
-    public void bindDescriptorSetsCmd(int pipelineBindPoint, long pipelineLayout, DescriptorSet... descriptorSets) {
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            LongBuffer pDescriptorSets = stack.callocLong(descriptorSets.length);
-            for(int i = 0; i < descriptorSets.length; i++) {
-			    pDescriptorSets.put(0, descriptorSets[i].getHandle());
-            }
-            VK11.vkCmdBindDescriptorSets(commandBuffer, pipelineBindPoint, pipelineLayout, 0, pDescriptorSets, null);
+    public void bindDescriptorSetsCmd(MemoryStack stack, int pipelineBindPoint, long pipelineLayout, DescriptorSet... descriptorSets) {
+        LongBuffer pDescriptorSets = stack.callocLong(descriptorSets.length);
+        for(int i = 0; i < descriptorSets.length; i++) {
+            pDescriptorSets.put(0, descriptorSets[i].getHandle());
         }
+        VK11.vkCmdBindDescriptorSets(commandBuffer, pipelineBindPoint, pipelineLayout, 0, pDescriptorSets, null);
     }
 
     public void pushConstants(long pipelineLayout, int stageFlags, int offset, FloatBuffer pValues) {
@@ -117,7 +111,6 @@ public class CommandBuffer {
 
     public void copyBufferCmd(VulkanBuffer srcBuffer, VulkanBuffer dstBuffer, VkBufferCopy.Buffer pRegions) {
         VK11.vkCmdCopyBuffer(commandBuffer, srcBuffer.getHandle(), dstBuffer.getHandle(), pRegions);
-        
     }
 
     public void copyBufferToImage(VulkanBuffer buffer, VulkanImage image, VkBufferImageCopy.Buffer pRegions) {

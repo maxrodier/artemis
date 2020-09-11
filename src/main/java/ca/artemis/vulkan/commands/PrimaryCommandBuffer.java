@@ -14,16 +14,14 @@ public class PrimaryCommandBuffer extends CommandBuffer {
         super(device, createHandle(device, commandPool));
     }
     
-    public void beginRecording(int flags) {
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkCommandBufferBeginInfo pBeginInfo = VkCommandBufferBeginInfo.callocStack(stack)
-                .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
-                .flags(flags);
+    public void beginRecording(MemoryStack stack, int flags) {
+        VkCommandBufferBeginInfo pBeginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+            .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+            .flags(flags);
 
-            int error = VK11.vkBeginCommandBuffer(commandBuffer, pBeginInfo);
-            if(error != VK11.VK_SUCCESS)
-                throw new AssertionError("Failed to begin recording command buffer");
-        }
+        int error = VK11.vkBeginCommandBuffer(commandBuffer, pBeginInfo);
+        if(error != VK11.VK_SUCCESS)
+            throw new AssertionError("Failed to begin recording command buffer");
     }
     
     private static long createHandle(VulkanDevice device, CommandPool commandPool) {

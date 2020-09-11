@@ -4,36 +4,28 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK11;
-import org.lwjgl.vulkan.VkPresentInfoKHR;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 import ca.artemis.Configuration;
-import ca.artemis.vulkan.commands.CommandBufferUtils;
 import ca.artemis.vulkan.commands.CommandPool;
-import ca.artemis.vulkan.commands.SubmitInfo;
 import ca.artemis.vulkan.context.VulkanContext;
 import ca.artemis.vulkan.context.VulkanDevice;
-import ca.artemis.vulkan.context.VulkanMemoryAllocator;
 import ca.artemis.vulkan.context.VulkanPhysicalDevice;
 import ca.artemis.vulkan.context.VulkanSurface;
 import ca.artemis.vulkan.descriptor.DescriptorPool;
 import ca.artemis.vulkan.descriptor.DescriptorSet;
 import ca.artemis.vulkan.descriptor.DescriptorSetLayout;
 import ca.artemis.vulkan.memory.Framebuffer;
-import ca.artemis.vulkan.memory.VulkanImage;
 import ca.artemis.vulkan.memory.VulkanImageView;
 import ca.artemis.vulkan.pipeline.ColorBlendState;
 import ca.artemis.vulkan.pipeline.GraphicsPipeline;
 import ca.artemis.vulkan.pipeline.ShaderModule;
 import ca.artemis.vulkan.pipeline.VertexInputState;
 import ca.artemis.vulkan.pipeline.ViewportState;
-import ca.artemis.vulkan.synchronization.VulkanFence;
-import ca.artemis.vulkan.synchronization.VulkanSemaphore;
 
 public class Swapchain {
     
@@ -48,14 +40,6 @@ public class Swapchain {
     private final DescriptorSet[] descriptorSets;
     private final GraphicsPipeline graphicsPipeline;
 
-
-    private final VulkanSemaphore imageAcquiredSemaphore;
-    private final VulkanSemaphore renderCompletedSemaphore;
-    private final VulkanFence renderFence;
-    private final SubmitInfo submitInfo;
-    private final VkPresentInfoKHR presentInfo;
-    private final IntBuffer pImageIndex;
-
     public Swapchain(VulkanContext context, CommandPool commandPool) {
         this.handle = createHandle(context.getDevice(), context.getPhysicalDevice(), context.getSurface(), context.getSurfaceCapabilities());
         this.imageViews = createImageViews(context.getDevice(), this.handle);
@@ -65,20 +49,9 @@ public class Swapchain {
         this.descriptorSetLayout = createDescriptorSetLayout(context.getDevice());
         this.descriptorSets = createDescriptorSets(context.getDevice(), this.descriptorPool, this.descriptorSetLayout, this.framebuffers.length);
         this.graphicsPipeline = createGraphicsPipeline(context.getDevice(), this.descriptorSetLayout, this.renderPass);
-
-
-        
-        this.imageAcquiredSemaphore = new VulkanSemaphore(context.getDevice());
-        this.renderCompletedSemaphore = new VulkanSemaphore(context.getDevice());
-        this.renderFence = new VulkanFence(context.getDevice());
-
-        this.pImageIndex = MemoryUtil.memCallocInt(1);
-        this.submitInfo = new SubmitInfo(this.renderFence);
-        this.presentInfo = VkPresentInfoKHR.calloc();
     }
 
     public void destroy(VulkanContext context) {
-        MemoryUtil.memFree(pImageIndex);
         graphicsPipeline.destroy(context.getDevice());
         descriptorSetLayout.destroy(context.getDevice());
         descriptorPool.destroy(context.getDevice());
@@ -207,69 +180,6 @@ public class Swapchain {
             .setDescriptorSetLayouts(new DescriptorSetLayout[] {descriptorSetLayout})
             .setRenderPass(renderPass)
             .build(device);
-    }
-
-    private void updateDescriptorSets(VulkanContext context, Swapchain swapchain, VulkanImageView textureImageView, VulkanSampler textureSampler) {
-    	for(int i = 0; i < swapchain.getFramebuffers().length; i++) {
-			DescriptorSet descriptorSet = swapchain.getDescriptorSet(i);
-			descriptorSet.updateDescriptorImageBuffer(context, textureImageView, textureSampler, VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		}
-    }
-
-    private VkCommandBuffer[] createCommandBuffers(VulkanDevice device, CommandPool commandPool, Swapchain swapchain, VulkanBuffer vertexBuffer, VulkanBuffer indexBuffer) {
-    	VK11.vkResetCommandPool(device.getHandle(), commandPool.getHandle(), 0);
-
-        VkCommandBuffer[] drawCommandBuffers = new VkCommandBuffer[swapchain.getFramebuffers().length];
-    	for(int i = 0; i < swapchain.getFramebuffers().length; i++) {
-    		
-			PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
-			
-            VkClearValue.Buffer pClearValues = VkClearValue.create(2);
-            pClearValues.get(0).color()
-                .float32(0, 36f/255f)
-                .float32(1, 10f/255f)
-                .float32(2, 48f/255f)
-                .float32(3, 1);
-            pClearValues.get(1).depthStencil()
-            	.depth(1.0f)
-            	.stencil(0);
-
-			SecondaryCommandBuffer secondaryCommandBuffer1 = new SecondaryCommandBuffer(device, commandPool);
-			secondaryCommandBuffer1.beginRecording(VK11.VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT, swapchain.getRenderPass(), swapchain.getFramebuffer(i));
-			secondaryCommandBuffer1.bindPipelineCmd(VK11.VK_PIPELINE_BIND_POINT_GRAPHICS, swapchain.getGraphicsPipeline());
-			secondaryCommandBuffer1.bindVertexBufferCmd(vertexBuffer);
-			secondaryCommandBuffer1.bindIndexBufferCmd(indexBuffer);
-			secondaryCommandBuffer1.bindDescriptorSetsCmd(VK11.VK_PIPELINE_BIND_POINT_GRAPHICS, swapchain.getGraphicsPipeline().getPipelineLayout(), new DescriptorSet[] {swapchain.getDescriptorSet(i)});
-			secondaryCommandBuffer1.drawIndexedCmd(INDICES_LENGTH, 1);
-			secondaryCommandBuffer1.endRecording();
-
-            commandBuffer.beginRecording(0);
-			commandBuffer.beginRenderPassCmd(swapchain.getRenderPass().getHandle(), swapchain.getFramebuffer(i).getHandle(), Configuration.windowWidth, Configuration.windowHeight, pClearValues, VK11.VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-
-			VK11.vkCmdExecuteCommands(commandBuffer.getCommandBuffer(), MemoryUtil.memAllocPointer(1).put(0, secondaryCommandBuffer1.getHandle()));
-
-			commandBuffer.endRenderPassCmd();
-            commandBuffer.endRecording();
-            
-            drawCommandBuffers[i] = commandBuffer.getCommandBuffer();
-        }
-        
-        return drawCommandBuffers;
-    }
-
-    public void draw(VulkanDevice device) {
-        int error = KHRSwapchain.vkAcquireNextImageKHR(device.getHandle(), handle, Long.MAX_VALUE, imageAcquiredSemaphore.getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
-        if (error != VK11.VK_SUCCESS) {
-            throw new AssertionError("Failed to acquire next swapchain image");
-        }
-
-        //submitInfo.setCommandBuffers(MemoryUtil.memAllocPointer(1).put(swapchainRenderer.getDrawCommandBuffer(pImageIndex.get(0))).flip());
-        submitInfo.submit(device, device.getGraphicsQueue());
-
-        error = KHRSwapchain.vkQueuePresentKHR(device.getGraphicsQueue(), presentInfo);
-        if (error != VK11.VK_SUCCESS) {
-            throw new AssertionError("Failed to submit present info");
-        }
     }
 
     public long getHandle() {
