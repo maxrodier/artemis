@@ -4,6 +4,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK11;
@@ -12,6 +13,7 @@ import org.lwjgl.vulkan.VkPresentInfoKHR;
 import ca.artemis.vulkan.commands.CommandPool;
 import ca.artemis.vulkan.commands.SubmitInfo;
 import ca.artemis.vulkan.context.VulkanContext;
+import ca.artemis.vulkan.synchronization.VulkanFence;
 import ca.artemis.vulkan.synchronization.VulkanSemaphore;
 
 public class RenderingEngine {
@@ -33,61 +35,69 @@ public class RenderingEngine {
     }
 
     public void mainLoop() {
-    	
-    	int frame = 0;
-    	long lastTime = System.nanoTime();
+        int frame = 0;
+        long lastTime = System.nanoTime();
         long currentTime;
         
-
-        LongBuffer pWaitSemaphores = MemoryUtil.memAllocLong(1);
+        LongBuffer pWaitSemaphores = MemoryUtil.memCallocLong(1);
         pWaitSemaphores.put(imageAcquiredSemaphore.getHandle());
         pWaitSemaphores.flip();
         
-        LongBuffer pSignalSemaphores = MemoryUtil.memAllocLong(1);
+        LongBuffer pSignalSemaphores = MemoryUtil.memCallocLong(1);
         pSignalSemaphores.put(drawCompleteSemaphore.getHandle());
         pSignalSemaphores.flip();
         
-        IntBuffer pWaitStages = MemoryUtil.memAllocInt(1);
+        IntBuffer pWaitStages = MemoryUtil.memCallocInt(1);
         pWaitStages.put(VK11.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
         pWaitStages.flip();
 
-        SubmitInfo submitInfo = new SubmitInfo()
+        VulkanFence fence = new VulkanFence(context.getDevice());
+        SubmitInfo submitInfo = new SubmitInfo(fence)
             .setWaitSemaphores(pWaitSemaphores, 1)
             .setWaitDstStageMask(pWaitStages)
             .setSignalSemaphores(pSignalSemaphores);
-    	
+
         while (!context.getWindow().isCloseRequested()) {
-        	frame++;
-        	currentTime = System.nanoTime();
-        	if(currentTime - lastTime >= 1000000000L) {
-        		lastTime += 1000000000L;
-        		System.out.println(frame);
-        		frame = 0;
-        	}
-        	
-            GLFW.glfwPollEvents();
-            
-            IntBuffer pImageIndex = MemoryUtil.memAllocInt(1);
-            KHRSwapchain.vkAcquireNextImageKHR(context.getDevice().getHandle(), swapchain.getHandle(), Long.MAX_VALUE, imageAcquiredSemaphore.getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
+            try(MemoryStack stack = MemoryStack.stackPush()) {
+                frame++;
+                currentTime = System.nanoTime();
+                if(currentTime - lastTime >= 1000000000L) {
+                    lastTime += 1000000000L;
+                    System.out.println(frame);
+                    frame = 0;
+                }
+                
+                GLFW.glfwPollEvents();
 
-            submitInfo.setCommandBuffers(MemoryUtil.memAllocPointer(1).put(swapchainRenderer.getDrawCommandBuffer(pImageIndex.get(0))).flip());
-            submitInfo.submit(context.getDevice(), context.getDevice().getGraphicsQueue());
+                fence.waitFor(context.getDevice());
+                
+                IntBuffer pImageIndex = stack.callocInt(1);
+                KHRSwapchain.vkAcquireNextImageKHR(context.getDevice().getHandle(), swapchain.getHandle(), Long.MAX_VALUE, imageAcquiredSemaphore.getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
 
-            LongBuffer pSwapchains = MemoryUtil.memAllocLong(1);
-            pSwapchains.put(swapchain.getHandle());
-            pSwapchains.flip();
+                submitInfo.setCommandBuffers(stack.callocPointer(1).put(swapchainRenderer.getDrawCommandBuffer(pImageIndex.get(0))).flip());
+                submitInfo.submit(context.getDevice(), context.getDevice().getGraphicsQueue());
 
-            VkPresentInfoKHR pPresentInfo = VkPresentInfoKHR.create()
-                .sType(KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR)
-                .pWaitSemaphores(pSignalSemaphores)
-                .swapchainCount(1)
-                .pSwapchains(pSwapchains)
-                .pImageIndices(pImageIndex);
+                LongBuffer pSwapchains = stack.callocLong(1);
+                pSwapchains.put(swapchain.getHandle());
+                pSwapchains.flip();
 
-            KHRSwapchain.vkQueuePresentKHR(context.getDevice().getGraphicsQueue(), pPresentInfo);
+                VkPresentInfoKHR pPresentInfo = VkPresentInfoKHR.callocStack(stack)
+                    .sType(KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR)
+                    .pWaitSemaphores(pSignalSemaphores)
+                    .swapchainCount(1)
+                    .pSwapchains(pSwapchains)
+                    .pImageIndices(pImageIndex);
 
-            VK11.vkDeviceWaitIdle(context.getDevice().getHandle());
+                KHRSwapchain.vkQueuePresentKHR(context.getDevice().getGraphicsQueue(), pPresentInfo);
+            }
         }
+
+        VK11.vkDeviceWaitIdle(context.getDevice().getHandle());
+        submitInfo.destroy();
+        fence.destroy(context.getDevice());
+        MemoryUtil.memFree(pWaitStages);
+        MemoryUtil.memFree(pSignalSemaphores);
+        MemoryUtil.memFree(pWaitSemaphores);
     }
 
     public void destroy() {

@@ -25,8 +25,7 @@ public class SubmitInfo {
         this.fence = fence;
     }
 
-    public void destroy(VulkanDevice device) {
-        fence.destroy(device);
+    public void destroy() {
         handle.free();
     }
 

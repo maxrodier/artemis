@@ -1,4 +1,4 @@
-package ca.artemis.math;
+package ca.artemis.framework.math;
 
 public class Vector3f {
 
