@@ -70,7 +70,7 @@ public class GraphicsPipeline {
                 ShaderModule shaderModule = shaderModules.get(i);
                 pShaderStages.get(i)
                     .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)
-                    .stage(shaderModule.getShaderStage())
+                    .stage(shaderModule.getSpirv().getShaderStageKind().getStage())
                     .module(shaderModule.getHandle())
                     .pName(pMain);
             }

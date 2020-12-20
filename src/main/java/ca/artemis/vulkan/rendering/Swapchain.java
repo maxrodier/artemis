@@ -11,6 +11,7 @@ import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 import ca.artemis.Configuration;
+import ca.artemis.SharderUtils.ShaderStageKind;
 import ca.artemis.vulkan.commands.CommandPool;
 import ca.artemis.vulkan.context.VulkanContext;
 import ca.artemis.vulkan.context.VulkanDevice;
@@ -166,8 +167,8 @@ public class Swapchain {
 
     private static GraphicsPipeline createGraphicsPipeline(VulkanDevice device, DescriptorSetLayout descriptorSetLayout, RenderPass renderPass) {
         return new GraphicsPipeline.Builder()
-            .addShaderModule(new ShaderModule(device, "src/main/resources/shaders/swapchain.vert.spv", VK11.VK_SHADER_STAGE_VERTEX_BIT))
-            .addShaderModule(new ShaderModule(device, "src/main/resources/shaders/swapchain.frag.spv", VK11.VK_SHADER_STAGE_FRAGMENT_BIT))
+            .addShaderModule(new ShaderModule(device, "src/main/resources/shaders/swapchain.vert", ShaderStageKind.VERTEX_SHADER))
+            .addShaderModule(new ShaderModule(device, "src/main/resources/shaders/swapchain.frag", ShaderStageKind.FRAGMENT_SHADER))
             .setVertexInputState(new VertexInputState()
                 .addBinding(new VertexInputState.VertexInputBindingDescription(0, 20, VK11.VK_VERTEX_INPUT_RATE_VERTEX)
                     .addAttributes(0, VK11.VK_FORMAT_R32G32B32_SFLOAT, 0)

@@ -12,9 +12,8 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkClearValue;
 
 import ca.artemis.Configuration;
-import ca.artemis.math.Vector2f;
-import ca.artemis.math.Vector3f;
-import ca.artemis.vulkan.commands.CommandBuffer;
+import ca.artemis.framework.math.Vector2f;
+import ca.artemis.framework.math.Vector3f;
 import ca.artemis.vulkan.commands.CommandBufferUtils;
 import ca.artemis.vulkan.commands.CommandPool;
 import ca.artemis.vulkan.commands.PresentInfo;

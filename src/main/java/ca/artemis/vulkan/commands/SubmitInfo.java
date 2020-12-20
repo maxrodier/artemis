@@ -32,21 +32,7 @@ public class SubmitInfo {
         this.fence = fence;
     }
 
-    public void destroy(VulkanDevice device) {
-        if(pCommandBuffers != null) {
-            MemoryUtil.memFree(pCommandBuffers);
-        }
-        if(pSignalSemaphores != null) {
-            MemoryUtil.memFree(pSignalSemaphores);
-        }
-        if(pWaitDstStageMask != null) {
-            MemoryUtil.memFree(pWaitDstStageMask);
-        }
-        if(pWaitSemaphores != null) {
-            MemoryUtil.memFree(pWaitSemaphores);
-        }
-
-        fence.destroy(device);
+    public void destroy() {
         handle.free();
     }
 
