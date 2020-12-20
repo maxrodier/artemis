@@ -12,8 +12,9 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkClearValue;
 
 import ca.artemis.Configuration;
-import ca.artemis.framework.math.Vector2f;
-import ca.artemis.framework.math.Vector3f;
+import ca.artemis.math.Vector2f;
+import ca.artemis.math.Vector3f;
+import ca.artemis.vulkan.commands.CommandBuffer;
 import ca.artemis.vulkan.commands.CommandBufferUtils;
 import ca.artemis.vulkan.commands.CommandPool;
 import ca.artemis.vulkan.commands.PresentInfo;
@@ -98,8 +99,9 @@ public class SwapchainRenderer {
 
     public void destroy(VulkanContext context) {
         this.presentInfo.destroy(context.getDevice());
-        this.submitInfo.destroy(context.getDevice());
+        this.submitInfo.destroy();
         MemoryUtil.memFree(this.pImageIndex);
+        this.renderFence.destroy(context.getDevice());
         this.renderCompletedSemaphore.destroy(context.getDevice());
         this.imageAcquiredSemaphore.destroy(context.getDevice());
         this.textureSampler.destroy(context.getDevice());
@@ -235,12 +237,13 @@ public class SwapchainRenderer {
             throw new AssertionError("Failed to acquire next swapchain image");
         }
 
+
         submitInfo.setCommandBuffers(drawCommandBuffers[pImageIndex.get(0)]);
+
+        this.renderFence.waitFor(device);
         submitInfo.submit(device, device.getGraphicsQueue());
 
         presentInfo.present(device);
-
-        this.renderFence.waitFor(device);
     }
 
     public VulkanBuffer getVertexBuffer() {
