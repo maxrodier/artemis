@@ -4,17 +4,24 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkQueue;
 import org.lwjgl.vulkan.VkSubmitInfo;
 
 import ca.artemis.vulkan.context.VulkanDevice;
 import ca.artemis.vulkan.synchronization.VulkanFence;
+import ca.artemis.vulkan.synchronization.VulkanSemaphore;
 
 public class SubmitInfo {
     
     private VkSubmitInfo handle;
     private final VulkanFence fence;
+
+    private LongBuffer pWaitSemaphores;
+    private IntBuffer pWaitDstStageMask;
+    private LongBuffer pSignalSemaphores;
+    private PointerBuffer pCommandBuffers;
     
     public SubmitInfo() {
         this(null);
@@ -39,26 +46,63 @@ public class SubmitInfo {
             throw new AssertionError("Failed to submit to queue"); 
     }
 
-    public SubmitInfo setWaitSemaphores(LongBuffer pWaitSemaphores, int count) {
-        handle.waitSemaphoreCount(count);
+    public SubmitInfo setWaitSemaphores(VulkanSemaphore... waitSemaphores) {
+        if(pWaitSemaphores != null) {
+            MemoryUtil.memFree(pWaitSemaphores);
+        }
+
+        pWaitSemaphores = MemoryUtil.memAllocLong(waitSemaphores.length);
+        for(VulkanSemaphore semaphore: waitSemaphores) {
+            pWaitSemaphores.put(semaphore.getHandle());
+        }
+        pWaitSemaphores.flip();
+
+        handle.waitSemaphoreCount(waitSemaphores.length);
         handle.pWaitSemaphores(pWaitSemaphores);
 
         return this;
     }
 
-    public SubmitInfo setWaitDstStageMask(IntBuffer pWaitDstStageMask) {
+    public SubmitInfo setWaitDstStageMask(int waitDstStageMask) {
+        if(pWaitDstStageMask != null) {
+            MemoryUtil.memFree(pWaitDstStageMask);
+        }
+
+        pWaitDstStageMask = MemoryUtil.memAllocInt(1);
+        pWaitDstStageMask.put(0, waitDstStageMask);
+
         handle.pWaitDstStageMask(pWaitDstStageMask);
 
         return this;
     }
 
-    public SubmitInfo setSignalSemaphores(LongBuffer pSignalSemaphores) {
+    public SubmitInfo setSignalSemaphores(VulkanSemaphore... signalSemaphores) {
+        if(pSignalSemaphores != null) {
+            MemoryUtil.memFree(pSignalSemaphores);
+        }
+
+        pSignalSemaphores = MemoryUtil.memAllocLong(signalSemaphores.length);
+        for(VulkanSemaphore semaphore: signalSemaphores) {
+            pSignalSemaphores.put(semaphore.getHandle());
+        }
+        pSignalSemaphores.flip();
+
         handle.pSignalSemaphores(pSignalSemaphores);
 
         return this;
     }
 
-    public SubmitInfo setCommandBuffers(PointerBuffer pCommandBuffers) {
+    public SubmitInfo setCommandBuffers(CommandBuffer... commandBuffers) {
+        if(pCommandBuffers != null) {
+            MemoryUtil.memFree(pCommandBuffers);
+        }
+
+        pCommandBuffers = MemoryUtil.memAllocPointer(commandBuffers.length);
+        for(CommandBuffer commandBuffer: commandBuffers) {
+            pCommandBuffers.put(commandBuffer.getHandle());
+        }
+        pCommandBuffers.flip();
+
         handle.pCommandBuffers(pCommandBuffers);
 
         return this;

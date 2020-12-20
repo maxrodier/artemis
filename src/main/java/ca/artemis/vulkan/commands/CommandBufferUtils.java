@@ -26,7 +26,7 @@ public class CommandBufferUtils {
                     .size(size);
             
             PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
-            commandBuffer.beginRecording(VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+            commandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
             commandBuffer.copyBufferCmd(srcBuffer, dstBuffer, pRegions);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
@@ -52,7 +52,7 @@ public class CommandBufferUtils {
                 .imageExtent(e -> e.set(image.getWidth(), image.getHeight(), 1));
             
             PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
-            commandBuffer.beginRecording(VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+            commandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
             commandBuffer.copyBufferToImage(buffer, image, pRegions);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
@@ -110,7 +110,7 @@ public class CommandBufferUtils {
             }
 
             PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
-            commandBuffer.beginRecording(VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+            commandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
             commandBuffer.pipelineBarrierCmd(sourceStage, destinationStage, pBarriers);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
@@ -138,7 +138,7 @@ public class CommandBufferUtils {
             int mipHeight = image.getHeight();
 
             PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
-            commandBuffer.beginRecording(VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+            commandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
             for(int i = 1; i < mipLevels; i++) {
                 pBarrier

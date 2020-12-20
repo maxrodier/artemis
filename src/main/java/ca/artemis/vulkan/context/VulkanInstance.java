@@ -27,7 +27,7 @@ public class VulkanInstance {
             PointerBuffer ppRequiredExtentions = GLFWVulkan.glfwGetRequiredInstanceExtensions();
     
     		ByteBuffer[] pEnabledLayerNames = {
-    				stack.UTF8("VK_LAYER_LUNARG_standard_validation")
+    				stack.UTF8("VK_LAYER_KHRONOS_validation")
     		};
     		PointerBuffer ppEnabledLayerNames = stack.callocPointer(pEnabledLayerNames.length);
     		for(ByteBuffer pEnabledLayerName : pEnabledLayerNames)
