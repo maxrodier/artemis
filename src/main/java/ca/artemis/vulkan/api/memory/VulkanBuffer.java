@@ -1,4 +1,4 @@
-package ca.artemis.vulkan.memory;
+package ca.artemis.vulkan.api.memory;
 
 import java.nio.LongBuffer;
 

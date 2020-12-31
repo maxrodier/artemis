@@ -14,6 +14,9 @@ import org.lwjgl.vulkan.VkClearValue;
 import ca.artemis.Configuration;
 import ca.artemis.math.Vector2f;
 import ca.artemis.math.Vector3f;
+import ca.artemis.vulkan.api.memory.VulkanBuffer;
+import ca.artemis.vulkan.api.memory.VulkanImageView;
+import ca.artemis.vulkan.api.memory.VulkanSampler;
 import ca.artemis.vulkan.commands.CommandBuffer;
 import ca.artemis.vulkan.commands.CommandBufferUtils;
 import ca.artemis.vulkan.commands.CommandPool;
@@ -24,13 +27,10 @@ import ca.artemis.vulkan.context.VulkanContext;
 import ca.artemis.vulkan.context.VulkanDevice;
 import ca.artemis.vulkan.context.VulkanMemoryAllocator;
 import ca.artemis.vulkan.descriptor.DescriptorSet;
-import ca.artemis.vulkan.memory.VulkanBuffer;
-import ca.artemis.vulkan.memory.VulkanImageView;
-import ca.artemis.vulkan.memory.VulkanSampler;
 import ca.artemis.vulkan.synchronization.VulkanFence;
 import ca.artemis.vulkan.synchronization.VulkanSemaphore;
 
-public class SwapchainRenderer {
+public class OldSwapchainRenderer {
 
     private static final int VERTEX_SIZE = 5;
     private static final int VERTEX_BYTES = Float.BYTES*VERTEX_SIZE;
@@ -71,7 +71,7 @@ public class SwapchainRenderer {
     private final SubmitInfo submitInfo;
     private final PresentInfo presentInfo;
 
-    public SwapchainRenderer(VulkanContext context, CommandPool commandPool, Swapchain swapchain, VulkanImageView displayImageView) {
+    public OldSwapchainRenderer(VulkanContext context, CommandPool commandPool, Swapchain swapchain, VulkanImageView displayImageView) {
         this.vertexBuffer = createVertexBuffer(context.getMemoryAllocator(), context.getDevice(), commandPool);
         this.indexBuffer = createIndexBuffer(context.getMemoryAllocator(), context.getDevice(), commandPool);
 

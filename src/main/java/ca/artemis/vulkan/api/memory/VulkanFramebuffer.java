@@ -1,4 +1,4 @@
-package ca.artemis.vulkan.memory;
+package ca.artemis.vulkan.api.memory;
 
 import java.nio.LongBuffer;
 import java.util.ArrayList;
@@ -10,11 +10,11 @@ import org.lwjgl.vulkan.VkFramebufferCreateInfo;
 
 import ca.artemis.vulkan.context.VulkanDevice;
 
-public class Framebuffer {
+public class VulkanFramebuffer {
 
     public final long handle;
 
-    public Framebuffer(long handle) {
+    public VulkanFramebuffer(long handle) {
         this.handle = handle;
     }
 
@@ -34,7 +34,7 @@ public class Framebuffer {
         private int height;
         private int layers;
 
-        public Framebuffer build(VulkanDevice device) {
+        public VulkanFramebuffer build(VulkanDevice device) {
             try(MemoryStack stack = MemoryStack.stackPush()) {
 
                 LongBuffer pAttachements = stack.callocLong(attachements.size());
@@ -55,7 +55,7 @@ public class Framebuffer {
                 if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to create framebuffer");
     
-                return new Framebuffer(pFramebuffer.get(0));
+                return new VulkanFramebuffer(pFramebuffer.get(0));
             }
         }
 

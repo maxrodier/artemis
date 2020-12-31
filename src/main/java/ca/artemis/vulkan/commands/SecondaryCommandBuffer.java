@@ -7,8 +7,8 @@ import org.lwjgl.vulkan.VkCommandBufferAllocateInfo;
 import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
 import org.lwjgl.vulkan.VkCommandBufferInheritanceInfo;
 
+import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
 import ca.artemis.vulkan.context.VulkanDevice;
-import ca.artemis.vulkan.memory.Framebuffer;
 import ca.artemis.vulkan.rendering.RenderPass;
 
 public class SecondaryCommandBuffer extends CommandBuffer {
@@ -17,7 +17,7 @@ public class SecondaryCommandBuffer extends CommandBuffer {
         super(device, createHandle(device, commandPool));
     }
     
-    public void beginRecording(MemoryStack stack, int flags, RenderPass renderPass, Framebuffer framebuffer) {
+    public void beginRecording(MemoryStack stack, int flags, RenderPass renderPass, VulkanFramebuffer framebuffer) {
         VkCommandBufferInheritanceInfo pInheritanceInfo = VkCommandBufferInheritanceInfo.callocStack(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
             .renderPass(renderPass.getHandle())

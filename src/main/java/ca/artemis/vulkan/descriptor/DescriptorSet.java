@@ -9,11 +9,11 @@ import org.lwjgl.vulkan.VkDescriptorImageInfo;
 import org.lwjgl.vulkan.VkDescriptorSetAllocateInfo;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
+import ca.artemis.vulkan.api.memory.VulkanBuffer;
+import ca.artemis.vulkan.api.memory.VulkanImageView;
+import ca.artemis.vulkan.api.memory.VulkanSampler;
 import ca.artemis.vulkan.context.VulkanContext;
 import ca.artemis.vulkan.context.VulkanDevice;
-import ca.artemis.vulkan.memory.VulkanBuffer;
-import ca.artemis.vulkan.memory.VulkanImageView;
-import ca.artemis.vulkan.memory.VulkanSampler;
 
 public class DescriptorSet {
     

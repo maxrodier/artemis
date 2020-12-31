@@ -1,4 +1,4 @@
-package ca.artemis.vulkan.memory;
+package ca.artemis.vulkan.api.memory;
 
 import java.nio.LongBuffer;
 
@@ -51,11 +51,11 @@ public class VulkanImage {
         private int imageType = VK11.VK_IMAGE_TYPE_2D;
         private int extentWidth;
         private int extentHeight;
-        private int extentDepth;
-        private int mipLevels;
-        private int arrayLayers;
+        private int extentDepth = 1;
+        private int mipLevels = 1;
+        private int arrayLayers = 1;
         private int format;
-        private int tiling;
+        private int tiling = VK11.VK_IMAGE_TILING_OPTIMAL;
         private int initialLayout = VK11.VK_IMAGE_LAYOUT_UNDEFINED;
         private int usage;
         private int sharingMode = VK11.VK_SHARING_MODE_EXCLUSIVE;

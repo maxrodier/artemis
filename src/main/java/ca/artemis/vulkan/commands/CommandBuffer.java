@@ -16,10 +16,10 @@ import org.lwjgl.vulkan.VkRect2D;
 import org.lwjgl.vulkan.VkRenderPassBeginInfo;
 import org.lwjgl.vulkan.VkViewport;
 
+import ca.artemis.vulkan.api.memory.VulkanBuffer;
+import ca.artemis.vulkan.api.memory.VulkanImage;
 import ca.artemis.vulkan.context.VulkanDevice;
 import ca.artemis.vulkan.descriptor.DescriptorSet;
-import ca.artemis.vulkan.memory.VulkanBuffer;
-import ca.artemis.vulkan.memory.VulkanImage;
 import ca.artemis.vulkan.pipeline.GraphicsPipeline;
 
 public class CommandBuffer {

@@ -12,6 +12,8 @@ import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 import ca.artemis.Configuration;
 import ca.artemis.SharderUtils.ShaderStageKind;
+import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
+import ca.artemis.vulkan.api.memory.VulkanImageView;
 import ca.artemis.vulkan.commands.CommandPool;
 import ca.artemis.vulkan.context.VulkanContext;
 import ca.artemis.vulkan.context.VulkanDevice;
@@ -20,8 +22,6 @@ import ca.artemis.vulkan.context.VulkanSurface;
 import ca.artemis.vulkan.descriptor.DescriptorPool;
 import ca.artemis.vulkan.descriptor.DescriptorSet;
 import ca.artemis.vulkan.descriptor.DescriptorSetLayout;
-import ca.artemis.vulkan.memory.Framebuffer;
-import ca.artemis.vulkan.memory.VulkanImageView;
 import ca.artemis.vulkan.pipeline.ColorBlendState;
 import ca.artemis.vulkan.pipeline.GraphicsPipeline;
 import ca.artemis.vulkan.pipeline.ShaderModule;
@@ -35,7 +35,7 @@ public class Swapchain {
     private final long handle;
     private final VulkanImageView[] imageViews;
     private final RenderPass renderPass;
-    private final Framebuffer[] framebuffers;
+    private final VulkanFramebuffer[] framebuffers;
     private final DescriptorPool descriptorPool;
     private final DescriptorSetLayout descriptorSetLayout;
     private final DescriptorSet[] descriptorSets;
@@ -56,7 +56,7 @@ public class Swapchain {
         graphicsPipeline.destroy(context.getDevice());
         descriptorSetLayout.destroy(context.getDevice());
         descriptorPool.destroy(context.getDevice());
-        for(Framebuffer framebuffer : framebuffers)
+        for(VulkanFramebuffer framebuffer : framebuffers)
             framebuffer.destroy(context.getDevice());
         renderPass.destroy(context.getDevice());
         for(VulkanImageView imageView : imageViews)
@@ -130,10 +130,10 @@ public class Swapchain {
             .build(device);
     }
 
-    private Framebuffer[] createFramebuffers(VulkanDevice device, VulkanImageView[] imageViews, RenderPass renderPass, VkSurfaceCapabilitiesKHR surfaceCapabilities) {
-        Framebuffer[] framebuffers = new Framebuffer[imageViews.length];
+    private VulkanFramebuffer[] createFramebuffers(VulkanDevice device, VulkanImageView[] imageViews, RenderPass renderPass, VkSurfaceCapabilitiesKHR surfaceCapabilities) {
+        VulkanFramebuffer[] framebuffers = new VulkanFramebuffer[imageViews.length];
         for(int i = 0; i < framebuffers.length; i++) {
-            framebuffers[i] = new Framebuffer.Builder()
+            framebuffers[i] = new VulkanFramebuffer.Builder()
                 .addAttachement(imageViews[i])
                 .setRenderPass(renderPass.getHandle())
                 .setWidth(surfaceCapabilities.currentExtent().width())
@@ -199,11 +199,11 @@ public class Swapchain {
         return renderPass;
     }
 
-    public Framebuffer[] getFramebuffers() {
+    public VulkanFramebuffer[] getFramebuffers() {
         return framebuffers;
     }
 
-    public Framebuffer getFramebuffer(int index) {
+    public VulkanFramebuffer getFramebuffer(int index) {
         return framebuffers[index];
     }
 

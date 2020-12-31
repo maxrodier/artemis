@@ -12,9 +12,9 @@ import org.lwjgl.vulkan.VkOffset3D;
 import org.lwjgl.vulkan.VkQueue;
 import org.lwjgl.vulkan.VkSubmitInfo;
 
+import ca.artemis.vulkan.api.memory.VulkanBuffer;
+import ca.artemis.vulkan.api.memory.VulkanImage;
 import ca.artemis.vulkan.context.VulkanDevice;
-import ca.artemis.vulkan.memory.VulkanBuffer;
-import ca.artemis.vulkan.memory.VulkanImage;
 
 public class CommandBufferUtils {
 
