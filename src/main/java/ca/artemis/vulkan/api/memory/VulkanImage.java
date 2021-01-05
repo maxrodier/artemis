@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkExtent3D;
 import org.lwjgl.vulkan.VkImageCreateInfo;
 
-import ca.artemis.vulkan.context.VulkanMemoryAllocator;
+import ca.artemis.vulkan.api.context.VulkanMemoryAllocator;
 
 public class VulkanImage {
 

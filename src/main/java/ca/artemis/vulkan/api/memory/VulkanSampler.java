@@ -6,9 +6,8 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
 
-import ca.artemis.vulkan.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanDevice;
 
-//TODO: Finish this
 public class VulkanSampler {
 
     private final long handle;
@@ -43,7 +42,7 @@ public class VulkanSampler {
     	private int minLod = 0;
         private int maxLod = 1;
         
-        public VulkanSampler build(VulkanDevice device, int mipLevels) {
+        public VulkanSampler build(VulkanDevice device) {
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.create()
                     .sType(VK11.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
@@ -61,7 +60,7 @@ public class VulkanSampler {
                     .mipmapMode(mipmapMode)
                     .mipLodBias(mipLodBias)
                     .minLod(minLod)
-                    .maxLod(mipLevels);
+                    .maxLod(maxLod);
 
                 LongBuffer pSampler = stack.callocLong(1);
                 int error =  VK11.vkCreateSampler(device.getHandle(), samplerInfo, null, pSampler);
@@ -70,6 +69,10 @@ public class VulkanSampler {
 
                 return new VulkanSampler(pSampler.get(0));
             }
-        } 
+        }
+
+        public void setMaxLod(int maxLoad) {
+            this.maxLod = maxLoad;
+        }
     }
 }

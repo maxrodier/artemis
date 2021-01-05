@@ -4,31 +4,39 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 
-import ca.artemis.Configuration;
-import ca.artemis.vulkan.commands.CommandPool;
-import ca.artemis.vulkan.context.VulkanContext;
+import ca.artemis.vulkan.api.context.VulkanContext;
+import ca.artemis.vulkan.api.framebuffer.Swapchain;
+import ca.artemis.vulkan.rendering.renderer.PostProcessingRenderer;
 import ca.artemis.vulkan.rendering.renderer.SceneRenderer;
 import ca.artemis.vulkan.rendering.renderer.SwapchainRenderer;
+import ca.artemis.vulkan.rendering.scene.SceneGraph;
 
 public class RenderingEngine {
     
     private final VulkanContext context;
-    private final CommandPool commandPool;
-    
+
     private final Swapchain swapchain;
 
     private final SceneRenderer sceneRenderer;
+    private final PostProcessingRenderer postProcessingRenderer;
     private final SwapchainRenderer swapchainRenderer;
 
-
+    private SceneGraph sceneGraph;
 
     public RenderingEngine(VulkanContext context) {
         this.context = context;
-        this.commandPool = new CommandPool(this.context.getDevice(), this.context.getPhysicalDevice().getQueueFamilies().get(0).getIndex(), VK11.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-        this.swapchain = new Swapchain(this.context, this.commandPool);
 
-        this.sceneRenderer = new SceneRenderer(this.context, null);
-        this.swapchainRenderer = new SwapchainRenderer(this.context.getDevice(), this.swapchain, sceneRenderer.getSignalSemaphore());
+        this.swapchain = new Swapchain(this.context);
+        this.sceneRenderer = new SceneRenderer(this.context);
+        this.postProcessingRenderer = new PostProcessingRenderer(this.context, sceneRenderer.getSignalSemaphore(), this.sceneRenderer.getDisplayImage());
+        this.swapchainRenderer = new SwapchainRenderer(this.context, this.swapchain, postProcessingRenderer.getSignalSemaphore(), this.postProcessingRenderer.getDisplayImage());
+    }
+
+    public void destroy() {
+        this.swapchainRenderer.destroy(context.getDevice(), context.getMemoryAllocator());
+        this.postProcessingRenderer.destroy(context);
+        this.sceneRenderer.destroy(context);
+        this.swapchain.destroy(context);
     }
 
     public void mainLoop() {
@@ -50,13 +58,13 @@ public class RenderingEngine {
 
                 sceneRenderer.getRenderFence().waitFor(context.getDevice());
 
-                //Update UBO HERE
-
+                sceneGraph.update(context, stack);
+                sceneRenderer.update(sceneGraph);
+                
                 swapchainRenderer.getRenderFence().waitFor(context.getDevice());
+
                 sceneRenderer.draw(context.getDevice(), stack);
-
-                //DO POST PROCESSING HERE
-
+                postProcessingRenderer.draw(context.getDevice(), stack);
                 swapchainRenderer.draw(context.getDevice(), stack);
 
                 frame++;
@@ -64,5 +72,13 @@ public class RenderingEngine {
         }
 
         VK11.vkDeviceWaitIdle(context.getDevice().getHandle());
+    }
+
+    public SceneRenderer getSceneRenderer() {
+        return sceneRenderer;
+    }
+
+    public void setSceneGraph(SceneGraph sceneGraph) {
+        this.sceneGraph = sceneGraph;
     }
 }

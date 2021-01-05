@@ -9,7 +9,7 @@ import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 
-import ca.artemis.vulkan.context.VulkanMemoryAllocator;
+import ca.artemis.vulkan.api.context.VulkanMemoryAllocator;
 
 public class VulkanBuffer {
 
