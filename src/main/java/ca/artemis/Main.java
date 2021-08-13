@@ -1,5 +1,6 @@
 package ca.artemis;
 
+import ca.artemis.math.Matrix4f;
 import ca.artemis.vulkan.context.VulkanContext;
 import ca.artemis.vulkan.rendering.OldRenderingEngine;
 
