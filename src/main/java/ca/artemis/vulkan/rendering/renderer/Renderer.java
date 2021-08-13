@@ -2,8 +2,8 @@ package ca.artemis.vulkan.rendering.renderer;
 
 import org.lwjgl.system.MemoryStack;
 
-import ca.artemis.vulkan.context.VulkanDevice;
-import ca.artemis.vulkan.synchronization.VulkanSemaphore;
+import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.synchronization.VulkanSemaphore;
 
 public abstract class Renderer {
     

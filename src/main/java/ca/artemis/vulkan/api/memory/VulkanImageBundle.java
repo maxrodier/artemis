@@ -1,7 +1,7 @@
 package ca.artemis.vulkan.api.memory;
 
-import ca.artemis.vulkan.context.VulkanDevice;
-import ca.artemis.vulkan.context.VulkanMemoryAllocator;
+import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanMemoryAllocator;
 
 public class VulkanImageBundle {
     
@@ -13,8 +13,8 @@ public class VulkanImageBundle {
         this.imageView = imageView;
     }
 
-    public void destroy(VulkanMemoryAllocator allocator, VulkanDevice device) {
-        this.image.destroy(allocator);
+    public void destroy(VulkanDevice device, VulkanMemoryAllocator memoryAllocator) {
+        this.image.destroy(memoryAllocator);
         this.imageView.destroy(device);
     }
 

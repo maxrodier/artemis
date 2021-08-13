@@ -8,7 +8,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkFramebufferCreateInfo;
 
-import ca.artemis.vulkan.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanDevice;
 
 public class VulkanFramebuffer {
 
