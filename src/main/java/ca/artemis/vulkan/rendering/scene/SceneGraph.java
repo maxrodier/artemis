@@ -37,4 +37,8 @@ public class SceneGraph {
     public void update(VulkanContext context, MemoryStack stack) {
         root.updateAll(context, stack);
     }
+
+    public void destroy() {
+        root.destroy();
+    }
 }

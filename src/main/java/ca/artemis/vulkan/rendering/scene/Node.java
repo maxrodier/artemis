@@ -17,6 +17,12 @@ public class Node {
     private List<Node> children = new ArrayList<>();
     private Transform transform = new Transform();
 
+    public void destroy() {
+        for(Node child: children) {
+            child.destroy();
+        }
+    }
+
     public void add(Node child) {
         if(child.getParent() != null) {
             child.getParent().remove(child);

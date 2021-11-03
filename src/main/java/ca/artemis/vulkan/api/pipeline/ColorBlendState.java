@@ -18,6 +18,12 @@ public class ColorBlendState {
             ColorBlendAttachement colorBlendAttachement = colorBlendAttachements.get(i);
             pAttachments.get(i)
                 .blendEnable(colorBlendAttachement.blendEnable)
+                .srcColorBlendFactor(colorBlendAttachement.srcColorBlendFactor)
+                .dstColorBlendFactor(colorBlendAttachement.dstColorBlendFactor)
+                .colorBlendOp(colorBlendAttachement.colorBlendOp)
+                .srcAlphaBlendFactor(colorBlendAttachement.srcAlphaBlendFactor)
+                .dstAlphaBlendFactor(colorBlendAttachement.dstAlphaBlendFactor)
+                .alphaBlendOp(colorBlendAttachement.alphaBlendOp)
                 .colorWriteMask(colorBlendAttachement.colorWriteMask);
         }
 
@@ -34,6 +40,12 @@ public class ColorBlendState {
     public static class ColorBlendAttachement {
         private boolean blendEnable;
         private int colorWriteMask;
+        private int srcColorBlendFactor = VK11.VK_BLEND_FACTOR_ONE;
+        private int dstColorBlendFactor = VK11.VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        private int colorBlendOp = VK11.VK_BLEND_OP_ADD;
+        private int srcAlphaBlendFactor = VK11.VK_BLEND_FACTOR_ONE;
+        private int dstAlphaBlendFactor = VK11.VK_BLEND_FACTOR_ZERO;
+        private int alphaBlendOp = VK11.VK_BLEND_OP_ADD;
 
         public ColorBlendAttachement(boolean blendEnable, int colorWriteMask) {
             this.blendEnable = blendEnable;

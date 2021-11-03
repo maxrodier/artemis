@@ -12,7 +12,7 @@ public class SpriteSheet {
     public SpriteSheet(VulkanContext context, int spriteWidth, int spriteHeight, String filePath) {
         this.spriteWidth = spriteWidth;
         this.spriteHeight = spriteHeight;
-        this.texture = new VulkanTexture(context, filePath);
+        this.texture = new VulkanTexture(context, filePath, false);
     }
 
     public void destroy(VulkanContext context) {

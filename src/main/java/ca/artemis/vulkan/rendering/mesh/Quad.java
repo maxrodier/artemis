@@ -21,7 +21,7 @@ public class Quad extends Mesh {
         new Vector2f(0.0f, 1.0f)
     };
 
-    private static final int[] indices = { 
+    private static final Integer[] indices = { 
         0, 1, 2, 0, 2, 3 
     };
 

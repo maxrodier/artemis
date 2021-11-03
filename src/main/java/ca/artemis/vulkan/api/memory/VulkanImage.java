@@ -18,12 +18,14 @@ public class VulkanImage {
     private final long allocationHandle;
     private final int width;
     private final int height;
+    private final int mipLevels;
 
-    private VulkanImage(long handle, long allocationHandle, int width, int height) {
+    private VulkanImage(long handle, long allocationHandle, int width, int height, int mipLevels) {
         this.handle = handle;
         this.allocationHandle = allocationHandle;
         this.width = width;
         this.height = height;
+        this.mipLevels = mipLevels;
     }
 
     public void destroy(VulkanMemoryAllocator allocator) {
@@ -44,6 +46,10 @@ public class VulkanImage {
 
     public int getHeight() {
         return height;
+    }
+
+    public int getMipLevels() {
+        return mipLevels;
     }
 
     public static class Builder {
@@ -86,7 +92,7 @@ public class VulkanImage {
                 if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to create image");
 
-                return new VulkanImage(pImage.get(0), pAllocation.get(0), extentWidth, extentHeight);
+                return new VulkanImage(pImage.get(0), pAllocation.get(0), extentWidth, extentHeight, mipLevels);
             }
         }
 

@@ -19,7 +19,7 @@ public class Mesh {
     private final VulkanBuffer vertexBuffer;
     private final VulkanBuffer indexBuffer;
 
-    public Mesh(VulkanContext context, Vertex[] vertices, int[] indices, VertexKind vertexKind) {
+    public Mesh(VulkanContext context, Vertex[] vertices, Integer[] indices, VertexKind vertexKind) {
         this.vertexBuffer = createVertexBuffer(context, vertices, vertexKind);
         this.indexBuffer = createIndexBuffer(context, indices);
     }
@@ -96,7 +96,7 @@ public class Mesh {
         return vertexBuffer;
     }
 
-    private static VulkanBuffer createIndexBuffer(VulkanContext context, int[] indices) {
+    private static VulkanBuffer createIndexBuffer(VulkanContext context, Integer[] indices) {
 		int bufferLength = indices.length;
     	int bufferSize = Integer.BYTES;
         

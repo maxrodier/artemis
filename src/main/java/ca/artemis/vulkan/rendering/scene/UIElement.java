@@ -44,9 +44,9 @@ public class UIElement extends RenderableNode {
     }
 
     public void destroy(VulkanContext context, SceneRenderer sceneRenderer) {
+        super.destroy(context.getDevice(), sceneRenderer.getCommandPool());
         this.quad.destroy(context.getMemoryAllocator());
         this.buffer.destroy(context.getMemoryAllocator());
-        super.destroy(context.getDevice(), sceneRenderer.getCommandPool());
     }
 
     @Override

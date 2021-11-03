@@ -18,6 +18,7 @@ import ca.artemis.vulkan.api.framebuffer.FramebufferObject.Attachment;
 import ca.artemis.vulkan.api.framebuffer.SceneFramebufferObject;
 import ca.artemis.vulkan.api.memory.VulkanImageView;
 import ca.artemis.vulkan.api.synchronization.VulkanFence;
+import ca.artemis.vulkan.rendering.programs.FontShaderProgram;
 import ca.artemis.vulkan.rendering.programs.SimpleShaderProgram;
 import ca.artemis.vulkan.rendering.programs.SpriteShaderProgram;
 import ca.artemis.vulkan.rendering.programs.SpriteSheetShaderProgram;
@@ -30,6 +31,7 @@ public class SceneRenderer extends Renderer {
     private final SimpleShaderProgram simpleShaderProgram;
     private final SpriteShaderProgram spriteShaderProgram;
     private final SpriteSheetShaderProgram spriteSheetShaderProgram;
+    private final FontShaderProgram fontShaderProgram;
 
     private final CommandPool commandPool;
 
@@ -47,6 +49,7 @@ public class SceneRenderer extends Renderer {
         this.simpleShaderProgram = new SimpleShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
         this.spriteShaderProgram = new SpriteShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
         this.spriteSheetShaderProgram = new SpriteSheetShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
+        this.fontShaderProgram = new FontShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
 
         this.commandPool = new CommandPool(context.getDevice(), context.getPhysicalDevice().getQueueFamilies().get(0).getIndex(), VK11.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
         this.primaryCommandBuffer = new PrimaryCommandBuffer(context.getDevice(), this.commandPool);
@@ -68,6 +71,7 @@ public class SceneRenderer extends Renderer {
         this.spriteSheetShaderProgram.destroy(context.getDevice());
         this.spriteShaderProgram.destroy(context.getDevice());
         this.simpleShaderProgram.destroy(context.getDevice());
+        this.fontShaderProgram.destroy(context.getDevice());
 
         this.sceneFramebufferObject.destroy(context);
         super.destroy(context.getDevice());
@@ -132,5 +136,9 @@ public class SceneRenderer extends Renderer {
 
     public SpriteSheetShaderProgram getSpriteSheetShaderProgram() {
         return spriteSheetShaderProgram;
+    }
+
+    public FontShaderProgram getFontShaderProgram() {
+        return fontShaderProgram;
     }
 }

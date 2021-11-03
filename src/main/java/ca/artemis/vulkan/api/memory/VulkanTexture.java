@@ -1,6 +1,5 @@
 package ca.artemis.vulkan.api.memory;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.IntBuffer;
@@ -25,9 +24,9 @@ public class VulkanTexture {
     private final VulkanImageBundle imageBundle;
     private final VulkanSampler sampler;
 
-    public VulkanTexture(VulkanContext context, String filePath) {
-        this.imageBundle = createTexutureImageBundle(context.getDevice(), context.getMemoryAllocator(), context.getCommandPool(), filePath);
-        this.sampler = createTextureSampler(context.getDevice());
+    public VulkanTexture(VulkanContext context, String filePath, boolean multiSampling) {
+        this.imageBundle = createTexutureImageBundle(context.getDevice(), context.getMemoryAllocator(), context.getCommandPool(), filePath, multiSampling);
+        this.sampler = createTextureSampler(context.getDevice(), this.imageBundle.getImage());
     }
 
     public void destroy(VulkanContext context) {
@@ -43,19 +42,20 @@ public class VulkanTexture {
         return sampler;
     }
 
-    private static VulkanImageBundle createTexutureImageBundle(VulkanDevice device, VulkanMemoryAllocator memoryAllocator, CommandPool commandPool, String filePath) {
-        VulkanImage textureImage = createTextureImage(device, memoryAllocator, commandPool, filePath);
+    private static VulkanImageBundle createTexutureImageBundle(VulkanDevice device, VulkanMemoryAllocator memoryAllocator, CommandPool commandPool, String filePath, boolean multiSampling) {
+        VulkanImage textureImage = createTextureImage(device, memoryAllocator, commandPool, filePath, multiSampling);
         VulkanImageView textureImageView = createTextureImageView(device, textureImage);
 
         return new VulkanImageBundle(textureImage, textureImageView);
     }
 
-    private static VulkanImage createTextureImage(VulkanDevice device, VulkanMemoryAllocator memoryAllocator, CommandPool commandPool, String filePath) {
+    private static VulkanImage createTextureImage(VulkanDevice device, VulkanMemoryAllocator memoryAllocator, CommandPool commandPool, String filePath, boolean multiSampling) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             BufferedImage bufferedImage = ImageIO.read(Files.newInputStream(Paths.get(filePath)));
             int imageWidth = bufferedImage.getWidth();
             int imageHeight = bufferedImage.getHeight();
             int imageSize = bufferedImage.getWidth() * bufferedImage.getHeight();
+            int mipLevels = multiSampling ? (int)Math.floor(Math.log(Math.max(imageWidth, imageHeight))) + 1 : 1;
             
             VulkanBuffer stagingBuffer = new VulkanBuffer.Builder()
                 .setLength(imageSize)
@@ -69,8 +69,6 @@ public class VulkanTexture {
             IntBuffer data = ppData.getIntBuffer(imageSize);
             for(int y = 0; y < imageHeight; y++) {
                 for(int x = 0; x < imageWidth; x++) {
-                    int pixel = bufferedImage.getRGB(x, y);
-
                     data.put(x + y * imageWidth, bufferedImage.getRGB(x, y));
                 }
             }
@@ -80,16 +78,20 @@ public class VulkanTexture {
                 .setExtentWidth(imageWidth)
                 .setExtentHeight(imageHeight)
                 .setExtentDepth(1)
-                .setMipLevels(1)
+                .setMipLevels(mipLevels)
                 .setArrayLayers(1)
                 .setFormat(VK11.VK_FORMAT_B8G8R8A8_UNORM)
                 .setTilling(VK11.VK_IMAGE_TILING_OPTIMAL)
                 .setUsage(VK11.VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK11.VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK11.VK_IMAGE_USAGE_SAMPLED_BIT)
                 .build(memoryAllocator);
 
-            CommandBufferUtils.transitionImageLayout(device, device.getGraphicsQueue(), commandPool, textureImage, VK11.VK_FORMAT_B8G8R8A8_UNORM, VK11.VK_IMAGE_LAYOUT_UNDEFINED, VK11.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1);
+            CommandBufferUtils.transitionImageLayout(device, device.getGraphicsQueue(), commandPool, textureImage, VK11.VK_FORMAT_B8G8R8A8_UNORM, VK11.VK_IMAGE_LAYOUT_UNDEFINED, VK11.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
             CommandBufferUtils.copyBufferToImage(device, device.getGraphicsQueue(), commandPool, stagingBuffer, textureImage);
-            CommandBufferUtils.transitionImageLayout(device, device.getGraphicsQueue(), commandPool, textureImage, VK11.VK_FORMAT_B8G8R8A8_UNORM, VK11.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
+            if(multiSampling) {
+                CommandBufferUtils.generateMipmaps(device, device.getGraphicsQueue(), commandPool, textureImage, mipLevels);
+            } else {
+                CommandBufferUtils.transitionImageLayout(device, device.getGraphicsQueue(), commandPool, textureImage, VK11.VK_FORMAT_B8G8R8A8_UNORM, VK11.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
+            }
             stagingBuffer.destroy(memoryAllocator);
 
             return textureImage;
@@ -106,7 +108,7 @@ public class VulkanTexture {
             .setFormat(VK11.VK_FORMAT_B8G8R8A8_UNORM)
             .setAspectMask(VK11.VK_IMAGE_ASPECT_COLOR_BIT)
             .setBaseMipLevel(0)
-            .setLevelCount(1)
+            .setLevelCount(textureImage.getMipLevels())
             .setBaseArrayLayer(0)
             .setLayerCount(1)
             .build(device);
@@ -114,8 +116,9 @@ public class VulkanTexture {
         return textureImageView;
     }
 
-    private static VulkanSampler createTextureSampler(VulkanDevice device) {
+    private static VulkanSampler createTextureSampler(VulkanDevice device, VulkanImage textureImage) {
         VulkanSampler textureSampler = new VulkanSampler.Builder()
+            .setMaxLod(textureImage.getMipLevels())
             .build(device);
 
         return textureSampler;

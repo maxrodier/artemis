@@ -19,6 +19,7 @@ public abstract class RenderableNode extends Node {
     }
 
     protected void destroy(VulkanDevice device, CommandPool commandPool) {
+        super.destroy();
         this.drawCommandBuffer.destroy(device, commandPool);
     }
 

@@ -71,8 +71,9 @@ public class VulkanSampler {
             }
         }
 
-        public void setMaxLod(int maxLoad) {
+        public Builder setMaxLod(int maxLoad) {
             this.maxLod = maxLoad;
+            return this;
         }
     }
 }

@@ -3,8 +3,8 @@ package ca.artemis.vulkan.rendering.scene;
 import ca.artemis.Configuration;
 import ca.artemis.math.Vector3f;
 import ca.artemis.vulkan.api.context.VulkanContext;
+import ca.artemis.vulkan.api.memory.Sprite;
 import ca.artemis.vulkan.api.memory.SpriteSheet;
-import ca.artemis.vulkan.api.memory.VulkanTexture;
 import ca.artemis.vulkan.rendering.RenderingEngine;
 import ca.artemis.vulkan.rendering.renderer.SceneRenderer;
 
@@ -12,7 +12,7 @@ public class Game {
     
     private SceneGraph sceneGraph;
 
-    private VulkanTexture texture;
+    private Sprite sprite;
     private SpriteSheet spriteSheet;
 
     private UIElement uiElement;
@@ -28,14 +28,14 @@ public class Game {
 
         SceneRenderer sceneRenderer = renderingEngine.getSceneRenderer();
 
-        this.texture = new VulkanTexture(context, "src/main/resources/textures/wood.png");
+        this.sprite = new Sprite(context, 512, 512, "src/main/resources/textures/wood.png");
         this.spriteSheet = new SpriteSheet(context, 32, 32, "src/main/resources/textures/terrain.png");
 
         System.out.println(spriteSheet.getNormalizedSpriteWidth());
         System.out.println(spriteSheet.getNormalizedSpriteHeight());
 
         this.uiElement = new UIElement(context, sceneRenderer, 0, 0, 200, 200);
-        this.spriteElement = new SpriteElement(context, sceneRenderer, 0, 0, 200, 200, this.texture);
+        this.spriteElement = new SpriteElement(context, sceneRenderer, 0, 0, 200, 200, this.sprite);
         this.spriteSheetElement = new SpriteSheetElement(context, sceneRenderer, 0, 0, 200, 200, this.spriteSheet);
 
         this.spriteSheetElement.setSpriteIndex(33,10);
@@ -55,11 +55,11 @@ public class Game {
     public void destroy(VulkanContext context, RenderingEngine renderingEngine) {
         SceneRenderer sceneRenderer = renderingEngine.getSceneRenderer();
 
-        this.spriteSheetElement.destroy(context, sceneRenderer);
-        this.spriteElement.destroy(context, sceneRenderer);
-        this.uiElement.destroy(context, sceneRenderer);
+            this.spriteSheetElement.destroy(context, sceneRenderer);
+            this.spriteElement.destroy(context, sceneRenderer);
+            this.uiElement.destroy(context, sceneRenderer);
 
-        this.spriteSheet.destroy(context);
-        this.texture.destroy(context);
+            this.spriteSheet.destroy(context);
+            this.sprite.destroy(context);
     }
 }
