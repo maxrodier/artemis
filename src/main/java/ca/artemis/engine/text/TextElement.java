@@ -33,7 +33,7 @@ public class TextElement extends RenderableNode {
     private Font font;
 
     public TextElement(VulkanContext context, SceneRenderer sceneRenderer, String text, int size, Font font) {
-        super(context.getDevice(), sceneRenderer.getSpriteShaderProgram(), sceneRenderer.getCommandPool());
+        super(context.getDevice(), sceneRenderer.getFontShaderProgram(), sceneRenderer.getCommandPool());
 
         this.buffer = new VulkanBuffer.Builder()
             .setBufferUsage(VK11.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
@@ -91,22 +91,20 @@ public class TextElement extends RenderableNode {
         List<Vertex> vertices = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
 
-        Vector2f cursor = new Vector2f(0.f, 0.75f);
+        Vector2f cursor = new Vector2f(0.f, 0.f);
         int index = 0;
 
         for(char c : text.toCharArray()) {
             Character character = font.characters.get((int)c);
             if(character == null) {
-                System.out.println(cursor.getX());
                 cursor.setX(cursor.getX() + 0.5f);
-                System.out.println(cursor.getX());
                 continue;
             }
 
-            vertices.add(new Vertex(new Vector3f((cursor.getX() - character.xOffset) * size, (cursor.getY() - character.yOffset) * size, 0.0f), new Vector3f(1,1,1), new Vector2f(character.xMinTexCoord, character.yMinTexCoord)));
-            vertices.add(new Vertex(new Vector3f((cursor.getX() - character.xOffset + character.width) * size, (cursor.getY() - character.yOffset) * size, 0.0f), new Vector3f(1,1,1), new Vector2f(character.xMaxTexCoord, character.yMinTexCoord)));
-            vertices.add(new Vertex(new Vector3f((cursor.getX() - character.xOffset + character.width) * size, (cursor.getY() - character.yOffset + character.height) * size, 0.0f), new Vector3f(1,1,1),  new Vector2f(character.xMaxTexCoord, character.yMaxTexCoord)));
-            vertices.add(new Vertex(new Vector3f((cursor.getX() - character.xOffset) * size, (cursor.getY() - character.yOffset + character.height) * size, 0.0f), new Vector3f(1,1,1), new Vector2f(character.xMinTexCoord, character.yMaxTexCoord)));
+            vertices.add(new Vertex(new Vector3f((cursor.getX() + character.xOffset) * size, (cursor.getY() + character.yOffset) * size, 0.0f), new Vector3f(1,1,1), new Vector2f(character.xMinTexCoord, character.yMinTexCoord)));
+            vertices.add(new Vertex(new Vector3f((cursor.getX() + character.xOffset + character.width) * size, (cursor.getY() + character.yOffset) * size, 0.0f), new Vector3f(1,1,1), new Vector2f(character.xMaxTexCoord, character.yMinTexCoord)));
+            vertices.add(new Vertex(new Vector3f((cursor.getX() + character.xOffset + character.width) * size, (cursor.getY() + character.yOffset + character.height) * size, 0.0f), new Vector3f(1,1,1),  new Vector2f(character.xMaxTexCoord, character.yMaxTexCoord)));
+            vertices.add(new Vertex(new Vector3f((cursor.getX() + character.xOffset) * size, (cursor.getY() + character.yOffset + character.height) * size, 0.0f), new Vector3f(1,1,1), new Vector2f(character.xMinTexCoord, character.yMaxTexCoord)));
 
             indices.add(4 * index + 0);
             indices.add(4 * index + 1);

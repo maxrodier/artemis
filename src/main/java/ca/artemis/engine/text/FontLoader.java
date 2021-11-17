@@ -17,12 +17,12 @@ public class FontLoader {
         Gson gson = new Gson();
         FontMetadata fontMetadata = null;
         try {
-            fontMetadata = gson.fromJson(Files.readString(Paths.get("src/main/resources/fonts/" + name +".json")), FontMetadata.class);
+            fontMetadata = gson.fromJson(Files.readString(Paths.get("src/main/resources/fonts/" + name + ".json")), FontMetadata.class);
         } catch (JsonSyntaxException | IOException e) {
             e.printStackTrace();
         } 
         
-        VulkanTexture texture = new VulkanTexture(context, "src/main/resources/fonts/" + name +".png", true);
+        VulkanTexture texture = new VulkanTexture(context, "src/main/resources/fonts/" + name +".png", false);
         Font font = new Font(texture);
         for(CharacterMetadata characterMetadata : fontMetadata.characters) {
 
@@ -35,10 +35,10 @@ public class FontLoader {
             float width = characterMetadata.width / fontMetadata.size;
             float height = characterMetadata.height / fontMetadata.size;
 
-            float xOffset = characterMetadata.originX / fontMetadata.size;
-            float yOffset = characterMetadata.originY / fontMetadata.size;
+            float xOffset = characterMetadata.xoffset / fontMetadata.size;
+            float yOffset = characterMetadata.yoffset / fontMetadata.size;
 
-            float xAdvance = characterMetadata.advance / fontMetadata.size;
+            float xAdvance = characterMetadata.xadvance / fontMetadata.size;
 
             Character character = new Character(xMinTexCoord, xMaxTexCoord, yMinTexCoord, yMaxTexCoord, width, height, xOffset, yOffset, xAdvance);
             font.characters.put((int)characterMetadata.id, character);
@@ -61,8 +61,8 @@ public class FontLoader {
         private float y;
         private float width;
         private float height;
-        private float originX;
-        private float originY;
-        private float advance;
+        private float xoffset;
+        private float yoffset;
+        private float xadvance;
     }
 }

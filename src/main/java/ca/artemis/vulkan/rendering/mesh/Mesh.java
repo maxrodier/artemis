@@ -40,7 +40,7 @@ public class Mesh {
 			.setMemoryUsage(Vma.VMA_MEMORY_USAGE_CPU_ONLY)
 			.build(context.getMemoryAllocator());
     	
-        PointerBuffer ppData = MemoryUtil.memAllocPointer(1);
+        PointerBuffer ppData = MemoryUtil.memAllocPointer(1); //TODO: Change this for stack allocation
         Vma.vmaMapMemory(context.getMemoryAllocator().getHandle(), stagingBuffer.getAllocationHandle(), ppData);
     	FloatBuffer data = ppData.getFloatBuffer(0, vertices.length * vertexKind.size);
     	

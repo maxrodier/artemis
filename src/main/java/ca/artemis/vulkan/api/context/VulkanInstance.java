@@ -45,7 +45,7 @@ public class VulkanInstance {
             VkInstanceCreateInfo pCreateInfo = VkInstanceCreateInfo.callocStack(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO)
                 .pApplicationInfo(pApplicationInfo)
-                .ppEnabledLayerNames(ppEnabledLayerNames)
+                //.ppEnabledLayerNames(ppEnabledLayerNames)
                 .ppEnabledExtensionNames(ppRequiredExtentions);
     
             PointerBuffer pInstance = stack.callocPointer(1);

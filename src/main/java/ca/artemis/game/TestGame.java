@@ -26,8 +26,8 @@ public class TestGame {
 
         SceneRenderer sceneRenderer = renderingEngine.getSceneRenderer();
 
-        this.font = FontLoader.load(context, "montserrat");
-        this.textElement = new TextElement(context, sceneRenderer, "Allo, comment ça va? Oui je vais bien et toi?", 12, font);
+        this.font = FontLoader.load(context, "montserrat_bold_italic");
+        this.textElement = new TextElement(context, sceneRenderer, "Allo, comment ca va? Oui je vais bien et toi?", 16, font);
 
         sceneGraph.add(textElement);
 

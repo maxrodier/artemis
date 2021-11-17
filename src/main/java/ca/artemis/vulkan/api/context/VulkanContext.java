@@ -3,6 +3,7 @@ package ca.artemis.vulkan.api.context;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVulkan;
+import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;

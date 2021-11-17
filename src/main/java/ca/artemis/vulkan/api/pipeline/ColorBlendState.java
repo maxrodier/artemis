@@ -40,7 +40,7 @@ public class ColorBlendState {
     public static class ColorBlendAttachement {
         private boolean blendEnable;
         private int colorWriteMask;
-        private int srcColorBlendFactor = VK11.VK_BLEND_FACTOR_ONE;
+        private int srcColorBlendFactor = VK11.VK_BLEND_FACTOR_SRC_ALPHA;
         private int dstColorBlendFactor = VK11.VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
         private int colorBlendOp = VK11.VK_BLEND_OP_ADD;
         private int srcAlphaBlendFactor = VK11.VK_BLEND_FACTOR_ONE;
