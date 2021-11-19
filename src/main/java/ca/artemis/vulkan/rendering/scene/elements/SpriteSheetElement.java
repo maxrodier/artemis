@@ -1,4 +1,4 @@
-package ca.artemis.vulkan.rendering.scene;
+package ca.artemis.vulkan.rendering.scene.elements;
 
 import java.nio.FloatBuffer;
 import java.util.List;
@@ -8,6 +8,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.Vma;
 import org.lwjgl.vulkan.VK11;
 
+import ca.artemis.engine.scene.RenderableNode;
 import ca.artemis.math.Matrix4f;
 import ca.artemis.math.Vector3f;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;

@@ -8,6 +8,7 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkClearValue;
 
 import ca.artemis.Configuration;
+import ca.artemis.engine.scene.SceneGraph;
 import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.PrimaryCommandBuffer;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;
@@ -22,7 +23,6 @@ import ca.artemis.vulkan.rendering.programs.FontShaderProgram;
 import ca.artemis.vulkan.rendering.programs.SimpleShaderProgram;
 import ca.artemis.vulkan.rendering.programs.SpriteShaderProgram;
 import ca.artemis.vulkan.rendering.programs.SpriteSheetShaderProgram;
-import ca.artemis.vulkan.rendering.scene.SceneGraph;
 
 public class SceneRenderer extends Renderer {
 

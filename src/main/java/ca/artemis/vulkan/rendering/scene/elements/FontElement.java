@@ -1,4 +1,4 @@
-package ca.artemis.vulkan.rendering.scene;
+package ca.artemis.vulkan.rendering.scene.elements;
 
 import java.nio.FloatBuffer;
 import java.util.List;
@@ -8,30 +8,33 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.Vma;
 import org.lwjgl.vulkan.VK11;
 
+import ca.artemis.engine.scene.RenderableNode;
+import ca.artemis.engine.text.Character;
+import ca.artemis.engine.text.Font;
 import ca.artemis.math.Matrix4f;
+import ca.artemis.math.Vector2f;
 import ca.artemis.math.Vector3f;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;
 import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.descriptor.DescriptorSet;
 import ca.artemis.vulkan.api.framebuffer.RenderPass;
-import ca.artemis.vulkan.api.memory.Sprite;
 import ca.artemis.vulkan.api.memory.VulkanBuffer;
 import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
 import ca.artemis.vulkan.api.pipeline.GraphicsPipeline;
 import ca.artemis.vulkan.rendering.mesh.Quad;
 import ca.artemis.vulkan.rendering.renderer.SceneRenderer;
 
-public class SpriteElement extends RenderableNode {
+public class FontElement extends RenderableNode {
 
     private final VulkanBuffer buffer;
     private final Quad quad;
-    private final Sprite sprite;
+    private final Font font;
 
-    public SpriteElement(VulkanContext context, SceneRenderer sceneRenderer, int x, int y, int width, int height, Sprite sprite) {
+    public FontElement(VulkanContext context, SceneRenderer sceneRenderer, int x, int y, int width, int height, Font font, Character character) {
         super(context.getDevice(), sceneRenderer.getSpriteShaderProgram(), sceneRenderer.getCommandPool());
 
-        this.sprite = sprite;
+        this.font = font;
 
         this.buffer = new VulkanBuffer.Builder()
             .setBufferUsage(VK11.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
@@ -40,7 +43,7 @@ public class SpriteElement extends RenderableNode {
             .setSize(Matrix4f.BYTES)
             .build(context.getMemoryAllocator());
 
-        this.quad = new Quad(context, x, y, width, height, new Vector3f(1,0,1), sprite.getU(), sprite.getV());
+        this.quad = new Quad(context, x, y, width, height, new Vector3f(1,1,1), new Vector2f(character.xMinTexCoord, character.xMaxTexCoord), new Vector2f(character.yMinTexCoord, character.yMaxTexCoord));
 
         this.updateDescriptorSets(context.getDevice());
 
@@ -56,7 +59,7 @@ public class SpriteElement extends RenderableNode {
     @Override
     public void updateDescriptorSets(VulkanDevice device) {
         descriptorSets[0].updateDescriptorBuffer(device, buffer, VK11.VK_WHOLE_SIZE, 0, 0, VK11.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-        descriptorSets[0].updateDescriptorImageBuffer(device, sprite.getTexture().getImageBundle().getImageView(), sprite.getTexture().getSampler(), VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        descriptorSets[0].updateDescriptorImageBuffer(device, font.getTexture().getImageBundle().getImageView(), font.getTexture().getSampler(), VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     }
 
     @Override

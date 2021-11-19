@@ -4,12 +4,12 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 
+import ca.artemis.engine.scene.SceneGraph;
 import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.framebuffer.Swapchain;
 import ca.artemis.vulkan.rendering.renderer.PostProcessingRenderer;
 import ca.artemis.vulkan.rendering.renderer.SceneRenderer;
 import ca.artemis.vulkan.rendering.renderer.SwapchainRenderer;
-import ca.artemis.vulkan.rendering.scene.SceneGraph;
 
 public class RenderingEngine {
     

@@ -28,6 +28,26 @@ public class Transform {
         return translationMatrix.mul(rotationMatrix.mul(scalingMatrix));
     }
 
+    public Transform addPosition(Vector3f r) {
+        this.position = position.add(r);
+        return this;
+    }
+
+    public Transform subPosition(Vector3f r) {
+        this.position = position.sub(r);
+        return this;
+    }
+
+    public Transform mulPosition(Vector3f r) {
+        this.position = position.mul(r);
+        return this;
+    }
+
+    public Transform divPosition(Vector3f r) {
+        this.position = position.div(r);
+        return this;
+    }
+
     public Vector3f getPosition() {
         return position;
     }
@@ -42,6 +62,26 @@ public class Transform {
 
     public void setRotation(Quaternion rotation) {
         this.rotation = rotation;
+    }
+
+    public Transform addScaling(Vector3f r) {
+        this.scaling = scaling.add(r);
+        return this;
+    }
+
+    public Transform subScaling(Vector3f r) {
+        this.scaling = scaling.sub(r);
+        return this;
+    }
+
+    public Transform mulScaling(Vector3f r) {
+        this.scaling = scaling.mul(r);
+        return this;
+    }
+
+    public Transform divScaling(Vector3f r) {
+        this.scaling = scaling.div(r);
+        return this;
     }
 
     public Vector3f getScaling() {

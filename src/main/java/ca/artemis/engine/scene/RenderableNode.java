@@ -1,4 +1,4 @@
-package ca.artemis.vulkan.rendering.scene;
+package ca.artemis.engine.scene;
 
 import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;

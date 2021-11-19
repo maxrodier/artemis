@@ -1,15 +1,10 @@
-package ca.artemis.vulkan.rendering.scene;
+package ca.artemis.game;
 
-import ca.artemis.Configuration;
-import ca.artemis.math.Vector3f;
-import ca.artemis.vulkan.api.context.VulkanContext;
-import ca.artemis.vulkan.api.memory.Sprite;
-import ca.artemis.vulkan.api.memory.SpriteSheet;
-import ca.artemis.vulkan.rendering.RenderingEngine;
-import ca.artemis.vulkan.rendering.renderer.SceneRenderer;
+public class OldGame {
+    //Old Game is here to show old code
 
-public class Game {
-    
+
+    /*
     private SceneGraph sceneGraph;
 
     private Sprite sprite;
@@ -62,4 +57,5 @@ public class Game {
             this.spriteSheet.destroy(context);
             this.sprite.destroy(context);
     }
+    */
 }

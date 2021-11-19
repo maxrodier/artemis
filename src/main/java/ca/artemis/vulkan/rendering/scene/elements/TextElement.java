@@ -1,4 +1,4 @@
-package ca.artemis.engine.text;
+package ca.artemis.vulkan.rendering.scene.elements;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -9,6 +9,9 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.Vma;
 import org.lwjgl.vulkan.VK11;
 
+import ca.artemis.engine.scene.RenderableNode;
+import ca.artemis.engine.text.Character;
+import ca.artemis.engine.text.Font;
 import ca.artemis.math.Matrix4f;
 import ca.artemis.math.Vector2f;
 import ca.artemis.math.Vector3f;
@@ -24,7 +27,6 @@ import ca.artemis.vulkan.rendering.mesh.Mesh;
 import ca.artemis.vulkan.rendering.mesh.Vertex;
 import ca.artemis.vulkan.rendering.mesh.Vertex.VertexKind;
 import ca.artemis.vulkan.rendering.renderer.SceneRenderer;
-import ca.artemis.vulkan.rendering.scene.RenderableNode;
 
 public class TextElement extends RenderableNode {
   

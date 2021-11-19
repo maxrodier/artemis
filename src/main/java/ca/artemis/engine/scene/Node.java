@@ -1,11 +1,10 @@
-package ca.artemis.vulkan.rendering.scene;
+package ca.artemis.engine.scene;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.lwjgl.system.MemoryStack;
 
-import ca.artemis.Configuration;
 import ca.artemis.math.Matrix4f;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;
 import ca.artemis.vulkan.api.context.VulkanContext;
@@ -54,7 +53,7 @@ public class Node {
         return parent;
     }
 
-    public void setParent(Node parent) {
+    protected void setParent(Node parent) {
         this.parent = parent;
     }
 
@@ -66,7 +65,7 @@ public class Node {
         if(parent != null) {
             return parent.getTransformation().mul(transform.getTransformation());
         }
-        Matrix4f projection = new Matrix4f().initOrthographic(0, Configuration.windowWidth, 0, Configuration.windowHeight, -1, 1);
-        return projection.mul(transform.getTransformation());
+        return transform.getTransformation();
     }
+
 }
