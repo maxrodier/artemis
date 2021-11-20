@@ -30,14 +30,14 @@ public class TestGame {
 
         SceneRenderer sceneRenderer = renderingEngine.getSceneRenderer();
 
-        this.font = FontLoader.load(context, "montserrat_medium");
-        this.textElement1 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 16, font);
+        this.font = FontLoader.load(context, "montserrat");
+        this.textElement1 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 12, font);
         this.textElement1.getTransform().setPosition(this.textElement1.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
-        this.textElement2 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 24, font);
+        this.textElement2 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 20, font);
         this.textElement2.getTransform().setPosition(this.textElement1.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
-        this.textElement3 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 32, font);
+        this.textElement3 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 28, font);
         this.textElement3.getTransform().setPosition(this.textElement1.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
-        this.textElement4 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 40, font);
+        this.textElement4 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 36, font);
         this.textElement4.getTransform().setPosition(this.textElement1.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
 
         textElement3.add(textElement4);
