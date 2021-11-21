@@ -91,6 +91,12 @@ public class VulkanContext {
         return context;
     }
 
+    public static VulkanContext getContext() {
+        if(context == null)
+            throw new AssertionError("Context is not created");
+        return context;
+    }
+
     public void destroy() {
         surfaceFormats.free();
         surfaceCapabilities.free();

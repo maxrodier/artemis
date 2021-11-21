@@ -9,7 +9,7 @@ import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 
-import ca.artemis.vulkan.api.context.VulkanMemoryAllocator;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class VulkanBuffer {
 
@@ -25,8 +25,8 @@ public class VulkanBuffer {
         this.size = size;
     }
 
-    public void destroy(VulkanMemoryAllocator allocator) {
-        Vma.vmaDestroyBuffer(allocator.getHandle(), handle, allocationHandle);
+    public void destroy() {
+        Vma.vmaDestroyBuffer(VulkanContext.getContext().getMemoryAllocator().getHandle(), handle, allocationHandle);
     }
 
     public long getHandle() {
@@ -52,7 +52,7 @@ public class VulkanBuffer {
         private int bufferUsage;
         private int memoryUsage;
 
-        public VulkanBuffer build(VulkanMemoryAllocator allocator) {
+        public VulkanBuffer build() {
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 VkBufferCreateInfo pBufferCreateInfo = VkBufferCreateInfo.callocStack(stack)
                     .sType(VK11.VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO)
@@ -64,7 +64,7 @@ public class VulkanBuffer {
 
                 LongBuffer pBuffer = stack.callocLong(1);
                 PointerBuffer pAllocation = stack.callocPointer(1);
-                Vma.vmaCreateBuffer(allocator.getHandle(), pBufferCreateInfo, pAllocationCreateInfo, pBuffer, pAllocation, null);
+                Vma.vmaCreateBuffer(VulkanContext.getContext().getMemoryAllocator().getHandle(), pBufferCreateInfo, pAllocationCreateInfo, pBuffer, pAllocation, null);
 
                 return new VulkanBuffer(pBuffer.get(0), pAllocation.get(0), length, size);
             }

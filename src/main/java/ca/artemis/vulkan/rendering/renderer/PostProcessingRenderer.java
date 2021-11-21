@@ -10,7 +10,6 @@ import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.PrimaryCommandBuffer;
 import ca.artemis.vulkan.api.commands.SubmitInfo;
 import ca.artemis.vulkan.api.context.VulkanContext;
-import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.descriptor.DescriptorPool;
 import ca.artemis.vulkan.api.descriptor.DescriptorSet;
 import ca.artemis.vulkan.api.descriptor.DescriptorSetLayout;
@@ -46,23 +45,23 @@ public class PostProcessingRenderer extends Renderer {
 
     private final SubmitInfo submitInfo;
 
-    public PostProcessingRenderer(VulkanContext context, VulkanSemaphore waitSemaphore, VulkanImageView displayImageView) {
-        super(context.getDevice(), waitSemaphore);
+    public PostProcessingRenderer(VulkanSemaphore waitSemaphore, VulkanImageView displayImageView) {
+        super(waitSemaphore);
 
-        this.sceneFramebufferObject = new SceneFramebufferObject(context);
+        this.sceneFramebufferObject = new SceneFramebufferObject();
 
-        this.quad = new Quad(context);
+        this.quad = new Quad();
 
-        this.descriptorPool = createDescriptorPool(context.getDevice(), 1);
-        this.descriptorSetLayout = createDescriptorSetLayout(context.getDevice());
-        this.descriptorSet = new DescriptorSet(context.getDevice(), this.descriptorPool, this.descriptorSetLayout);
-        this.graphicsPipeline = createGraphicsPipeline(context.getDevice(), this.descriptorSetLayout, this.sceneFramebufferObject.getRenderPass());
+        this.descriptorPool = createDescriptorPool(1);
+        this.descriptorSetLayout = createDescriptorSetLayout();
+        this.descriptorSet = new DescriptorSet(this.descriptorPool, this.descriptorSetLayout);
+        this.graphicsPipeline = createGraphicsPipeline(this.descriptorSetLayout, this.sceneFramebufferObject.getRenderPass());
 
-        this.textureSampler = createTextureSampler(context.getDevice());
-        updateDescriptorSet(context, this.descriptorSet, displayImageView, textureSampler);
+        this.textureSampler = createTextureSampler();
+        updateDescriptorSet(this.descriptorSet, displayImageView, textureSampler);
 
-        this.commandPool = new CommandPool(context.getDevice(), context.getPhysicalDevice().getQueueFamilies().get(0).getIndex(), VK11.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-        this.drawCommandBuffer = createCommandBuffer(context.getDevice(), this.commandPool, this.quad, this.sceneFramebufferObject, this.graphicsPipeline, this.descriptorSet);
+        this.commandPool = new CommandPool(VulkanContext.getContext().getDevice(), VulkanContext.getContext().getPhysicalDevice().getQueueFamilies().get(0).getIndex(), VK11.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+        this.drawCommandBuffer = createCommandBuffer(this.commandPool, this.quad, this.sceneFramebufferObject, this.graphicsPipeline, this.descriptorSet);
 
         this.submitInfo = new SubmitInfo()
             .setWaitSemaphores(this.waitSemaphore)
@@ -71,36 +70,36 @@ public class PostProcessingRenderer extends Renderer {
             .setSignalSemaphores(this.signalSemaphore);
     }
 
-    public void destroy(VulkanContext context) {
+    public void destroy() {
         this.submitInfo.destroy();
-        this.drawCommandBuffer.destroy(context.getDevice(), this.commandPool);
-        this.commandPool.destroy(context.getDevice());
-        this.textureSampler.destroy(context.getDevice());
-        this.graphicsPipeline.destroy(context.getDevice());
-        this.descriptorPool.destroy(context.getDevice());
-        this.descriptorSetLayout.destroy(context.getDevice());
-        this.quad.destroy(context.getMemoryAllocator());
-        this.sceneFramebufferObject.destroy(context);
-        super.destroy(context.getDevice());
+        this.drawCommandBuffer.destroy(this.commandPool);
+        this.commandPool.destroy(VulkanContext.getContext().getDevice());
+        this.textureSampler.destroy();
+        this.graphicsPipeline.destroy();
+        this.descriptorPool.destroy();
+        this.descriptorSetLayout.destroy();
+        this.quad.destroy();
+        this.sceneFramebufferObject.destroy();
+        super.destroy();
     }
 
-    private DescriptorPool createDescriptorPool(VulkanDevice device, int size) {
+    private DescriptorPool createDescriptorPool(int size) {
         return new DescriptorPool.Builder()
             .addPoolSize(VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, size)
             .setMaxSets(size)
-            .build(device);
+            .build();
     }
 
-    private DescriptorSetLayout createDescriptorSetLayout(VulkanDevice device) {
+    private DescriptorSetLayout createDescriptorSetLayout() {
         return new DescriptorSetLayout.Builder()
             .addDescriptorSetLayoutBinding(0, VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK11.VK_SHADER_STAGE_FRAGMENT_BIT)
-            .build(device);
+            .build();
     }
 
-    private static GraphicsPipeline createGraphicsPipeline(VulkanDevice device, DescriptorSetLayout descriptorSetLayout, RenderPass renderPass) {
+    private static GraphicsPipeline createGraphicsPipeline(DescriptorSetLayout descriptorSetLayout, RenderPass renderPass) {
         return new GraphicsPipeline.Builder()
-            .addShaderModule(new ShaderModule(device, "src/main/resources/shaders/swapchain.vert", ShaderStageKind.VERTEX_SHADER))
-            .addShaderModule(new ShaderModule(device, "src/main/resources/shaders/swapchain.frag", ShaderStageKind.FRAGMENT_SHADER))
+            .addShaderModule(new ShaderModule("src/main/resources/shaders/swapchain.vert", ShaderStageKind.VERTEX_SHADER))
+            .addShaderModule(new ShaderModule("src/main/resources/shaders/swapchain.frag", ShaderStageKind.FRAGMENT_SHADER))
             .setVertexInputState(new VertexInputState()
                 .addBinding(new VertexInputState.VertexInputBindingDescription(0, 20, VK11.VK_VERTEX_INPUT_RATE_VERTEX)
                     .addAttributes(0, VK11.VK_FORMAT_R32G32B32_SFLOAT, 0)
@@ -112,25 +111,25 @@ public class PostProcessingRenderer extends Renderer {
                 .addColorBlendAttachement(new ColorBlendState.ColorBlendAttachement(false, VK11.VK_COLOR_COMPONENT_R_BIT | VK11.VK_COLOR_COMPONENT_G_BIT | VK11.VK_COLOR_COMPONENT_B_BIT | VK11.VK_COLOR_COMPONENT_A_BIT)))
             .setDescriptorSetLayouts(new DescriptorSetLayout[] {descriptorSetLayout})
             .setRenderPass(renderPass)
-            .build(device);
+            .build();
     }
     
-    private static VulkanSampler createTextureSampler(VulkanDevice device) {
+    private static VulkanSampler createTextureSampler() {
         VulkanSampler textureSampler = new VulkanSampler.Builder()
-            .build(device);
+            .build();
 
         return textureSampler;
     }
 
-    private static void updateDescriptorSet(VulkanContext context, DescriptorSet descriptorSet, VulkanImageView textureImageView, VulkanSampler textureSampler) {
-        descriptorSet.updateDescriptorImageBuffer(context.getDevice(), textureImageView, textureSampler, VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    private static void updateDescriptorSet(DescriptorSet descriptorSet, VulkanImageView textureImageView, VulkanSampler textureSampler) {
+        descriptorSet.updateDescriptorImageBuffer(textureImageView, textureSampler, VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     }
 
-    private static CommandBuffer createCommandBuffer(VulkanDevice device, CommandPool commandPool, Quad quad, SceneFramebufferObject sceneFramebufferObject, GraphicsPipeline graphicsPipeline, DescriptorSet descriptorSet) {
+    private static CommandBuffer createCommandBuffer(CommandPool commandPool, Quad quad, SceneFramebufferObject sceneFramebufferObject, GraphicsPipeline graphicsPipeline, DescriptorSet descriptorSet) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VK11.vkResetCommandPool(device.getHandle(), commandPool.getHandle(), 0);
+            VK11.vkResetCommandPool(VulkanContext.getContext().getDevice().getHandle(), commandPool.getHandle(), 0);
    
-            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
+            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(commandPool);
             
             VkClearValue.Buffer pClearValues = VkClearValue.callocStack(1);
             pClearValues.get(0).color()
@@ -156,8 +155,8 @@ public class PostProcessingRenderer extends Renderer {
     }
 
     @Override
-    public void draw(VulkanDevice device, MemoryStack stack) {
-        submitInfo.submit(device, device.getGraphicsQueue());
+    public void draw(MemoryStack stack) {
+        submitInfo.submit(VulkanContext.getContext().getDevice().getGraphicsQueue());
     }
 
     public VulkanImageView getDisplayImage() {

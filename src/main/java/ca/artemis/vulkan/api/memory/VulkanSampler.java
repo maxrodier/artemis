@@ -6,7 +6,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkSamplerCreateInfo;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class VulkanSampler {
 
@@ -20,8 +20,8 @@ public class VulkanSampler {
         return handle;
     }
 
-    public void destroy(VulkanDevice device) {
-        VK11.vkDestroySampler(device.getHandle(), handle, null);
+    public void destroy() {
+        VK11.vkDestroySampler(VulkanContext.getContext().getDevice().getHandle(), handle, null);
     }
     
     public static class Builder {
@@ -42,7 +42,7 @@ public class VulkanSampler {
     	private int minLod = 0;
         private int maxLod = 1;
         
-        public VulkanSampler build(VulkanDevice device) {
+        public VulkanSampler build() {
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.create()
                     .sType(VK11.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
@@ -63,7 +63,7 @@ public class VulkanSampler {
                     .maxLod(maxLod);
 
                 LongBuffer pSampler = stack.callocLong(1);
-                int error =  VK11.vkCreateSampler(device.getHandle(), samplerInfo, null, pSampler);
+                int error =  VK11.vkCreateSampler(VulkanContext.getContext().getDevice().getHandle(), samplerInfo, null, pSampler);
                 if(error != VK11.VK_SUCCESS) 
                     throw new AssertionError("Failed to create pipeline layout");
 

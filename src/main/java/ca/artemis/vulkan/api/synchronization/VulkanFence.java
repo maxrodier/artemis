@@ -6,28 +6,28 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkFenceCreateInfo;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class VulkanFence {
     
     private final long handle;
 
-    public VulkanFence(VulkanDevice device) {
-        this.handle = createHandle(device);
+    public VulkanFence() {
+        this.handle = createHandle();
     }
 
-    public void destroy(VulkanDevice device) {
-        VK11.vkDestroyFence(device.getHandle(), handle, null);
+    public void destroy() {
+        VK11.vkDestroyFence(VulkanContext.getContext().getDevice().getHandle(), handle, null);
     }
 
-    private long createHandle(VulkanDevice device) {
+    private long createHandle() {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkFenceCreateInfo pFenceCreateInfo = VkFenceCreateInfo.callocStack(stack);
             pFenceCreateInfo.sType(VK11.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO);
             pFenceCreateInfo.flags(VK11.VK_FENCE_CREATE_SIGNALED_BIT);
 
             LongBuffer pFence = stack.callocLong(1);
-            int error = VK11.vkCreateFence(device.getHandle(), pFenceCreateInfo, null, pFence);
+            int error = VK11.vkCreateFence(VulkanContext.getContext().getDevice().getHandle(), pFenceCreateInfo, null, pFence);
             if(error != VK11.VK_SUCCESS) 
                 throw new AssertionError("Failed to create fence");
 
@@ -35,14 +35,14 @@ public class VulkanFence {
         }
     }
 
-    public void reset(VulkanDevice device) {
-        int error = VK11.vkResetFences(device.getHandle(), handle);
+    public void reset() {
+        int error = VK11.vkResetFences(VulkanContext.getContext().getDevice().getHandle(), handle);
         if(error != VK11.VK_SUCCESS) 
             throw new AssertionError("Failed to reset fence");
     }
 
-    public void waitFor(VulkanDevice device) {
-        int error = VK11.vkWaitForFences(device.getHandle(), handle, true, 1000000000l);
+    public void waitFor() {
+        int error = VK11.vkWaitForFences(VulkanContext.getContext().getDevice().getHandle(), handle, true, 1000000000l);
         if(error != VK11.VK_SUCCESS) 
             throw new AssertionError("Failed to wait for fence");
     }

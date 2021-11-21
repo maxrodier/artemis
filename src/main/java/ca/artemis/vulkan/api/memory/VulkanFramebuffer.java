@@ -8,7 +8,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkFramebufferCreateInfo;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class VulkanFramebuffer {
 
@@ -18,8 +18,8 @@ public class VulkanFramebuffer {
         this.handle = handle;
     }
 
-    public void destroy(VulkanDevice device) {
-        VK11.vkDestroyFramebuffer(device.getHandle(), handle, null);
+    public void destroy() {
+        VK11.vkDestroyFramebuffer(VulkanContext.getContext().getDevice().getHandle(), handle, null);
     }
 
     public long getHandle() {
@@ -34,7 +34,7 @@ public class VulkanFramebuffer {
         private int height;
         private int layers;
 
-        public VulkanFramebuffer build(VulkanDevice device) {
+        public VulkanFramebuffer build() {
             try(MemoryStack stack = MemoryStack.stackPush()) {
 
                 LongBuffer pAttachements = stack.callocLong(attachements.size());
@@ -51,7 +51,7 @@ public class VulkanFramebuffer {
                     .layers(layers);
     
                 LongBuffer pFramebuffer = stack.callocLong(1);
-                int error = VK11.vkCreateFramebuffer(device.getHandle(), pCreateInfo, null, pFramebuffer);
+                int error = VK11.vkCreateFramebuffer(VulkanContext.getContext().getDevice().getHandle(), pCreateInfo, null, pFramebuffer);
                 if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to create framebuffer");
     

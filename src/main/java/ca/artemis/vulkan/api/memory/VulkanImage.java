@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkExtent3D;
 import org.lwjgl.vulkan.VkImageCreateInfo;
 
-import ca.artemis.vulkan.api.context.VulkanMemoryAllocator;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class VulkanImage {
 
@@ -28,8 +28,8 @@ public class VulkanImage {
         this.mipLevels = mipLevels;
     }
 
-    public void destroy(VulkanMemoryAllocator allocator) {
-        Vma.vmaDestroyImage(allocator.getHandle(), handle, allocationHandle);
+    public void destroy() {
+        Vma.vmaDestroyImage(VulkanContext.getContext().getMemoryAllocator().getHandle(), handle, allocationHandle);
     }
 
     public long getHandle() {
@@ -67,7 +67,7 @@ public class VulkanImage {
         private int sharingMode = VK11.VK_SHARING_MODE_EXCLUSIVE;
         private int samples = VK11.VK_SAMPLE_COUNT_1_BIT;
 
-        public VulkanImage build(VulkanMemoryAllocator allocator) {
+        public VulkanImage build() {
             try(MemoryStack stack = MemoryStack.stackPush()) {
 
                 VkImageCreateInfo pImageCreateInfo = VkImageCreateInfo.callocStack(stack)
@@ -88,7 +88,7 @@ public class VulkanImage {
 
                 LongBuffer pImage = stack.callocLong(1);
                 PointerBuffer pAllocation = stack.callocPointer(1);
-                int error = Vma.vmaCreateImage(allocator.getHandle(), pImageCreateInfo, pAllocationCreateInfo, pImage, pAllocation, null);
+                int error = Vma.vmaCreateImage(VulkanContext.getContext().getMemoryAllocator().getHandle(), pImageCreateInfo, pAllocationCreateInfo, pImage, pAllocation, null);
                 if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to create image");
 

@@ -3,7 +3,6 @@ package ca.artemis.engine.text;
 import java.util.HashMap;
 import java.util.Map;
 
-import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.memory.VulkanTexture;
 
 public class Font {
@@ -15,8 +14,8 @@ public class Font {
         this.texture = texture;
     }
 
-    public void destroy(VulkanContext context) {
-        texture.destroy(context);
+    public void destroy() {
+        texture.destroy();
     }
 
     public VulkanTexture getTexture() {

@@ -4,17 +4,18 @@ import java.util.List;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkClearValue;
 
 import ca.artemis.Configuration;
 import ca.artemis.engine.scene.SceneGraph;
+import ca.artemis.math.Vector3f;
 import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.PrimaryCommandBuffer;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;
 import ca.artemis.vulkan.api.commands.SubmitInfo;
 import ca.artemis.vulkan.api.context.VulkanContext;
-import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.framebuffer.FramebufferObject.Attachment;
 import ca.artemis.vulkan.api.framebuffer.SceneFramebufferObject;
 import ca.artemis.vulkan.api.memory.VulkanImageView;
@@ -41,56 +42,58 @@ public class SceneRenderer extends Renderer {
 
     private final SubmitInfo submitInfo;
 
-    public SceneRenderer(VulkanContext context) {
-        super(context.getDevice(), null);
+    private final VkClearValue.Buffer pClearValues;
 
-        this.sceneFramebufferObject = new SceneFramebufferObject(context);
+    public SceneRenderer(Vector3f clearColour) {
+        super(null);
 
-        this.simpleShaderProgram = new SimpleShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
-        this.spriteShaderProgram = new SpriteShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
-        this.spriteSheetShaderProgram = new SpriteSheetShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
-        this.fontShaderProgram = new FontShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
+        this.sceneFramebufferObject = new SceneFramebufferObject();
 
-        this.commandPool = new CommandPool(context.getDevice(), context.getPhysicalDevice().getQueueFamilies().get(0).getIndex(), VK11.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-        this.primaryCommandBuffer = new PrimaryCommandBuffer(context.getDevice(), this.commandPool);
+        this.simpleShaderProgram = new SimpleShaderProgram(this.sceneFramebufferObject.getRenderPass());
+        this.spriteShaderProgram = new SpriteShaderProgram(this.sceneFramebufferObject.getRenderPass());
+        this.spriteSheetShaderProgram = new SpriteSheetShaderProgram(this.sceneFramebufferObject.getRenderPass());
+        this.fontShaderProgram = new FontShaderProgram(this.sceneFramebufferObject.getRenderPass());
 
-        this.renderFence = new VulkanFence(context.getDevice());
+        this.commandPool = new CommandPool(VulkanContext.getContext().getDevice(), VulkanContext.getContext().getPhysicalDevice().getQueueFamilies().get(0).getIndex(), VK11.VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+        this.primaryCommandBuffer = new PrimaryCommandBuffer(this.commandPool);
+
+        this.renderFence = new VulkanFence();
 
         this.submitInfo = new SubmitInfo(this.renderFence)
             .setCommandBuffers(primaryCommandBuffer)
             .setSignalSemaphores(this.signalSemaphore);
+
+        this.pClearValues = VkClearValue.calloc(1);
+        this.pClearValues.get(0).color()
+            .float32(0, clearColour.getX())
+            .float32(1, clearColour.getY())
+            .float32(2, clearColour.getZ())
+            .float32(3, 1);
     }
 
-    public void destroy(VulkanContext context) {
+    public void destroy() {
+        MemoryUtil.memFree(pClearValues);
         this.submitInfo.destroy();
-        this.renderFence.destroy(context.getDevice());
-        this.primaryCommandBuffer.destroy(context.getDevice(), this.commandPool);
+        this.renderFence.destroy();
+        this.primaryCommandBuffer.destroy(this.commandPool);
 
-        this.commandPool.destroy(context.getDevice());
+        this.commandPool.destroy(VulkanContext.getContext().getDevice());
 
-        this.spriteSheetShaderProgram.destroy(context.getDevice());
-        this.spriteShaderProgram.destroy(context.getDevice());
-        this.simpleShaderProgram.destroy(context.getDevice());
-        this.fontShaderProgram.destroy(context.getDevice());
+        this.spriteSheetShaderProgram.destroy();
+        this.spriteShaderProgram.destroy();
+        this.simpleShaderProgram.destroy();
+        this.fontShaderProgram.destroy();
 
-        this.sceneFramebufferObject.destroy(context);
-        super.destroy(context.getDevice());
+        this.sceneFramebufferObject.destroy();
+        super.destroy();
     }
 
     public void update(SceneGraph sceneGraph) {
         recordCommandBuffer(this.primaryCommandBuffer, sceneGraph.getDrawCommandBuffers(), this.sceneFramebufferObject);
     }
 
-    private static void recordCommandBuffer(PrimaryCommandBuffer primaryCommandBuffer, List<SecondaryCommandBuffer> secondaryCommandBuffers, SceneFramebufferObject sceneFramebufferObject) {
+    private void recordCommandBuffer(PrimaryCommandBuffer primaryCommandBuffer, List<SecondaryCommandBuffer> secondaryCommandBuffers, SceneFramebufferObject sceneFramebufferObject) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            
-            VkClearValue.Buffer pClearValues = VkClearValue.callocStack(1);
-            pClearValues.get(0).color()
-                .float32(0, 36f/255f)
-                .float32(1, 10f/255f)
-                .float32(2, 48f/255f)
-                .float32(3, 1);
-
             primaryCommandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
             primaryCommandBuffer.beginRenderPassCmd(stack, sceneFramebufferObject.getRenderPass().getHandle(), sceneFramebufferObject.getFramebuffer().getHandle(), Configuration.windowWidth, Configuration.windowHeight, pClearValues, VK11.VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -106,8 +109,8 @@ public class SceneRenderer extends Renderer {
     }
 
     @Override
-    public void draw(VulkanDevice device, MemoryStack stack) {
-        submitInfo.submit(device, device.getGraphicsQueue());
+    public void draw(MemoryStack stack) {
+        submitInfo.submit(VulkanContext.getContext().getDevice().getGraphicsQueue());
     }
 
     public VulkanFence getRenderFence() {

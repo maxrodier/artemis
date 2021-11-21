@@ -7,8 +7,8 @@ import org.lwjgl.system.MemoryStack;
 
 import ca.artemis.Configuration;
 import ca.artemis.math.Matrix4f;
+import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;
-import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class SceneGraph {
     
@@ -20,8 +20,8 @@ public class SceneGraph {
 
     }
 
-    public void destroy() {
-        root.destroy();
+    public void destroy(CommandPool commandPool) {
+        root.destroy(commandPool);
     }
 
     public void add(Node node) {
@@ -32,8 +32,8 @@ public class SceneGraph {
         root.remove(node);
     }
 
-    public void update(VulkanContext context, MemoryStack stack) {
-        root.updateAll(context, stack);
+    public void update(MemoryStack stack) {
+        root.updateAll(stack);
     }
 
     public List<SecondaryCommandBuffer> getDrawCommandBuffers() {

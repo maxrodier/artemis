@@ -12,29 +12,28 @@ import org.lwjgl.vulkan.VkOffset3D;
 import org.lwjgl.vulkan.VkQueue;
 import org.lwjgl.vulkan.VkSubmitInfo;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.memory.VulkanBuffer;
 import ca.artemis.vulkan.api.memory.VulkanImage;
 
 public class CommandBufferUtils {
 
-    public static void copyBuffer(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanBuffer srcBuffer, VulkanBuffer dstBuffer, int size) {
+    public static void copyBuffer(VkQueue queue, CommandPool commandPool, VulkanBuffer srcBuffer, VulkanBuffer dstBuffer, int size) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
 
             VkBufferCopy.Buffer pRegions = VkBufferCopy.callocStack(1, stack);
             pRegions.get(0)
                     .size(size);
             
-            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
+            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(commandPool);
             commandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
             commandBuffer.copyBufferCmd(srcBuffer, dstBuffer, pRegions);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
-            commandBuffer.destroy(device, commandPool);
+            commandBuffer.destroy(commandPool);
         }
     }
 
-    public static void copyBufferToImage(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanBuffer buffer, VulkanImage image) {
+    public static void copyBufferToImage(VkQueue queue, CommandPool commandPool, VulkanBuffer buffer, VulkanImage image) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkImageSubresourceLayers subresourceLayers = VkImageSubresourceLayers.callocStack(stack)
                 .aspectMask(VK11.VK_IMAGE_ASPECT_COLOR_BIT)
@@ -51,16 +50,16 @@ public class CommandBufferUtils {
                 .imageOffset(e -> e.set(0, 0, 0))
                 .imageExtent(e -> e.set(image.getWidth(), image.getHeight(), 1));
             
-            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
+            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(commandPool);
             commandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
             commandBuffer.copyBufferToImage(buffer, image, pRegions);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
-            commandBuffer.destroy(device, commandPool);
+            commandBuffer.destroy(commandPool);
         }
     }
 
-    public static void transitionImageLayout(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanImage image, int format, int oldLayout, int newLayout, int mipLevels) {
+    public static void transitionImageLayout(VkQueue queue, CommandPool commandPool, VulkanImage image, int format, int oldLayout, int newLayout, int mipLevels) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkImageSubresourceRange pSubresourceRange = VkImageSubresourceRange.callocStack(stack)
                 .baseMipLevel(0)
@@ -109,17 +108,17 @@ public class CommandBufferUtils {
                 throw new IllegalStateException("Unsupported layout transition");
             }
 
-            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
+            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(commandPool);
             commandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
             commandBuffer.pipelineBarrierCmd(sourceStage, destinationStage, pBarriers);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
-            commandBuffer.destroy(device, commandPool);
+            commandBuffer.destroy(commandPool);
 
         }
     }
 
-    public static void generateMipmaps(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanImage image, int mipLevels) {
+    public static void generateMipmaps(VkQueue queue, CommandPool commandPool, VulkanImage image, int mipLevels) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkImageMemoryBarrier.Buffer pBarriers = VkImageMemoryBarrier.callocStack(1, stack);
             VkImageMemoryBarrier pBarrier = pBarriers.get(0);
@@ -137,7 +136,7 @@ public class CommandBufferUtils {
             int mipWidth = image.getWidth();
             int mipHeight = image.getHeight();
 
-            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
+            PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(commandPool);
             commandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
             for(int i = 1; i < mipLevels; i++) {
@@ -199,7 +198,7 @@ public class CommandBufferUtils {
             commandBuffer.pipelineBarrierCmd(VK11.VK_PIPELINE_STAGE_TRANSFER_BIT, VK11.VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, pBarriers);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
-            commandBuffer.destroy(device, commandPool);
+            commandBuffer.destroy(commandPool);
         }
     } 
 

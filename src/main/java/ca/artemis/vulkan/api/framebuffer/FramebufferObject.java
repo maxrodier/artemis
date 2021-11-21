@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import org.lwjgl.vulkan.VK11;
 
-import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.memory.VulkanImage;
 import ca.artemis.vulkan.api.memory.VulkanImageBundle;
 import ca.artemis.vulkan.api.memory.VulkanImageView;
@@ -13,9 +12,9 @@ public abstract class FramebufferObject {
 
     protected final HashMap<Attachment, VulkanImageBundle> attachments = new HashMap<>();
 
-    public void destroy(VulkanContext context) {
+    public void destroy() {
         for(VulkanImageBundle imageBundle : attachments.values()) {
-            imageBundle.destroy(context.getDevice(), context.getMemoryAllocator());
+            imageBundle.destroy();
         }
     }
 
@@ -23,13 +22,13 @@ public abstract class FramebufferObject {
         return attachments.get(attachment);
     }
 
-    protected static VulkanImageBundle createColorAttachment(VulkanContext context, int width, int height, int format) {
+    protected static VulkanImageBundle createColorAttachment(int width, int height, int format) {
         VulkanImage image = new VulkanImage.Builder()
             .setExtentWidth(width)
             .setExtentHeight(height)
             .setFormat(format)
             .setUsage(VK11.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK11.VK_IMAGE_USAGE_SAMPLED_BIT | VK11.VK_IMAGE_USAGE_STORAGE_BIT)
-            .build(context.getMemoryAllocator());
+            .build();
 
         VulkanImageView imageView = new VulkanImageView.Builder()
             .setImage(image.getHandle())
@@ -38,7 +37,7 @@ public abstract class FramebufferObject {
             .setComponentG(VK11.VK_COMPONENT_SWIZZLE_G)
             .setComponentB(VK11.VK_COMPONENT_SWIZZLE_B)
             .setComponentA(VK11.VK_COMPONENT_SWIZZLE_A)
-            .build(context.getDevice());
+            .build();
 
         return new VulkanImageBundle(image, imageView);
     }

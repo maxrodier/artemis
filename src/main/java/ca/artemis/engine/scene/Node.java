@@ -6,8 +6,8 @@ import java.util.List;
 import org.lwjgl.system.MemoryStack;
 
 import ca.artemis.math.Matrix4f;
+import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;
-import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.rendering.mesh.Transform;
 
 public class Node {
@@ -16,9 +16,9 @@ public class Node {
     private List<Node> children = new ArrayList<>();
     private Transform transform = new Transform();
 
-    public void destroy() {
+    public void destroy(CommandPool commandPool) {
         for(Node child: children) {
-            child.destroy();
+            child.destroy(commandPool);
         }
     }
 
@@ -35,13 +35,13 @@ public class Node {
         children.remove(child);
     }
 
-    public void updateAll(VulkanContext context, MemoryStack stack) {
-        update(context, stack);
+    public void updateAll(MemoryStack stack) {
+        update(stack);
         for(Node child : children)
-            child.updateAll(context, stack);
+            child.updateAll(stack);
     }
 
-    protected void update(VulkanContext context, MemoryStack stack) { }
+    protected void update(MemoryStack stack) { }
 
     public void populateDrawCommandBuffers(List<SecondaryCommandBuffer> drawCommandBuffers) {
         for(Node child : children) {

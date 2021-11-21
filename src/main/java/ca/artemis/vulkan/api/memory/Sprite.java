@@ -1,7 +1,6 @@
 package ca.artemis.vulkan.api.memory;
 
 import ca.artemis.math.Vector2f;
-import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class Sprite {
  
@@ -9,14 +8,14 @@ public class Sprite {
     public int spriteHeight;
     public VulkanTexture texture;
 
-    public Sprite(VulkanContext context, int spriteWidth, int spriteHeight, String filePath) {
+    public Sprite(int spriteWidth, int spriteHeight, String filePath) {
         this.spriteWidth = spriteWidth;
         this.spriteHeight = spriteHeight;
-        this.texture = new VulkanTexture(context, filePath, false);
+        this.texture = new VulkanTexture(filePath, false);
     }
 
-    public void destroy(VulkanContext context) {
-        this.texture.destroy(context);
+    public void destroy() {
+        this.texture.destroy();
     }
 
     public Vector2f getU() {

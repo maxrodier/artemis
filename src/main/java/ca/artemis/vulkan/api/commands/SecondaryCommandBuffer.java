@@ -7,14 +7,14 @@ import org.lwjgl.vulkan.VkCommandBufferAllocateInfo;
 import org.lwjgl.vulkan.VkCommandBufferBeginInfo;
 import org.lwjgl.vulkan.VkCommandBufferInheritanceInfo;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.framebuffer.RenderPass;
 import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
 
 public class SecondaryCommandBuffer extends CommandBuffer {
 
-    public SecondaryCommandBuffer(VulkanDevice device, CommandPool commandPool) { 
-        super(device, createHandle(device, commandPool));
+    public SecondaryCommandBuffer(CommandPool commandPool) { 
+        super(createHandle(commandPool));
     }
     
     public void beginRecording(MemoryStack stack, int flags, RenderPass renderPass, VulkanFramebuffer framebuffer) {
@@ -34,7 +34,7 @@ public class SecondaryCommandBuffer extends CommandBuffer {
             throw new AssertionError("Failed to begin recording command buffer");
     }
 
-    private static long createHandle(VulkanDevice device, CommandPool commandPool) {
+    private static long createHandle(CommandPool commandPool) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkCommandBufferAllocateInfo pAllocateInfo = VkCommandBufferAllocateInfo.callocStack(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
@@ -43,7 +43,7 @@ public class SecondaryCommandBuffer extends CommandBuffer {
                 .commandBufferCount(1);
     
             PointerBuffer pCommandBuffer = stack.callocPointer(1);
-            int error = VK11.vkAllocateCommandBuffers(device.getHandle(), pAllocateInfo, pCommandBuffer);
+            int error = VK11.vkAllocateCommandBuffers(VulkanContext.getContext().getDevice().getHandle(), pAllocateInfo, pCommandBuffer);
             if(error != VK11.VK_SUCCESS)
                 throw new AssertionError("Failed to allocate command buffer");
 

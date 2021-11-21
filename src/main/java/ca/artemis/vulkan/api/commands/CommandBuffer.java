@@ -16,7 +16,7 @@ import org.lwjgl.vulkan.VkRect2D;
 import org.lwjgl.vulkan.VkRenderPassBeginInfo;
 import org.lwjgl.vulkan.VkViewport;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.descriptor.DescriptorSet;
 import ca.artemis.vulkan.api.memory.VulkanBuffer;
 import ca.artemis.vulkan.api.memory.VulkanImage;
@@ -27,16 +27,16 @@ public class CommandBuffer {
     protected final long handle;
     protected final VkCommandBuffer commandBuffer;
 
-    protected CommandBuffer(VulkanDevice device, long handle) {
+    protected CommandBuffer(long handle) {
         this.handle = handle;
-        this.commandBuffer = new VkCommandBuffer(this.handle, device.getHandle());
+        this.commandBuffer = new VkCommandBuffer(this.handle, VulkanContext.getContext().getDevice().getHandle());
     }
 
-    public void destroy(VulkanDevice device, CommandPool commandPool) {
+    public void destroy(CommandPool commandPool) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             PointerBuffer pHandle = stack.callocPointer(1);
             pHandle.put(0, handle);
-            VK11.vkFreeCommandBuffers(device.getHandle(), commandPool.getHandle(), pHandle);
+            VK11.vkFreeCommandBuffers(VulkanContext.getContext().getDevice().getHandle(), commandPool.getHandle(), pHandle);
         }
     }
 

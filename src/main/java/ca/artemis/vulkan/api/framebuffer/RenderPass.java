@@ -12,7 +12,7 @@ import org.lwjgl.vulkan.VkRenderPassCreateInfo;
 import org.lwjgl.vulkan.VkSubpassDependency;
 import org.lwjgl.vulkan.VkSubpassDescription;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class RenderPass {
 
@@ -22,8 +22,8 @@ public class RenderPass {
         this.handle = handle;
     }
 
-    public void destroy(VulkanDevice device) {
-        VK11.vkDestroyRenderPass(device.getHandle(), handle, null);
+    public void destroy() {
+        VK11.vkDestroyRenderPass(VulkanContext.getContext().getDevice().getHandle(), handle, null);
     }
 
     public long getHandle() {
@@ -35,7 +35,7 @@ public class RenderPass {
         private List<Attachement> colorAttachments = new ArrayList<>();
         private Attachement depthAttachement;
 
-        public RenderPass build(VulkanDevice device) {
+        public RenderPass build() {
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 int size = depthAttachement == null ? colorAttachments.size() : colorAttachments.size() + 1;
                 VkAttachmentDescription.Buffer pAttachments = VkAttachmentDescription.callocStack(size, stack);
@@ -80,7 +80,7 @@ public class RenderPass {
                     .pDependencies(pDependencies);
 
                 LongBuffer pRenderPass = stack.callocLong(1);
-                int error = VK11.vkCreateRenderPass(device.getHandle(), pCreateInfo, null, pRenderPass);
+                int error = VK11.vkCreateRenderPass(VulkanContext.getContext().getDevice().getHandle(), pCreateInfo, null, pRenderPass);
                 if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to create render pass");
                 

@@ -8,7 +8,7 @@ import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkPresentInfoKHR;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.framebuffer.Swapchain;
 import ca.artemis.vulkan.api.synchronization.VulkanSemaphore;
 
@@ -23,7 +23,7 @@ public class PresentInfo {
         this.handle = VkPresentInfoKHR.calloc().sType(KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
     }
 
-    public void destroy(VulkanDevice device) {
+    public void destroy() {
         if(pSwapchains != null) {
             MemoryUtil.memFree(pSwapchains);
         }
@@ -34,8 +34,8 @@ public class PresentInfo {
         handle.free();
     }
 
-    public void present(VulkanDevice device) {
-        int error = KHRSwapchain.vkQueuePresentKHR(device.getGraphicsQueue(), handle);
+    public void present() {
+        int error = KHRSwapchain.vkQueuePresentKHR(VulkanContext.getContext().getDevice().getGraphicsQueue(), handle);
         if (error != VK11.VK_SUCCESS) {
             throw new AssertionError("Failed to submit present info");
         }

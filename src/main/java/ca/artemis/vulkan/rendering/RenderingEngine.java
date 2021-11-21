@@ -5,6 +5,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 
 import ca.artemis.engine.scene.SceneGraph;
+import ca.artemis.math.Vector3f;
 import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.framebuffer.Swapchain;
 import ca.artemis.vulkan.rendering.renderer.PostProcessingRenderer;
@@ -23,20 +24,24 @@ public class RenderingEngine {
 
     private SceneGraph sceneGraph;
 
-    public RenderingEngine(VulkanContext context) {
-        this.context = context;
+    public RenderingEngine() {
+        this.context = VulkanContext.create();
 
-        this.swapchain = new Swapchain(this.context);
-        this.sceneRenderer = new SceneRenderer(this.context);
-        this.postProcessingRenderer = new PostProcessingRenderer(this.context, sceneRenderer.getSignalSemaphore(), this.sceneRenderer.getDisplayImage());
-        this.swapchainRenderer = new SwapchainRenderer(this.context, this.swapchain, postProcessingRenderer.getSignalSemaphore(), this.postProcessingRenderer.getDisplayImage());
+        //Vector3f(36f/255f, 10f/255f, 48f/255f)
+        Vector3f clearColour = new Vector3f(210f/255f, 210f/255f, 210f/255f);
+
+        this.swapchain = new Swapchain();
+        this.sceneRenderer = new SceneRenderer(clearColour);
+        this.postProcessingRenderer = new PostProcessingRenderer(this.sceneRenderer.getSignalSemaphore(), this.sceneRenderer.getDisplayImage());
+        this.swapchainRenderer = new SwapchainRenderer(this.swapchain, this.postProcessingRenderer.getSignalSemaphore(), this.postProcessingRenderer.getDisplayImage());
     }
 
     public void destroy() {
-        this.swapchainRenderer.destroy(context.getDevice(), context.getMemoryAllocator());
-        this.postProcessingRenderer.destroy(context);
-        this.sceneRenderer.destroy(context);
-        this.swapchain.destroy(context);
+        this.swapchainRenderer.destroy();
+        this.postProcessingRenderer.destroy();
+        this.sceneRenderer.destroy();
+        this.swapchain.destroy();
+        this.context.destroy();
     }
 
     public void mainLoop() {
@@ -56,16 +61,16 @@ public class RenderingEngine {
                 
                 GLFW.glfwPollEvents();
 
-                sceneRenderer.getRenderFence().waitFor(context.getDevice());
+                sceneRenderer.getRenderFence().waitFor();
 
-                sceneGraph.update(context, stack);
+                sceneGraph.update(stack);
                 sceneRenderer.update(sceneGraph);
                 
-                swapchainRenderer.getRenderFence().waitFor(context.getDevice());
+                swapchainRenderer.getRenderFence().waitFor();
 
-                sceneRenderer.draw(context.getDevice(), stack);
-                postProcessingRenderer.draw(context.getDevice(), stack);
-                swapchainRenderer.draw(context.getDevice(), stack);
+                sceneRenderer.draw(stack);
+                postProcessingRenderer.draw(stack);
+                swapchainRenderer.draw(stack);
 
                 frame++;
             }

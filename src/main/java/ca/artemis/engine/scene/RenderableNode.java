@@ -2,7 +2,6 @@ package ca.artemis.engine.scene;
 
 import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;
-import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.descriptor.DescriptorSet;
 import ca.artemis.vulkan.rendering.programs.ShaderProgram;
 
@@ -12,16 +11,16 @@ public abstract class RenderableNode extends Node {
     protected final DescriptorSet[] descriptorSets;
     protected final SecondaryCommandBuffer drawCommandBuffer;
 
-    protected RenderableNode(VulkanDevice device, ShaderProgram shaderProgram, CommandPool commandPool) {
+    protected RenderableNode(ShaderProgram shaderProgram, CommandPool commandPool) {
         this.shaderProgram = shaderProgram;
-        this.descriptorSets = this.shaderProgram.allocate(device);
-        this.drawCommandBuffer = new SecondaryCommandBuffer(device, commandPool);
+        this.descriptorSets = this.shaderProgram.allocate();
+        this.drawCommandBuffer = new SecondaryCommandBuffer(commandPool);
     }
 
-    protected void destroy(VulkanDevice device, CommandPool commandPool) {
-        super.destroy();
-        this.drawCommandBuffer.destroy(device, commandPool);
+    public void destroy(CommandPool commandPool) {
+        super.destroy(commandPool);
+        this.drawCommandBuffer.destroy(commandPool);
     }
 
-    public abstract void updateDescriptorSets(VulkanDevice device);
+    public abstract void updateDescriptorSets();
 }

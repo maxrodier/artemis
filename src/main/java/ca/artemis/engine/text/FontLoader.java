@@ -8,12 +8,11 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
-import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.memory.VulkanTexture;
 
 public class FontLoader {
     
-    public static Font load(VulkanContext context, String name) {
+    public static Font load(String name) {
         Gson gson = new Gson();
         FontMetadata fontMetadata = null;
         try {
@@ -22,7 +21,7 @@ public class FontLoader {
             e.printStackTrace();
         } 
         
-        VulkanTexture texture = new VulkanTexture(context, "src/main/resources/fonts/" + name +".png", false);
+        VulkanTexture texture = new VulkanTexture("src/main/resources/fonts/" + name +".png", false);
         Font font = new Font(texture);
         for(CharacterMetadata characterMetadata : fontMetadata.characters) {
 

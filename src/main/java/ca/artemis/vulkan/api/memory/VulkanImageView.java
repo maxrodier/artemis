@@ -6,7 +6,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class VulkanImageView {
 
@@ -16,8 +16,8 @@ public class VulkanImageView {
         this.handle = handle;
     }
 
-    public void destroy(VulkanDevice device) {
-        VK11.vkDestroyImageView(device.getHandle(), handle, null);
+    public void destroy() {
+        VK11.vkDestroyImageView(VulkanContext.getContext().getDevice().getHandle(), handle, null);
     }
 
     public long getHandle() {
@@ -39,7 +39,7 @@ public class VulkanImageView {
         private int baseArrayLayer = 0;
         private int layerCount = 1;
     
-        public VulkanImageView build(VulkanDevice device) {
+        public VulkanImageView build() {
             try(MemoryStack stack = MemoryStack.stackPush()) {
 
                 VkImageViewCreateInfo pImageViewCreateInfo = VkImageViewCreateInfo.callocStack(stack)
@@ -60,7 +60,7 @@ public class VulkanImageView {
                     .layerCount(layerCount));
     
                 LongBuffer pImageView = stack.callocLong(1);
-                int error = VK11.vkCreateImageView(device.getHandle(), pImageViewCreateInfo, null, pImageView);
+                int error = VK11.vkCreateImageView(VulkanContext.getContext().getDevice().getHandle(), pImageViewCreateInfo, null, pImageView);
                 if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to ccreate image view");
     

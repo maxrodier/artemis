@@ -9,7 +9,7 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutBinding;
 import org.lwjgl.vulkan.VkDescriptorSetLayoutCreateInfo;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class DescriptorSetLayout {
 
@@ -19,8 +19,8 @@ public class DescriptorSetLayout {
         this.handle = handle;
     }
 
-    public void destroy(VulkanDevice device) {
-        VK11.vkDestroyDescriptorSetLayout(device.getHandle(), handle, null);
+    public void destroy() {
+        VK11.vkDestroyDescriptorSetLayout(VulkanContext.getContext().getDevice().getHandle(), handle, null);
     }
 
     public long getHandle() {
@@ -31,7 +31,7 @@ public class DescriptorSetLayout {
 
         private List<DescriptorSetLayoutBinding> descriptorSetLayoutBindings = new ArrayList<>();
 
-        public DescriptorSetLayout build(VulkanDevice device) {
+        public DescriptorSetLayout build() {
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 VkDescriptorSetLayoutBinding.Buffer pLayoutBindings = VkDescriptorSetLayoutBinding.callocStack(descriptorSetLayoutBindings.size(), stack);
                 for(int i = 0; i < descriptorSetLayoutBindings.size(); i++) {
@@ -48,7 +48,7 @@ public class DescriptorSetLayout {
                     .pBindings(pLayoutBindings);
 
                 LongBuffer pDescriptorSetLayout = stack.callocLong(1);
-                int error = VK11.vkCreateDescriptorSetLayout(device.getHandle(), pLayoutCreateInfo, null, pDescriptorSetLayout);
+                int error = VK11.vkCreateDescriptorSetLayout(VulkanContext.getContext().getDevice().getHandle(), pLayoutCreateInfo, null, pDescriptorSetLayout);
                 if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to create descriptor set layout");
     

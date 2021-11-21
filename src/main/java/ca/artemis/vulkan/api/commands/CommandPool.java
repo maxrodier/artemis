@@ -13,7 +13,7 @@ public class CommandPool {
     private final long handle;
 
     public CommandPool(VulkanDevice device, int queueFamilyIndex, int flags) {
-        this.handle =  createHandle(device, queueFamilyIndex, flags);
+        this.handle = createHandle(device, queueFamilyIndex, flags);
     }
 
     public void destroy(VulkanDevice device) {

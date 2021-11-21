@@ -12,8 +12,6 @@ import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
 
 import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.context.VulkanDevice;
-import ca.artemis.vulkan.api.context.VulkanPhysicalDevice;
-import ca.artemis.vulkan.api.context.VulkanSurface;
 import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
 import ca.artemis.vulkan.api.memory.VulkanImageView;
 
@@ -26,23 +24,24 @@ public class Swapchain {
     private final RenderPass renderPass;
     private final VulkanFramebuffer[] framebuffers;
 
-    public Swapchain(VulkanContext context) {
-        this.handle = createHandle(context.getDevice(), context.getPhysicalDevice(), context.getSurface(), context.getSurfaceCapabilities());
-        this.imageViews = createImageViews(context.getDevice(), this.handle);
-        this.renderPass = createRenderPass(context.getDevice());
-        this.framebuffers = createFramebuffers(context.getDevice(), this.imageViews, this.renderPass, context.getSurfaceCapabilities());
+    public Swapchain() {
+        this.handle = createHandle();
+        this.imageViews = createImageViews(this.handle);
+        this.renderPass = createRenderPass();
+        this.framebuffers = createFramebuffers(this.imageViews, this.renderPass);
     }
 
-    public void destroy(VulkanContext context) {
+    public void destroy() {
         for(VulkanFramebuffer framebuffer : framebuffers)
-            framebuffer.destroy(context.getDevice());
-        renderPass.destroy(context.getDevice());
+            framebuffer.destroy();
+        renderPass.destroy();
         for(VulkanImageView imageView : imageViews)
-            imageView.destroy(context.getDevice());
-        KHRSwapchain.vkDestroySwapchainKHR(context.getDevice().getHandle(), handle, null);
+            imageView.destroy();
+        KHRSwapchain.vkDestroySwapchainKHR(VulkanContext.getContext().getDevice().getHandle(), handle, null);
     }
 
-    private long createHandle(VulkanDevice device, VulkanPhysicalDevice physicalDevice, VulkanSurface surface, VkSurfaceCapabilitiesKHR surfaceCapabilities) {
+    private long createHandle() {
+        VkSurfaceCapabilitiesKHR surfaceCapabilities = VulkanContext.getContext().getSurfaceCapabilities();
         int minImageCount = surfaceCapabilities.minImageCount();
         if (surfaceCapabilities.maxImageCount() > 0 && minImageCount > surfaceCapabilities.maxImageCount()) {
             minImageCount = surfaceCapabilities.maxImageCount();
@@ -51,7 +50,7 @@ public class Swapchain {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkSwapchainCreateInfoKHR pCreateInfo = VkSwapchainCreateInfoKHR.callocStack(stack)
                 .sType(KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR)
-                .surface(surface.getHandle())
+                .surface(VulkanContext.getContext().getSurface().getHandle())
                 .minImageCount(minImageCount)
                 .imageFormat(SURFACEFORMAT)
                 .imageColorSpace(KHRSurface.VK_COLORSPACE_SRGB_NONLINEAR_KHR)
@@ -66,13 +65,15 @@ public class Swapchain {
                 .oldSwapchain(VK11.VK_NULL_HANDLE);
 
             LongBuffer pSwapchain = stack.callocLong(1);
-            KHRSwapchain.vkCreateSwapchainKHR(device.getHandle(), pCreateInfo, null, pSwapchain);
+            KHRSwapchain.vkCreateSwapchainKHR(VulkanContext.getContext().getDevice().getHandle(), pCreateInfo, null, pSwapchain);
             return pSwapchain.get(0);
         }
     }
 
-    private VulkanImageView[] createImageViews(VulkanDevice device, long swapchain) {
+    private VulkanImageView[] createImageViews(long swapchain) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
+            VulkanDevice device = VulkanContext.getContext().getDevice();
+
             IntBuffer pSwapchainImageCount = stack.callocInt(1);
             KHRSwapchain.vkGetSwapchainImagesKHR(device.getHandle(), swapchain, pSwapchainImageCount, null);
     
@@ -88,13 +89,13 @@ public class Swapchain {
                     .setComponentG(VK11.VK_COMPONENT_SWIZZLE_G)
                     .setComponentB(VK11.VK_COMPONENT_SWIZZLE_B)
                     .setComponentA(VK11.VK_COMPONENT_SWIZZLE_A)
-                    .build(device);
+                    .build();
             }
             return imageViews;
         }
     }
 
-    private RenderPass createRenderPass(VulkanDevice device) {
+    private RenderPass createRenderPass() {
         return new RenderPass.Builder()
             .addColorAttachment(new RenderPass.Attachement()
                 .setFormat(VK11.VK_FORMAT_B8G8R8A8_UNORM)
@@ -105,10 +106,12 @@ public class Swapchain {
                 .setStencilStoreOp(VK11.VK_ATTACHMENT_STORE_OP_DONT_CARE)
                 .setInitialLayout(VK11.VK_IMAGE_LAYOUT_UNDEFINED)
                 .setFinalLayout(KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR))
-            .build(device);
+            .build();
     }
 
-    private VulkanFramebuffer[] createFramebuffers(VulkanDevice device, VulkanImageView[] imageViews, RenderPass renderPass, VkSurfaceCapabilitiesKHR surfaceCapabilities) {
+    private VulkanFramebuffer[] createFramebuffers(VulkanImageView[] imageViews, RenderPass renderPass) {
+        VkSurfaceCapabilitiesKHR surfaceCapabilities = VulkanContext.getContext().getSurfaceCapabilities(); 
+
         VulkanFramebuffer[] framebuffers = new VulkanFramebuffer[imageViews.length];
         for(int i = 0; i < framebuffers.length; i++) {
             framebuffers[i] = new VulkanFramebuffer.Builder()
@@ -117,7 +120,7 @@ public class Swapchain {
                 .setWidth(surfaceCapabilities.currentExtent().width())
                 .setHeight(surfaceCapabilities.currentExtent().height())
                 .setLayers(1)
-                .build(device);
+                .build();
         }
         return framebuffers;
     }

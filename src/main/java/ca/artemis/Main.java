@@ -1,20 +1,15 @@
 package ca.artemis;
 
 import ca.artemis.game.TestGame;
-import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.rendering.RenderingEngine;
 
 public class Main {
     
     public static void main(String[] args) {
-        VulkanContext context = VulkanContext.create();
-
-        RenderingEngine renderingEngine = new RenderingEngine(context);
-        TestGame game = new TestGame(context, renderingEngine);
+        RenderingEngine renderingEngine = new RenderingEngine();
+        TestGame game = new TestGame(renderingEngine);
         renderingEngine.mainLoop();
-        game.destroy(context, renderingEngine);
+        game.destroy(renderingEngine);
         renderingEngine.destroy();
-        
-        context.destroy();
     }
 }

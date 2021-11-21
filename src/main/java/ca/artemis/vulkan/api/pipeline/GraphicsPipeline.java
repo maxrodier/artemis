@@ -14,7 +14,7 @@ import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;
 import org.lwjgl.vulkan.VkPipelineShaderStageCreateInfo;
 import org.lwjgl.vulkan.VkPushConstantRange;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.descriptor.DescriptorSetLayout;
 import ca.artemis.vulkan.api.descriptor.PushConstantRange;
 import ca.artemis.vulkan.api.framebuffer.RenderPass;
@@ -31,11 +31,11 @@ public class GraphicsPipeline {
         this.shaderModules = shaderModules;
     }
 
-    public void destroy(VulkanDevice device) {
+    public void destroy() {
         for(ShaderModule shaderModule : shaderModules)
-            shaderModule.destroy(device);
-        VK11.vkDestroyPipelineLayout(device.getHandle(), pipelineLayout, null);
-        VK11.vkDestroyPipeline(device.getHandle(), handle, null);
+            shaderModule.destroy();
+        VK11.vkDestroyPipelineLayout(VulkanContext.getContext().getDevice().getHandle(), pipelineLayout, null);
+        VK11.vkDestroyPipeline(VulkanContext.getContext().getDevice().getHandle(), handle, null);
     }
 
     public long getHandle() {
@@ -89,7 +89,7 @@ public class GraphicsPipeline {
                 .pDynamicStates(pDynamicStates);
         }
 
-        public long createPipelineLayout(VulkanDevice device, MemoryStack stack) {
+        public long createPipelineLayout(MemoryStack stack) {
             LongBuffer pSetLayouts = descriptorSetLayouts.length == 0 ? null : stack.callocLong(descriptorSetLayouts.length);
             for(int i = 0; i < descriptorSetLayouts.length; i++) {
                 pSetLayouts.put(i, descriptorSetLayouts[i].getHandle());
@@ -110,7 +110,7 @@ public class GraphicsPipeline {
                 .pPushConstantRanges(pPushConstantRanges);
     
             LongBuffer pPipelineLayout = stack.callocLong(1);
-            int error = VK11.vkCreatePipelineLayout(device.getHandle(), pPipelineLayoutCreateInfo, null, pPipelineLayout);
+            int error = VK11.vkCreatePipelineLayout(VulkanContext.getContext().getDevice().getHandle(), pPipelineLayoutCreateInfo, null, pPipelineLayout);
             if(error != VK11.VK_SUCCESS) {
                 throw new AssertionError("Failed to create pipeline layout");
             } 
@@ -118,10 +118,10 @@ public class GraphicsPipeline {
             return pPipelineLayout.get(0); 
         }
 
-        public GraphicsPipeline build(VulkanDevice device) {
+        public GraphicsPipeline build() {
             try(MemoryStack stack = MemoryStack.stackPush()) {
 
-                long pipelineLayout = createPipelineLayout(device, stack);
+                long pipelineLayout = createPipelineLayout(stack);
             
                 VkGraphicsPipelineCreateInfo.Buffer pCreateInfos = VkGraphicsPipelineCreateInfo.callocStack(1, stack);
                 pCreateInfos.get(0)
@@ -141,7 +141,7 @@ public class GraphicsPipeline {
                     .subpass(subpass);
 
                 LongBuffer pPipelines = stack.callocLong(1);
-                int error = VK11.vkCreateGraphicsPipelines(device.getHandle(), VK11.VK_NULL_HANDLE, pCreateInfos, null, pPipelines);
+                int error = VK11.vkCreateGraphicsPipelines(VulkanContext.getContext().getDevice().getHandle(), VK11.VK_NULL_HANDLE, pCreateInfos, null, pPipelines);
                 if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to create graphics pipeline");
 

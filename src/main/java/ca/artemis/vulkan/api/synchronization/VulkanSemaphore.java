@@ -6,28 +6,28 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkSemaphoreCreateInfo;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class VulkanSemaphore {
     
     private final long handle;
 
-    public VulkanSemaphore(VulkanDevice device) {
-        this.handle = createHandle(device);
+    public VulkanSemaphore() {
+        this.handle = createHandle();
     }
 
-    public void destroy(VulkanDevice device) {
-        VK11.vkDestroySemaphore(device.getHandle(), handle, null);
+    public void destroy() {
+        VK11.vkDestroySemaphore(VulkanContext.getContext().getDevice().getHandle(), handle, null);
     }
 
-    private long createHandle(VulkanDevice device) {
+    private long createHandle() {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkSemaphoreCreateInfo pSemaphoreCreateInfo = VkSemaphoreCreateInfo.callocStack(stack)
 	            .sType(VK11.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO)
                 .flags(0);
                 
             LongBuffer pSemaphore = stack.callocLong(1);
-            int error = VK11.vkCreateSemaphore(device.getHandle(), pSemaphoreCreateInfo, null, pSemaphore);
+            int error = VK11.vkCreateSemaphore(VulkanContext.getContext().getDevice().getHandle(), pSemaphoreCreateInfo, null, pSemaphore);
             if(error != VK11.VK_SUCCESS) 
                 throw new AssertionError("Failed to create semaphore");
 

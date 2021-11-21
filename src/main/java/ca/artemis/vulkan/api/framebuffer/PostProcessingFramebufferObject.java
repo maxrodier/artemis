@@ -3,7 +3,6 @@ package ca.artemis.vulkan.api.framebuffer;
 import org.lwjgl.vulkan.VK11;
 
 import ca.artemis.Configuration;
-import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
 import ca.artemis.vulkan.api.memory.VulkanImageBundle;
 
@@ -12,9 +11,9 @@ public class PostProcessingFramebufferObject extends FramebufferObject {
     private final VulkanFramebuffer framebuffer;
     private final RenderPass renderPass;
 
-    public PostProcessingFramebufferObject(VulkanContext context) {
-            VulkanImageBundle colorAttachment = createColorAttachment(context, Configuration.windowWidth, Configuration.windowHeight, VK11.VK_FORMAT_R16G16B16A16_SFLOAT);
-            attachments.put(Attachment.COLOR, colorAttachment);
+    public PostProcessingFramebufferObject() {
+        VulkanImageBundle colorAttachment = createColorAttachment(Configuration.windowWidth, Configuration.windowHeight, VK11.VK_FORMAT_R16G16B16A16_SFLOAT);
+        attachments.put(Attachment.COLOR, colorAttachment);
 
         this.renderPass = new RenderPass.Builder()
             .addColorAttachment(new RenderPass.Attachement()
@@ -26,7 +25,7 @@ public class PostProcessingFramebufferObject extends FramebufferObject {
                 .setStencilStoreOp(VK11.VK_ATTACHMENT_STORE_OP_DONT_CARE)
                 .setInitialLayout(VK11.VK_IMAGE_LAYOUT_UNDEFINED)
                 .setFinalLayout(VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL))
-            .build(context.getDevice());
+            .build();
 
         this.framebuffer = new VulkanFramebuffer.Builder()
             .addAttachement(attachments.get(Attachment.COLOR).getImageView())
@@ -34,13 +33,13 @@ public class PostProcessingFramebufferObject extends FramebufferObject {
             .setWidth(Configuration.windowWidth)
             .setHeight(Configuration.windowHeight)
             .setLayers(1)
-            .build(context.getDevice());
+            .build();
     }
 
-    public void destroy(VulkanContext context) {
-        framebuffer.destroy(context.getDevice());
-        renderPass.destroy(context.getDevice());
-        super.destroy(context);
+    public void destroy() {
+        framebuffer.destroy();
+        renderPass.destroy();
+        super.destroy();
     }
 
     public VulkanFramebuffer getFramebuffer() {

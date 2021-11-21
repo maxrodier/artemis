@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkDescriptorPoolCreateInfo;
 import org.lwjgl.vulkan.VkDescriptorPoolSize;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 
 public class DescriptorPool {
 
@@ -20,8 +20,8 @@ public class DescriptorPool {
         this.handle = handle;
     }
 
-    public void destroy(VulkanDevice device) {
-        VK11.vkDestroyDescriptorPool(device.getHandle(), handle, null);   
+    public void destroy() {
+        VK11.vkDestroyDescriptorPool(VulkanContext.getContext().getDevice().getHandle(), handle, null);   
     }
 
     public long getHandle() {
@@ -33,7 +33,7 @@ public class DescriptorPool {
         private int maxSets;
         private List<PoolSize> poolSizes = new ArrayList<>();
 
-        public DescriptorPool build(VulkanDevice device) {
+        public DescriptorPool build() {
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 VkDescriptorPoolSize.Buffer pPoolSizes = VkDescriptorPoolSize.callocStack(poolSizes.size(), stack);
                 for(int i = 0; i < poolSizes.size(); i++) {
@@ -49,7 +49,7 @@ public class DescriptorPool {
                     .maxSets(maxSets);
 
                 LongBuffer pDescriptorPool = MemoryUtil.memAllocLong(1);
-                int error = VK11.vkCreateDescriptorPool(device.getHandle(), pCreateInfo, null, pDescriptorPool);
+                int error = VK11.vkCreateDescriptorPool(VulkanContext.getContext().getDevice().getHandle(), pCreateInfo, null, pDescriptorPool);
                 if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to create descriptor pool");
                 

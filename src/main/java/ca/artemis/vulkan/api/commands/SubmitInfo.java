@@ -9,7 +9,6 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkQueue;
 import org.lwjgl.vulkan.VkSubmitInfo;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.synchronization.VulkanFence;
 import ca.artemis.vulkan.api.synchronization.VulkanSemaphore;
 
@@ -36,9 +35,9 @@ public class SubmitInfo {
         handle.free();
     }
 
-    public void submit(VulkanDevice device, VkQueue queue) {
+    public void submit(VkQueue queue) {
         if (fence != null){
-			fence.reset(device);
+			fence.reset();
 		}
 		
 		int error = VK11.vkQueueSubmit(queue, handle,fence == null ? VK11.VK_NULL_HANDLE : fence.getHandle());

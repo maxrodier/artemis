@@ -9,7 +9,7 @@ import org.lwjgl.vulkan.VkDescriptorImageInfo;
 import org.lwjgl.vulkan.VkDescriptorSetAllocateInfo;
 import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
-import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.memory.VulkanBuffer;
 import ca.artemis.vulkan.api.memory.VulkanImageView;
 import ca.artemis.vulkan.api.memory.VulkanSampler;
@@ -18,11 +18,11 @@ public class DescriptorSet {
     
     private final long handle;
 
-    public DescriptorSet(VulkanDevice device, DescriptorPool descriptorPool, DescriptorSetLayout descriptorSetLayout) {
-        this.handle = createHandle(device, descriptorPool, descriptorSetLayout);
+    public DescriptorSet(DescriptorPool descriptorPool, DescriptorSetLayout descriptorSetLayout) {
+        this.handle = createHandle(descriptorPool, descriptorSetLayout);
     }
 
-    public void updateDescriptorBuffer(VulkanDevice device, VulkanBuffer buffer, long range, long offset, int binding, int descriptorType){
+    public void updateDescriptorBuffer(VulkanBuffer buffer, long range, long offset, int binding, int descriptorType){
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkDescriptorBufferInfo.Buffer pBufferInfos = VkDescriptorBufferInfo.callocStack(1, stack)
                 .buffer(buffer.getHandle())
@@ -38,11 +38,11 @@ public class DescriptorSet {
                 .descriptorType(descriptorType)
                 .pBufferInfo(pBufferInfos);
 
-            VK11.vkUpdateDescriptorSets(device.getHandle(), pDescriptorWrites, null);
+            VK11.vkUpdateDescriptorSets(VulkanContext.getContext().getDevice().getHandle(), pDescriptorWrites, null);
         }
     }
 
-    public void updateDescriptorImageBuffer(VulkanDevice device, VulkanImageView imageView, VulkanSampler sampler, int imageLayout, int binding, int descriptorType){
+    public void updateDescriptorImageBuffer(VulkanImageView imageView, VulkanSampler sampler, int imageLayout, int binding, int descriptorType){
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkDescriptorImageInfo.Buffer pImageInfos = VkDescriptorImageInfo.callocStack(1, stack)
                 .imageView(imageView.getHandle())
@@ -58,11 +58,11 @@ public class DescriptorSet {
                 .descriptorType(descriptorType)
                 .pImageInfo(pImageInfos);
 
-            VK11.vkUpdateDescriptorSets(device.getHandle(), pDescriptorWrites, null);
+            VK11.vkUpdateDescriptorSets(VulkanContext.getContext().getDevice().getHandle(), pDescriptorWrites, null);
         }
     }
 
-    private long createHandle(VulkanDevice device, DescriptorPool descriptorPool, DescriptorSetLayout descriptorSetLayout) {
+    private long createHandle(DescriptorPool descriptorPool, DescriptorSetLayout descriptorSetLayout) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkDescriptorSetAllocateInfo pAllocateInfo = VkDescriptorSetAllocateInfo.callocStack(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
@@ -70,7 +70,7 @@ public class DescriptorSet {
                 .pSetLayouts(stack.callocLong(1).put(0, descriptorSetLayout.getHandle()));
             
             LongBuffer pDescriptorSet = stack.callocLong(1);
-            int error = VK11.vkAllocateDescriptorSets(device.getHandle(), pAllocateInfo, pDescriptorSet);
+            int error = VK11.vkAllocateDescriptorSets(VulkanContext.getContext().getDevice().getHandle(), pAllocateInfo, pDescriptorSet);
             if(error != VK11.VK_SUCCESS)
                     throw new AssertionError("Failed to create descriptor set");
 

@@ -2,7 +2,6 @@ package ca.artemis.vulkan.rendering.mesh;
 
 import ca.artemis.math.Vector2f;
 import ca.artemis.math.Vector3f;
-import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.rendering.mesh.Vertex.VertexKind;
 
 public class Quad extends Mesh {
@@ -25,24 +24,24 @@ public class Quad extends Mesh {
         0, 1, 2, 0, 2, 3 
     };
 
-    public Quad(VulkanContext context) {
-        super(context, getDefaultVertices(), indices, VertexKind.POS_UV);
+    public Quad() {
+        super(getDefaultVertices(), indices, VertexKind.POS_UV);
     }
 
-    public Quad(VulkanContext context, int x, int y, int width, int height, Vector3f colour) {
-        this(context, getPositions(x, y, width, height), colour, null, VertexKind.POS_COLOUR);
+    public Quad(int x, int y, int width, int height, Vector3f colour) {
+        this(getPositions(x, y, width, height), colour, null, VertexKind.POS_COLOUR);
     }
 
-    public Quad(VulkanContext context, int x, int y, int width, int height, Vector2f u, Vector2f v) {
-        this(context, getPositions(x, y, width, height), null, getTexCoords(u, v), VertexKind.POS_COLOUR);
+    public Quad(int x, int y, int width, int height, Vector2f u, Vector2f v) {
+        this(getPositions(x, y, width, height), null, getTexCoords(u, v), VertexKind.POS_COLOUR);
     }
 
-    public Quad(VulkanContext context, int x, int y, int width, int height, Vector3f colour, Vector2f u, Vector2f v) {
-        this(context, getPositions(x, y, width, height), colour, getTexCoords(u, v), VertexKind.POS_COLOUR_UV);
+    public Quad(int x, int y, int width, int height, Vector3f colour, Vector2f u, Vector2f v) {
+        this(getPositions(x, y, width, height), colour, getTexCoords(u, v), VertexKind.POS_COLOUR_UV);
     }
 
-    public Quad(VulkanContext context, Vector3f[] positions, Vector3f colour, Vector2f[] texCoords, VertexKind vertexKind) {
-        super(context, getVertices(positions, colour, texCoords, vertexKind), indices, vertexKind);
+    public Quad(Vector3f[] positions, Vector3f colour, Vector2f[] texCoords, VertexKind vertexKind) {
+        super(getVertices(positions, colour, texCoords, vertexKind), indices, vertexKind);
     }
 
     private static Vertex[] getDefaultVertices() {
