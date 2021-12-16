@@ -72,7 +72,7 @@ public class PostProcessingRenderer extends Renderer {
 
     public void destroy() {
         this.submitInfo.destroy();
-        this.drawCommandBuffer.destroy(this.commandPool);
+        this.drawCommandBuffer.destroy();
         this.commandPool.destroy(VulkanContext.getContext().getDevice());
         this.textureSampler.destroy();
         this.graphicsPipeline.destroy();

@@ -1,0 +1,11 @@
+x: 1024
+y: 512
+children:
+  - class: 'ca.artemis.engine.scene3.base.Container'
+    id: 'container1'
+    type: 'RootContainer'
+  - class: 'ca.artemis.engine.scene3.base.Container'
+    id: 'container2'
+    type: 'RootContainer'
+  - class: 'ca.artemis.engine.scene3.components.Block'
+    id: 'block1'

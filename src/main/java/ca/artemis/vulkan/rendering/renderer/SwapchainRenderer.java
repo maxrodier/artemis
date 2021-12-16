@@ -82,7 +82,7 @@ public class SwapchainRenderer extends Renderer {
         this.renderFence.destroy();
         this.imageAcquiredSemaphore.destroy();
         for(CommandBuffer commandBuffer : drawCommandBuffers)
-            commandBuffer.destroy(this.commandPool);
+            commandBuffer.destroy();
         this.quad.destroy();
         this.commandPool.destroy(VulkanContext.getContext().getDevice());
         this.swapchainShaderProgram.destroy();

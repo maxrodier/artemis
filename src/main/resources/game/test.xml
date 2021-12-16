@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import ca.artemis.engine.scene2.text.*?>
+<?import ca.artemis.engine.scene2.image.*?>
+<?import ca.artemis.engine.scene2.control.*?>
+<?import ca.artemis.engine.scene2.layout.*?>
+
+<system:root system:id="root" type="ca.artemis.engine.scene2.layout.Pane" xmlns:system="http://artemis.ca/system" xmlns="http://artemis.ca">
+	<GridPane system:id="rootGridPane" maxHeight="950.0" maxWidth="1730.0" minHeight="950.0" minWidth="1730.0" prefHeight="950.0" prefWidth="1730.0">
+		<columnConstraints>
+			<ColumnConstraints hgrow="SOMETIMES" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" />
+			<ColumnConstraints hgrow="SOMETIMES" maxWidth="1580.0" minWidth="1580.0" prefWidth="1580.0" />
+		</columnConstraints>
+		<rowConstraints>
+			<RowConstraints maxHeight="950.0" minHeight="950.0" prefHeight="950.0" vgrow="SOMETIMES" />
+		</rowConstraints>
+		<children>
+			<GridPane>
+				<columnConstraints>
+					<ColumnConstraints hgrow="SOMETIMES" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" />
+				</columnConstraints>
+				<rowConstraints>
+					<RowConstraints maxHeight="90.0" minHeight="90.0" prefHeight="90.0" vgrow="SOMETIMES" />
+					<RowConstraints maxHeight="115.0" minHeight="115.0" prefHeight="115.0" vgrow="SOMETIMES" />
+					<RowConstraints maxHeight="115.0" minHeight="115.0" prefHeight="115.0" vgrow="SOMETIMES" />
+					<RowConstraints maxHeight="115.0" minHeight="115.0" prefHeight="115.0" vgrow="SOMETIMES" />
+					<RowConstraints maxHeight="115.0" minHeight="115.0" prefHeight="115.0" vgrow="SOMETIMES" />
+					<RowConstraints maxHeight="90.0" minHeight="90.0" prefHeight="90.0" vgrow="SOMETIMES" />
+					<RowConstraints maxHeight="115.0" minHeight="115.0" prefHeight="115.0" vgrow="SOMETIMES" />
+					<RowConstraints maxHeight="115.0" minHeight="115.0" prefHeight="115.0" vgrow="SOMETIMES" />
+					<RowConstraints maxHeight="80.0" minHeight="80.0" prefHeight="80.0" vgrow="SOMETIMES" />
+				</rowConstraints>
+				<children>
+					<Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.rowIndex="0"
+						style="-fx-background-color: #2b2e33;-fx-background-radius: 0;-fx-border-width: 2 0 2 0; -fx-border-color:#414449 #000000 #000000 #000000;" />
+					<Button system:id="button1" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" GridPane.rowIndex="1" text="Button">
+						<font>
+							<Font name="Arial Bold" size="15.0" />
+						</font>
+					</Button>
+					<Button system:id="button2" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" GridPane.rowIndex="2" text="Button">
+						<font>
+							<Font name="Arial Bold" size="15.0" />
+						</font>
+					</Button>
+					<Button system:id="button3" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" GridPane.rowIndex="3" text="Button">
+						<font>
+							<Font name="Arial Bold" size="15.0" />
+						</font>
+					</Button>
+					<Button system:id="button4" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" GridPane.rowIndex="4" text="Button">
+						<font>
+							<Font name="Arial Bold" size="15.0" />
+						</font>
+					</Button>
+					<Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.rowIndex="5"
+						style="-fx-background-color: #2b2e33;-fx-background-radius: 0;-fx-border-width: 2 0 2 0; -fx-border-color:#414449 #000000 #000000 #000000;" />
+					<Button system:id="actionButton1" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" GridPane.rowIndex="6" text="Button">
+						<font>
+							<Font name="Arial Bold" size="15.0" />
+						</font>
+					</Button>
+					<Button system:id="actionButton2" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" GridPane.rowIndex="7" text="Button">
+						<font>
+							<Font name="Arial Bold" size="15.0" />
+						</font>
+					</Button>
+					<Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" GridPane.rowIndex="8"
+						style="-fx-background-color: #2b2e33;-fx-background-radius: 0;-fx-border-width: 2 0 2 0; -fx-border-color:#414449 #000000 #000000 #000000;">
+						<children>
+							<ImageView system:id="imageLogo" fitHeight="80.0" fitWidth="150.0" />
+						</children>
+					</Pane>
+				</children>
+			</GridPane>
+			<VBox system:id="container" maxHeight="950.0" maxWidth="1580.0" minHeight="950.0" minWidth="1580.0" prefHeight="950.0" prefWidth="1580.0" GridPane.columnIndex="1" />
+		</children>
+	</GridPane>
+</system:root>

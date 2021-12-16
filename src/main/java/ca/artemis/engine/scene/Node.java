@@ -6,7 +6,6 @@ import java.util.List;
 import org.lwjgl.system.MemoryStack;
 
 import ca.artemis.math.Matrix4f;
-import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.SecondaryCommandBuffer;
 import ca.artemis.vulkan.rendering.mesh.Transform;
 
@@ -16,9 +15,9 @@ public class Node {
     private List<Node> children = new ArrayList<>();
     private Transform transform = new Transform();
 
-    public void destroy(CommandPool commandPool) {
+    public void destroy() {
         for(Node child: children) {
-            child.destroy(commandPool);
+            child.destroy();
         }
     }
 

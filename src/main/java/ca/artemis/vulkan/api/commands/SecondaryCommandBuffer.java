@@ -14,7 +14,7 @@ import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
 public class SecondaryCommandBuffer extends CommandBuffer {
 
     public SecondaryCommandBuffer(CommandPool commandPool) { 
-        super(createHandle(commandPool));
+        super(createHandle(commandPool), commandPool);
     }
     
     public void beginRecording(MemoryStack stack, int flags, RenderPass renderPass, VulkanFramebuffer framebuffer) {

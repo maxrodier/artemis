@@ -53,8 +53,8 @@ public class FontNode extends RenderableNode {
         recordDrawCommandBuffer(this.drawCommandBuffer, this.shaderProgram.getGraphicsPipeline(), sceneRenderer.getSceneFramebufferObject().getRenderPass(), sceneRenderer.getSceneFramebufferObject().getFramebuffer(), this.descriptorSets, this.mesh);
     }
 
-    public void destroy(SceneRenderer sceneRenderer) {
-        super.destroy(sceneRenderer.getCommandPool());
+    public void destroy() {
+        super.destroy();
         this.mesh.destroy();
         this.buffer.destroy();
     }

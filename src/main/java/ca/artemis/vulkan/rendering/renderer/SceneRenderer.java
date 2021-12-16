@@ -75,7 +75,7 @@ public class SceneRenderer extends Renderer {
         MemoryUtil.memFree(pClearValues);
         this.submitInfo.destroy();
         this.renderFence.destroy();
-        this.primaryCommandBuffer.destroy(this.commandPool);
+        this.primaryCommandBuffer.destroy();
 
         this.commandPool.destroy(VulkanContext.getContext().getDevice());
 

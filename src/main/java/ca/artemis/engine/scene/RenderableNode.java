@@ -17,9 +17,9 @@ public abstract class RenderableNode extends Node {
         this.drawCommandBuffer = new SecondaryCommandBuffer(commandPool);
     }
 
-    public void destroy(CommandPool commandPool) {
-        super.destroy(commandPool);
-        this.drawCommandBuffer.destroy(commandPool);
+    public void destroy() {
+        super.destroy();
+        this.drawCommandBuffer.destroy();
     }
 
     public abstract void updateDescriptorSets();

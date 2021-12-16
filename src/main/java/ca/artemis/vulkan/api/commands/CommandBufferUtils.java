@@ -29,7 +29,7 @@ public class CommandBufferUtils {
             commandBuffer.copyBufferCmd(srcBuffer, dstBuffer, pRegions);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
-            commandBuffer.destroy(commandPool);
+            commandBuffer.destroy();
         }
     }
 
@@ -55,7 +55,7 @@ public class CommandBufferUtils {
             commandBuffer.copyBufferToImage(buffer, image, pRegions);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
-            commandBuffer.destroy(commandPool);
+            commandBuffer.destroy();
         }
     }
 
@@ -113,7 +113,7 @@ public class CommandBufferUtils {
             commandBuffer.pipelineBarrierCmd(sourceStage, destinationStage, pBarriers);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
-            commandBuffer.destroy(commandPool);
+            commandBuffer.destroy();
 
         }
     }
@@ -198,7 +198,7 @@ public class CommandBufferUtils {
             commandBuffer.pipelineBarrierCmd(VK11.VK_PIPELINE_STAGE_TRANSFER_BIT, VK11.VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, pBarriers);
             commandBuffer.endRecording();
             singleCommandBufferSubmit(queue, commandBuffer, stack);
-            commandBuffer.destroy(commandPool);
+            commandBuffer.destroy();
         }
     } 
 

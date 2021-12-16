@@ -26,13 +26,15 @@ public class CommandBuffer {
 
     protected final long handle;
     protected final VkCommandBuffer commandBuffer;
+    protected final CommandPool commandPool;
 
-    protected CommandBuffer(long handle) {
+    protected CommandBuffer(long handle, CommandPool commandPool) {
         this.handle = handle;
         this.commandBuffer = new VkCommandBuffer(this.handle, VulkanContext.getContext().getDevice().getHandle());
+        this.commandPool = commandPool;
     }
 
-    public void destroy(CommandPool commandPool) {
+    public void destroy() {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             PointerBuffer pHandle = stack.callocPointer(1);
             pHandle.put(0, handle);

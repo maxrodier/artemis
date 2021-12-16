@@ -43,8 +43,8 @@ public class SimpleNode extends RenderableNode {
         recordDrawCommandBuffer(this.drawCommandBuffer, this.shaderProgram.getGraphicsPipeline(), sceneRenderer.getSceneFramebufferObject().getRenderPass(), sceneRenderer.getSceneFramebufferObject().getFramebuffer(), this.descriptorSets, this.quad);
     }
 
-    public void destroy(SceneRenderer sceneRenderer) {
-        super.destroy(sceneRenderer.getCommandPool());
+    public void destroy() {
+        super.destroy();
         this.quad.destroy();
         this.buffer.destroy();
     }

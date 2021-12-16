@@ -1,0 +1,4 @@
+children:
+  - class: 'ca.artemis.engine.scene3.base.Container'
+    id: 'container1'
+    type: 'ComponentContainer'

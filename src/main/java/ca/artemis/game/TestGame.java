@@ -45,7 +45,7 @@ public class TestGame {
         this.simpleNode4.getTransform().addPosition(new Vector3f(0.0f, 50.0f, 0.0f));
 
         this.font = FontLoader.load("montserrat_bold");
-        this.fontNode1 = new FontNode(sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 16, new Vector3f(0.0f, 0.0f, 0.0f), font);
+        this.fontNode1 = new FontNode(sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 12, new Vector3f(0.0f, 0.0f, 0.0f), font);
         this.fontNode2 = new FontNode(sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 24, new Vector3f(0.0f, 0.0f, 0.0f), font);
         this.fontNode3 = new FontNode(sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 32, new Vector3f(0.0f, 0.0f, 0.0f), font);
         this.fontNode4 = new FontNode(sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 40, new Vector3f(0.0f, 0.0f, 0.0f), font);
@@ -64,7 +64,7 @@ public class TestGame {
     }
 
     public void destroy(RenderingEngine renderingEngine) {
-        sceneGraph.destroy(renderingEngine.getSceneRenderer().getCommandPool());
+        sceneGraph.destroy();
         this.font.destroy();
     }
 }
