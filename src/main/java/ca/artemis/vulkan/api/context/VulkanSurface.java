@@ -10,6 +10,8 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
+import ca.artemis.vulkan.api.context.window.GLFWWindow;
+
 public class VulkanSurface {
 
     private final long handle;

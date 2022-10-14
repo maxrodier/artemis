@@ -34,11 +34,14 @@ public class PresentInfo {
         handle.free();
     }
 
-    public void present(VulkanDevice device) {
+    public boolean present(VulkanDevice device) {
         int error = KHRSwapchain.vkQueuePresentKHR(device.getGraphicsQueue(), handle);
-        if (error != VK11.VK_SUCCESS) {
+        if(error == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR || error == KHRSwapchain.VK_SUBOPTIMAL_KHR) {
+            return true;
+        } else if (error != VK11.VK_SUCCESS) {
             throw new AssertionError("Failed to submit present info");
         }
+        return false;
     }
 
     public PresentInfo setWaitSemaphores(VulkanSemaphore... waitSemaphores) {

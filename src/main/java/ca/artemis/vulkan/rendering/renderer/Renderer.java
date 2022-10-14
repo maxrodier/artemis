@@ -2,6 +2,7 @@ package ca.artemis.vulkan.rendering.renderer;
 
 import org.lwjgl.system.MemoryStack;
 
+import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.synchronization.VulkanSemaphore;
 
@@ -18,6 +19,8 @@ public abstract class Renderer {
     protected void destroy(VulkanDevice device) {
         signalSemaphore.destroy(device);
     }
+
+    public abstract void recreateRenderer(VulkanContext context);
 
     public abstract void draw(VulkanDevice device, MemoryStack stack);
 

@@ -1,6 +1,5 @@
 package ca.artemis.game;
 
-import ca.artemis.Configuration;
 import ca.artemis.engine.scene.SceneGraph;
 import ca.artemis.engine.text.Font;
 import ca.artemis.engine.text.FontLoader;
@@ -26,7 +25,7 @@ public class TestGame {
     }
 
     public void init(VulkanContext context, RenderingEngine renderingEngine) {
-        this.sceneGraph = new SceneGraph(0, 0, Configuration.windowWidth, Configuration.windowHeight);
+        this.sceneGraph = new SceneGraph(context);
 
         SceneRenderer sceneRenderer = renderingEngine.getSceneRenderer();
 
@@ -34,11 +33,11 @@ public class TestGame {
         this.textElement1 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 12, font);
         this.textElement1.getTransform().setPosition(this.textElement1.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
         this.textElement2 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 20, font);
-        this.textElement2.getTransform().setPosition(this.textElement1.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
+        this.textElement2.getTransform().setPosition(this.textElement2.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
         this.textElement3 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 28, font);
-        this.textElement3.getTransform().setPosition(this.textElement1.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
+        this.textElement3.getTransform().setPosition(this.textElement3.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
         this.textElement4 = new TextElement(context, sceneRenderer, "Lorem ipsum dolor sit amet, consectetur adipiscing elit", 36, font);
-        this.textElement4.getTransform().setPosition(this.textElement1.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
+        this.textElement4.getTransform().setPosition(this.textElement4.getTransform().getPosition().add(new Vector3f(0.0f, 50.0f, 0.0f)));
 
         textElement3.add(textElement4);
         textElement2.add(textElement3);

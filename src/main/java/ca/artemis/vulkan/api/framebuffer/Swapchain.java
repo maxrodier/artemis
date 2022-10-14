@@ -21,25 +21,42 @@ public class Swapchain {
     
     public static final int SURFACEFORMAT = VK11.VK_FORMAT_B8G8R8A8_UNORM;
 
-    private final long handle;
-    private final VulkanImageView[] imageViews;
     private final RenderPass renderPass;
-    private final VulkanFramebuffer[] framebuffers;
+
+    private long handle;
+    private VulkanImageView[] imageViews;
+    private VulkanFramebuffer[] framebuffers;
 
     public Swapchain(VulkanContext context) {
+        this.renderPass = createRenderPass(context.getDevice());
         this.handle = createHandle(context.getDevice(), context.getPhysicalDevice(), context.getSurface(), context.getSurfaceCapabilities());
         this.imageViews = createImageViews(context.getDevice(), this.handle);
-        this.renderPass = createRenderPass(context.getDevice());
         this.framebuffers = createFramebuffers(context.getDevice(), this.imageViews, this.renderPass, context.getSurfaceCapabilities());
     }
 
     public void destroy(VulkanContext context) {
         for(VulkanFramebuffer framebuffer : framebuffers)
             framebuffer.destroy(context.getDevice());
-        renderPass.destroy(context.getDevice());
         for(VulkanImageView imageView : imageViews)
             imageView.destroy(context.getDevice());
         KHRSwapchain.vkDestroySwapchainKHR(context.getDevice().getHandle(), handle, null);
+        renderPass.destroy(context.getDevice());
+    }
+
+    public void regenerateSwapchain(VulkanContext context) {
+        for(VulkanFramebuffer framebuffer : framebuffers)
+        framebuffer.destroy(context.getDevice());
+        for(VulkanImageView imageView : imageViews)
+            imageView.destroy(context.getDevice());
+        KHRSwapchain.vkDestroySwapchainKHR(context.getDevice().getHandle(), handle, null);
+
+        this.handle = createHandle(context.getDevice(), context.getPhysicalDevice(), context.getSurface(), context.getSurfaceCapabilities());
+        this.imageViews = createImageViews(context.getDevice(), this.handle);
+        this.framebuffers = createFramebuffers(context.getDevice(), this.imageViews, this.renderPass, context.getSurfaceCapabilities());
+
+        System.out.println("Regenerate Swapchain");
+        System.out.println(context.getSurfaceCapabilities().currentExtent().width());
+        System.out.println(context.getSurfaceCapabilities().currentExtent().height());
     }
 
     private long createHandle(VulkanDevice device, VulkanPhysicalDevice physicalDevice, VulkanSurface surface, VkSurfaceCapabilitiesKHR surfaceCapabilities) {

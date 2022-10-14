@@ -7,8 +7,9 @@ import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkClearValue;
+import org.lwjgl.vulkan.VkRect2D;
+import org.lwjgl.vulkan.VkViewport;
 
-import ca.artemis.Configuration;
 import ca.artemis.vulkan.api.commands.CommandBuffer;
 import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.PresentInfo;
@@ -16,18 +17,20 @@ import ca.artemis.vulkan.api.commands.PrimaryCommandBuffer;
 import ca.artemis.vulkan.api.commands.SubmitInfo;
 import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.context.VulkanDevice;
-import ca.artemis.vulkan.api.context.VulkanMemoryAllocator;
 import ca.artemis.vulkan.api.descriptor.DescriptorSet;
 import ca.artemis.vulkan.api.framebuffer.Swapchain;
 import ca.artemis.vulkan.api.memory.VulkanImageView;
 import ca.artemis.vulkan.api.memory.VulkanSampler;
+import ca.artemis.vulkan.api.pipeline.ViewportState;
 import ca.artemis.vulkan.api.synchronization.VulkanFence;
 import ca.artemis.vulkan.api.synchronization.VulkanSemaphore;
+import ca.artemis.vulkan.rendering.RenderingEngine;
 import ca.artemis.vulkan.rendering.mesh.Quad;
 import ca.artemis.vulkan.rendering.programs.SwapchainShaderProgram;
 
 public class SwapchainRenderer extends Renderer {
 
+    private final RenderingEngine renderingEngine;
     private final Swapchain swapchain;
 
     private final VulkanSampler textureSampler;
@@ -38,18 +41,19 @@ public class SwapchainRenderer extends Renderer {
     private final Quad quad;
     private final DescriptorSet[][] descriptorSets;
 
-    private final CommandBuffer[] drawCommandBuffers;
+    private CommandBuffer[] drawCommandBuffers;
 
     private final VulkanSemaphore imageAcquiredSemaphore;
     private final VulkanFence renderFence;
 
     private final IntBuffer pImageIndex;
     private final SubmitInfo submitInfo;
-    private final PresentInfo presentInfo;
+    private PresentInfo presentInfo;
 
-    public SwapchainRenderer(VulkanContext context, Swapchain swapchain, VulkanSemaphore waitSemaphore, VulkanImageView displayImageView) {
+    public SwapchainRenderer(VulkanContext context, RenderingEngine renderingEngine, Swapchain swapchain, VulkanSemaphore waitSemaphore, VulkanImageView displayImageView) {
         super(context.getDevice(), waitSemaphore);
 
+        this.renderingEngine = renderingEngine;
         this.swapchain = swapchain;
 
         this.textureSampler = createTextureSampler(context.getDevice());
@@ -61,7 +65,7 @@ public class SwapchainRenderer extends Renderer {
         this.descriptorSets = createDescriptorSets(context.getDevice(), this.swapchainShaderProgram, this.swapchain.getFramebuffers().length);
         updateDescriptorSets(context, this.descriptorSets, displayImageView, this.textureSampler);
         
-        this.drawCommandBuffers = createCommandBuffers(context.getDevice(), this.commandPool, this.swapchain, this.quad, this.swapchainShaderProgram, this.descriptorSets);
+        this.drawCommandBuffers = createCommandBuffers(context, this.commandPool, this.swapchain, this.quad, this.swapchainShaderProgram, this.descriptorSets);
 
         this.imageAcquiredSemaphore = new VulkanSemaphore(context.getDevice());
         this.renderFence = new VulkanFence(context.getDevice());
@@ -77,19 +81,19 @@ public class SwapchainRenderer extends Renderer {
             .setImageIndexPointer(pImageIndex);
     }
 
-    public void destroy(VulkanDevice device, VulkanMemoryAllocator allocator) {
-        this.presentInfo.destroy(device);
+    public void destroy(VulkanContext context) {
+        this.presentInfo.destroy(context.getDevice());
         this.submitInfo.destroy();
         MemoryUtil.memFree(this.pImageIndex);
-        this.renderFence.destroy(device);
-        this.imageAcquiredSemaphore.destroy(device);
+        this.renderFence.destroy(context.getDevice());
+        this.imageAcquiredSemaphore.destroy(context.getDevice());
         for(CommandBuffer commandBuffer : drawCommandBuffers)
-            commandBuffer.destroy(device, this.commandPool);
-        this.quad.destroy(allocator);
-        this.commandPool.destroy(device);
-        this.swapchainShaderProgram.destroy(device);
-        this.textureSampler.destroy(device);
-        super.destroy(device);
+            commandBuffer.destroy(context.getDevice(), this.commandPool);
+        this.quad.destroy(context.getMemoryAllocator());
+        this.commandPool.destroy(context.getDevice());
+        this.swapchainShaderProgram.destroy(context.getDevice());
+        this.textureSampler.destroy(context.getDevice());
+        super.destroy(context.getDevice());
     }
 
     private DescriptorSet[][] createDescriptorSets(VulkanDevice device, SwapchainShaderProgram swapchainShaderProgram, int size) {
@@ -100,14 +104,20 @@ public class SwapchainRenderer extends Renderer {
         return descriptorSets;
     }
 
-    private static CommandBuffer[] createCommandBuffers(VulkanDevice device, CommandPool commandPool, Swapchain swapchain, Quad quad, SwapchainShaderProgram swapchainShaderProgram, DescriptorSet[][] descriptorSets) {
+    private static CommandBuffer[] createCommandBuffers(VulkanContext context, CommandPool commandPool, Swapchain swapchain, Quad quad, SwapchainShaderProgram swapchainShaderProgram, DescriptorSet[][] descriptorSets) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VK11.vkResetCommandPool(device.getHandle(), commandPool.getHandle(), 0);
+            VK11.vkResetCommandPool(context.getDevice().getHandle(), commandPool.getHandle(), 0);
 
             CommandBuffer[] drawCommandBuffers = new CommandBuffer[swapchain.getFramebuffers().length];
             for(int i = 0; i < swapchain.getFramebuffers().length; i++) {
                 
-                PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(device, commandPool);
+                PrimaryCommandBuffer commandBuffer = new PrimaryCommandBuffer(context.getDevice(), commandPool);
+
+                VkViewport.Buffer pViewports = VkViewport.calloc(1);
+                pViewports.put(0, new ViewportState.Viewport(0, 0, context.getSurfaceCapabilities().currentExtent().width(), context.getSurfaceCapabilities().currentExtent().height(), 0.0f, 1.0f).build(stack));
+
+                VkRect2D.Buffer pScissors = VkRect2D.calloc(1);
+                pScissors.put(0, new ViewportState.Scissor(0, 0, context.getSurfaceCapabilities().currentExtent().width(), context.getSurfaceCapabilities().currentExtent().height()).build(stack));
                 
                 VkClearValue.Buffer pClearValues = VkClearValue.callocStack(1);
                 pClearValues.get(0).color()
@@ -117,8 +127,12 @@ public class SwapchainRenderer extends Renderer {
                     .float32(3, 1);
 
                 commandBuffer.beginRecording(stack, 0);
-                commandBuffer.beginRenderPassCmd(stack, swapchain.getRenderPass().getHandle(), swapchain.getFramebuffer(i).getHandle(), Configuration.windowWidth, Configuration.windowHeight, pClearValues, VK11.VK_SUBPASS_CONTENTS_INLINE);
 
+                commandBuffer.setViewportCmd(pViewports);
+                commandBuffer.setScissorCmd(pScissors);
+
+                commandBuffer.beginRenderPassCmd(stack, swapchain.getRenderPass().getHandle(), swapchain.getFramebuffer(i).getHandle(), context.getSurfaceCapabilities().currentExtent().width(), context.getSurfaceCapabilities().currentExtent().height(), pClearValues, VK11.VK_SUBPASS_CONTENTS_INLINE);
+                
                 commandBuffer.bindPipelineCmd(VK11.VK_PIPELINE_BIND_POINT_GRAPHICS, swapchainShaderProgram.getGraphicsPipeline());
                 commandBuffer.bindVertexBufferCmd(stack, quad.getVertexBuffer());
                 commandBuffer.bindIndexBufferCmd(quad.getIndexBuffer());
@@ -149,16 +163,29 @@ public class SwapchainRenderer extends Renderer {
     }
 
     @Override
+    public void recreateRenderer(VulkanContext context) {
+        this.drawCommandBuffers = createCommandBuffers(context, commandPool, swapchain, quad, swapchainShaderProgram, descriptorSets);
+        this.presentInfo = new PresentInfo()
+            .setWaitSemaphores(this.signalSemaphore)
+            .setSwapchains(this.swapchain)
+            .setImageIndexPointer(pImageIndex);
+    }
+
+    @Override
     public void draw(VulkanDevice device, MemoryStack stack) {
         int error = KHRSwapchain.vkAcquireNextImageKHR(device.getHandle(), swapchain.getHandle(), Long.MAX_VALUE, imageAcquiredSemaphore.getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
-        if (error != VK11.VK_SUCCESS) {
+        if(error == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR) {
+            renderingEngine.recreateRenderingEngine();
+            return;
+        } else if (error != VK11.VK_SUCCESS && error != KHRSwapchain.VK_SUBOPTIMAL_KHR) {
             throw new AssertionError("Failed to acquire next swapchain image");
         }
 
         submitInfo.setCommandBuffers(drawCommandBuffers[pImageIndex.get(0)]);
         submitInfo.submit(device, device.getGraphicsQueue());
 
-        presentInfo.present(device);
+        if(presentInfo.present(device))
+            renderingEngine.recreateRenderingEngine();
     }
 
     public VulkanFence getRenderFence() {

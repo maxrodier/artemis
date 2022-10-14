@@ -1,13 +1,12 @@
 package ca.artemis.engine.text;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
+import ca.artemis.engine.utils.FileUtils;
 import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.memory.VulkanTexture;
 
@@ -17,12 +16,12 @@ public class FontLoader {
         Gson gson = new Gson();
         FontMetadata fontMetadata = null;
         try {
-            fontMetadata = gson.fromJson(Files.readString(Paths.get("src/main/resources/fonts/" + name + ".json")), FontMetadata.class);
+            fontMetadata = gson.fromJson(FileUtils.readString("fonts/" + name + ".json"), FontMetadata.class);
         } catch (JsonSyntaxException | IOException e) {
             e.printStackTrace();
         } 
         
-        VulkanTexture texture = new VulkanTexture(context, "src/main/resources/fonts/" + name +".png", false);
+        VulkanTexture texture = new VulkanTexture(context, "fonts/" + name +".png", false);
         Font font = new Font(texture);
         for(CharacterMetadata characterMetadata : fontMetadata.characters) {
 

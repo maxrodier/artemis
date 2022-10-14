@@ -15,28 +15,41 @@ public class RenderingEngine {
     
     private final VulkanContext context;
 
-    private final Swapchain swapchain;
-
-    private final SceneRenderer sceneRenderer;
-    private final PostProcessingRenderer postProcessingRenderer;
-    private final SwapchainRenderer swapchainRenderer;
+    private Swapchain swapchain;
+    private SceneRenderer sceneRenderer;
+    private PostProcessingRenderer postProcessingRenderer;
+    private SwapchainRenderer swapchainRenderer;
 
     private SceneGraph sceneGraph;
 
     public RenderingEngine(VulkanContext context) {
         this.context = context;
-
-        this.swapchain = new Swapchain(this.context);
-        this.sceneRenderer = new SceneRenderer(this.context);
-        this.postProcessingRenderer = new PostProcessingRenderer(this.context, sceneRenderer.getSignalSemaphore(), this.sceneRenderer.getDisplayImage());
-        this.swapchainRenderer = new SwapchainRenderer(this.context, this.swapchain, postProcessingRenderer.getSignalSemaphore(), this.postProcessingRenderer.getDisplayImage());
+        this.createRenderingEngine();
     }
 
     public void destroy() {
-        this.swapchainRenderer.destroy(context.getDevice(), context.getMemoryAllocator());
+        this.swapchainRenderer.destroy(context);
         this.postProcessingRenderer.destroy(context);
         this.sceneRenderer.destroy(context);
         this.swapchain.destroy(context);
+    }
+
+    public void createRenderingEngine() {
+        this.swapchain = new Swapchain(context);
+        this.sceneRenderer = new SceneRenderer(context);
+        this.postProcessingRenderer = new PostProcessingRenderer(context, sceneRenderer.getSignalSemaphore(), this.sceneRenderer.getDisplayImage());
+        this.swapchainRenderer = new SwapchainRenderer(context, this, this.swapchain, postProcessingRenderer.getSignalSemaphore(), this.postProcessingRenderer.getDisplayImage());
+    }
+
+    public void recreateRenderingEngine() {
+        VK11.vkDeviceWaitIdle(context.getDevice().getHandle());
+
+        context.updateSurfaceCapabilities();
+        context.updateSurfaceFormats();
+        swapchain.regenerateSwapchain(context);
+        sceneRenderer.recreateRenderer(context);
+        postProcessingRenderer.recreateRenderer(context);
+        swapchainRenderer.recreateRenderer(context);
     }
 
     public void mainLoop() {
@@ -59,7 +72,7 @@ public class RenderingEngine {
                 sceneRenderer.getRenderFence().waitFor(context.getDevice());
 
                 sceneGraph.update(context, stack);
-                sceneRenderer.update(sceneGraph);
+                sceneRenderer.update(context, sceneGraph);
                 
                 swapchainRenderer.getRenderFence().waitFor(context.getDevice());
 
@@ -73,6 +86,8 @@ public class RenderingEngine {
 
         VK11.vkDeviceWaitIdle(context.getDevice().getHandle());
     }
+
+
 
     public SceneRenderer getSceneRenderer() {
         return sceneRenderer;

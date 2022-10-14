@@ -149,4 +149,17 @@ public class Matrix4f {
 		
 		return res;	
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < 4; i++) {
+			for(int j = 0; j < 4; j++) {
+				sb.append("[" + m[i * 4 + j] + "] ");
+			}
+			sb.append("\n");
+		}
+
+		return sb.toString();
+	}
 }

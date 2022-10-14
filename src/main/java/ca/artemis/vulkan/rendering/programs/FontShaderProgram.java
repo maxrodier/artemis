@@ -2,7 +2,6 @@ package ca.artemis.vulkan.rendering.programs;
 
 import org.lwjgl.vulkan.VK11;
 
-import ca.artemis.Configuration;
 import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.descriptor.DescriptorPool;
 import ca.artemis.vulkan.api.descriptor.DescriptorSet;
@@ -13,7 +12,6 @@ import ca.artemis.vulkan.api.pipeline.GraphicsPipeline;
 import ca.artemis.vulkan.api.pipeline.ShaderModule;
 import ca.artemis.vulkan.api.pipeline.SharderUtils.ShaderStageKind;
 import ca.artemis.vulkan.api.pipeline.VertexInputState;
-import ca.artemis.vulkan.api.pipeline.ViewportState;
 
 public class FontShaderProgram extends ShaderProgram {
 
@@ -43,16 +41,15 @@ public class FontShaderProgram extends ShaderProgram {
     @Override
     protected GraphicsPipeline createGraphicsPipeline(VulkanDevice device, RenderPass renderPass) {
         return new GraphicsPipeline.Builder()
-            .addShaderModule(new ShaderModule(device, "src/main/resources/shaders/font.vert", ShaderStageKind.VERTEX_SHADER))
-            .addShaderModule(new ShaderModule(device, "src/main/resources/shaders/font.frag", ShaderStageKind.FRAGMENT_SHADER))
+            .addShaderModule(new ShaderModule(device, "shaders/font.vert", ShaderStageKind.VERTEX_SHADER))
+            .addShaderModule(new ShaderModule(device, "shaders/font.frag", ShaderStageKind.FRAGMENT_SHADER))
             .setVertexInputState(new VertexInputState()
                 .addBinding(new VertexInputState.VertexInputBindingDescription(0, 32, VK11.VK_VERTEX_INPUT_RATE_VERTEX)
                     .addAttributes(0, VK11.VK_FORMAT_R32G32B32_SFLOAT, 0)
                     .addAttributes(1, VK11.VK_FORMAT_R32G32B32_SFLOAT, 12)
                     .addAttributes(2, VK11.VK_FORMAT_R32G32_SFLOAT, 24)))
-            .setViewportState(new ViewportState()
-                .addViewport(new ViewportState.Viewport(0, 0, Configuration.windowWidth, Configuration.windowHeight, 0.0f, 1.0f))
-                .addScissors(new ViewportState.Scissor(0, 0, Configuration.windowWidth, Configuration.windowHeight)))
+            .addDynamicState(VK11.VK_DYNAMIC_STATE_VIEWPORT)
+            .addDynamicState(VK11.VK_DYNAMIC_STATE_SCISSOR)
             .setColorBlendState(new ColorBlendState()
                 .addColorBlendAttachement(new ColorBlendState.ColorBlendAttachement(true, VK11.VK_COLOR_COMPONENT_R_BIT | VK11.VK_COLOR_COMPONENT_G_BIT | VK11.VK_COLOR_COMPONENT_B_BIT | VK11.VK_COLOR_COMPONENT_A_BIT)))
             .setDescriptorSetLayouts(descriptorSetLayouts)

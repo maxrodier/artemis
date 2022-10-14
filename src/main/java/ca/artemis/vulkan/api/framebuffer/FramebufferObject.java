@@ -19,9 +19,7 @@ public abstract class FramebufferObject {
         }
     }
 
-    public VulkanImageBundle getAttachment(Attachment attachment) {
-        return attachments.get(attachment);
-    }
+    public abstract void regenerateFramebuffer(VulkanContext context, int width, int height);
 
     protected static VulkanImageBundle createColorAttachment(VulkanContext context, int width, int height, int format) {
         VulkanImage image = new VulkanImage.Builder()
@@ -41,6 +39,10 @@ public abstract class FramebufferObject {
             .build(context.getDevice());
 
         return new VulkanImageBundle(image, imageView);
+    }
+
+    public VulkanImageBundle getAttachment(Attachment attachment) {
+        return attachments.get(attachment);
     }
 
     public static enum Attachment {

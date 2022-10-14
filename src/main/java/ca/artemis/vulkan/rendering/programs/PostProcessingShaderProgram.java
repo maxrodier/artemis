@@ -13,10 +13,10 @@ import ca.artemis.vulkan.api.pipeline.ShaderModule;
 import ca.artemis.vulkan.api.pipeline.SharderUtils.ShaderStageKind;
 import ca.artemis.vulkan.api.pipeline.VertexInputState;
 
-public class SwapchainShaderProgram extends ShaderProgram {
+public class PostProcessingShaderProgram extends ShaderProgram {
 
-    public SwapchainShaderProgram(VulkanDevice device, RenderPass renderPass, int size) {
-        super(device, renderPass, size);
+    public PostProcessingShaderProgram(VulkanDevice device, RenderPass renderPass) {
+        super(device, renderPass);
     }
 
     @Override

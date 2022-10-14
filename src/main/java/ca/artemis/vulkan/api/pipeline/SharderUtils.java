@@ -2,18 +2,18 @@ package ca.artemis.vulkan.api.pipeline;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.lwjgl.vulkan.VK11;
 
+import ca.artemis.engine.utils.FileUtils;
+
 public class SharderUtils {
 
     public static Spirv compileShaderFile(String path, ShaderStageKind shaderStageKind) {
         try {
-            String source = new String(Files.readAllBytes(Paths.get(path)));
+            String source = FileUtils.readString(path);
             return compileShader(path, source, shaderStageKind);
         } catch (IOException e) {
             e.printStackTrace();

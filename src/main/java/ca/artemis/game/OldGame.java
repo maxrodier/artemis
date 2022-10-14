@@ -23,8 +23,8 @@ public class OldGame {
 
         SceneRenderer sceneRenderer = renderingEngine.getSceneRenderer();
 
-        this.sprite = new Sprite(context, 512, 512, "src/main/resources/textures/wood.png");
-        this.spriteSheet = new SpriteSheet(context, 32, 32, "src/main/resources/textures/terrain.png");
+        this.sprite = new Sprite(context, 512, 512, "textures/wood.png");
+        this.spriteSheet = new SpriteSheet(context, 32, 32, "textures/terrain.png");
 
         System.out.println(spriteSheet.getNormalizedSpriteWidth());
         System.out.println(spriteSheet.getNormalizedSpriteHeight());

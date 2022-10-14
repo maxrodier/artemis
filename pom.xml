@@ -85,12 +85,7 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>
-					<include>**/*.vert</include>
-					<include>**/*.frag</include>
-					<include>**/*.spv</include>
-					<include>**/*.png</include>
-					<include>**/*.jpg</include>
-					<include>**/*.obj</include>
+					<include>**/*</include>
 				</includes>
 			</resource>
 		</resources>
@@ -101,7 +96,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>ca.artemis.Main</mainClass>
+							<mainClass>ca.artemis.game.main.Main</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

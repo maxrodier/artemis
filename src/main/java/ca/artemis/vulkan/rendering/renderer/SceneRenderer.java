@@ -6,8 +6,9 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkClearValue;
+import org.lwjgl.vulkan.VkRect2D;
+import org.lwjgl.vulkan.VkViewport;
 
-import ca.artemis.Configuration;
 import ca.artemis.engine.scene.SceneGraph;
 import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.commands.PrimaryCommandBuffer;
@@ -18,6 +19,7 @@ import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.framebuffer.FramebufferObject.Attachment;
 import ca.artemis.vulkan.api.framebuffer.SceneFramebufferObject;
 import ca.artemis.vulkan.api.memory.VulkanImageView;
+import ca.artemis.vulkan.api.pipeline.ViewportState;
 import ca.artemis.vulkan.api.synchronization.VulkanFence;
 import ca.artemis.vulkan.rendering.programs.FontShaderProgram;
 import ca.artemis.vulkan.rendering.programs.SimpleShaderProgram;
@@ -44,7 +46,7 @@ public class SceneRenderer extends Renderer {
     public SceneRenderer(VulkanContext context) {
         super(context.getDevice(), null);
 
-        this.sceneFramebufferObject = new SceneFramebufferObject(context);
+        this.sceneFramebufferObject = new SceneFramebufferObject(context, context.getSurfaceCapabilities().currentExtent().width(), context.getSurfaceCapabilities().currentExtent().height());
 
         this.simpleShaderProgram = new SimpleShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
         this.spriteShaderProgram = new SpriteShaderProgram(context.getDevice(), this.sceneFramebufferObject.getRenderPass());
@@ -77,13 +79,19 @@ public class SceneRenderer extends Renderer {
         super.destroy(context.getDevice());
     }
 
-    public void update(SceneGraph sceneGraph) {
-        recordCommandBuffer(this.primaryCommandBuffer, sceneGraph.getDrawCommandBuffers(), this.sceneFramebufferObject);
+    public void update(VulkanContext context, SceneGraph sceneGraph) {
+        recordCommandBuffer(context, this.primaryCommandBuffer, sceneGraph.getDrawCommandBuffers(), this.sceneFramebufferObject);
     }
 
-    private static void recordCommandBuffer(PrimaryCommandBuffer primaryCommandBuffer, List<SecondaryCommandBuffer> secondaryCommandBuffers, SceneFramebufferObject sceneFramebufferObject) {
+    private static void recordCommandBuffer(VulkanContext context, PrimaryCommandBuffer primaryCommandBuffer, List<SecondaryCommandBuffer> secondaryCommandBuffers, SceneFramebufferObject sceneFramebufferObject) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             
+            VkViewport.Buffer pViewports = VkViewport.calloc(1);
+            pViewports.put(0, new ViewportState.Viewport(0, 0, context.getSurfaceCapabilities().currentExtent().width(), context.getSurfaceCapabilities().currentExtent().height(), 0.0f, 1.0f).build(stack));
+
+            VkRect2D.Buffer pScissors = VkRect2D.calloc(1);
+            pScissors.put(0, new ViewportState.Scissor(0, 0, context.getSurfaceCapabilities().currentExtent().width(), context.getSurfaceCapabilities().currentExtent().height()).build(stack));
+
             VkClearValue.Buffer pClearValues = VkClearValue.callocStack(1);
             pClearValues.get(0).color()
                 .float32(0, 36f/255f)
@@ -92,7 +100,11 @@ public class SceneRenderer extends Renderer {
                 .float32(3, 1);
 
             primaryCommandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
-            primaryCommandBuffer.beginRenderPassCmd(stack, sceneFramebufferObject.getRenderPass().getHandle(), sceneFramebufferObject.getFramebuffer().getHandle(), Configuration.windowWidth, Configuration.windowHeight, pClearValues, VK11.VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+            primaryCommandBuffer.setViewportCmd(pViewports);
+            primaryCommandBuffer.setScissorCmd(pScissors);
+
+            primaryCommandBuffer.beginRenderPassCmd(stack, sceneFramebufferObject.getRenderPass().getHandle(), sceneFramebufferObject.getFramebuffer().getHandle(), context.getSurfaceCapabilities().currentExtent().width(), context.getSurfaceCapabilities().currentExtent().height(), pClearValues, VK11.VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
             PointerBuffer pCommandBuffers = stack.callocPointer(secondaryCommandBuffers.size());
             for(int i = 0; i < secondaryCommandBuffers.size(); i++) {
@@ -103,6 +115,11 @@ public class SceneRenderer extends Renderer {
             primaryCommandBuffer.endRenderPassCmd();
             primaryCommandBuffer.endRecording();
         }
+    }
+
+    @Override
+    public void recreateRenderer(VulkanContext context) {
+        sceneFramebufferObject.regenerateFramebuffer(context, context.getSurfaceCapabilities().currentExtent().width(), context.getSurfaceCapabilities().currentExtent().height());
     }
 
     @Override

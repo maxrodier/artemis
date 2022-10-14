@@ -8,6 +8,7 @@ import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
 import ca.artemis.vulkan.api.commands.CommandPool;
+import ca.artemis.vulkan.api.context.window.GLFWWindow;
 
 public class VulkanContext {
 
@@ -21,8 +22,8 @@ public class VulkanContext {
     private final VulkanDevice device;
     private final CommandPool commandPool;
     private final VulkanMemoryAllocator memoryAllocator;
-    private final VkSurfaceCapabilitiesKHR surfaceCapabilities;
-    private final VkSurfaceFormatKHR.Buffer surfaceFormats;
+    private VkSurfaceCapabilitiesKHR surfaceCapabilities;
+    private VkSurfaceFormatKHR.Buffer surfaceFormats;
     
     private VulkanContext() {
         this.initialize();
@@ -34,8 +35,8 @@ public class VulkanContext {
         this.device = new VulkanDevice(this.physicalDevice);
         this.commandPool = new CommandPool(this.device, this.physicalDevice.getQueueFamilies().get(0).getIndex(), VK11.VK_COMMAND_POOL_CREATE_TRANSIENT_BIT);
         this.memoryAllocator = new VulkanMemoryAllocator(this.instance, this.physicalDevice, this.device);
-        this.surfaceCapabilities = VulkanSurface.fetchSurfaceCapabilities(this.physicalDevice, this.surface);
-        this.surfaceFormats = VulkanSurface.fetchSurfaceFormats(this.physicalDevice, this.surface);
+        this.updateSurfaceCapabilities();
+        this.updateSurfaceFormats();
     }
 
     private void initialize() {
@@ -47,6 +48,20 @@ public class VulkanContext {
         if (!GLFWVulkan.glfwVulkanSupported()) {
             throw new IllegalStateException("Cannot find a compatible Vulkan installable client driver");
         }
+    }
+
+    public void updateSurfaceCapabilities() {
+        if(surfaceCapabilities != null)
+            surfaceCapabilities.free();
+
+        this.surfaceCapabilities = VulkanSurface.fetchSurfaceCapabilities(this.physicalDevice, this.surface);
+    }
+
+    public void updateSurfaceFormats() {
+        if(surfaceFormats != null)
+            surfaceFormats.free();
+
+        this.surfaceFormats = VulkanSurface.fetchSurfaceFormats(this.physicalDevice, this.surface);
     }
 
     public GLFWWindow getWindow() {

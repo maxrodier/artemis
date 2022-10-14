@@ -3,16 +3,13 @@ package ca.artemis.vulkan.api.memory;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.IntBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-import javax.imageio.ImageIO;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.Vma;
 import org.lwjgl.vulkan.VK11;
 
+import ca.artemis.engine.utils.FileUtils;
 import ca.artemis.vulkan.api.commands.CommandBufferUtils;
 import ca.artemis.vulkan.api.commands.CommandPool;
 import ca.artemis.vulkan.api.context.VulkanContext;
@@ -51,7 +48,7 @@ public class VulkanTexture {
 
     private static VulkanImage createTextureImage(VulkanDevice device, VulkanMemoryAllocator memoryAllocator, CommandPool commandPool, String filePath, boolean multiSampling) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            BufferedImage bufferedImage = ImageIO.read(Files.newInputStream(Paths.get(filePath)));
+            BufferedImage bufferedImage = FileUtils.getBufferedImage(filePath);
             int imageWidth = bufferedImage.getWidth();
             int imageHeight = bufferedImage.getHeight();
             int imageSize = bufferedImage.getWidth() * bufferedImage.getHeight();

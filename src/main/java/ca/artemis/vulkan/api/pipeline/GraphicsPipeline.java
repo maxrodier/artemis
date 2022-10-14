@@ -78,7 +78,7 @@ public class GraphicsPipeline {
             return pShaderStages;
         }
 
-        public VkPipelineDynamicStateCreateInfo buildDynamicStateCreateInfo(MemoryStack stack) {
+        private VkPipelineDynamicStateCreateInfo buildDynamicStateCreateInfo(MemoryStack stack) {
             IntBuffer pDynamicStates = dynamicStates.size() == 0 ? null : stack.callocInt(dynamicStates.size());
             for(int i = 0; i < dynamicStates.size(); i++) {
                 pDynamicStates.put(i, dynamicStates.get(i));
@@ -89,7 +89,7 @@ public class GraphicsPipeline {
                 .pDynamicStates(pDynamicStates);
         }
 
-        public long createPipelineLayout(VulkanDevice device, MemoryStack stack) {
+        private long createPipelineLayout(VulkanDevice device, MemoryStack stack) {
             LongBuffer pSetLayouts = descriptorSetLayouts.length == 0 ? null : stack.callocLong(descriptorSetLayouts.length);
             for(int i = 0; i < descriptorSetLayouts.length; i++) {
                 pSetLayouts.put(i, descriptorSetLayouts[i].getHandle());
