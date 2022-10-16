@@ -12,8 +12,6 @@ import org.lwjgl.vulkan.VkPhysicalDeviceFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceMemoryProperties;
 import org.lwjgl.vulkan.VkPhysicalDeviceProperties;
 import org.lwjgl.vulkan.VkQueueFamilyProperties;
-import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
-import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
 public class VulkanPhysicalDevice {
 
@@ -21,8 +19,6 @@ public class VulkanPhysicalDevice {
     private final VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties;
     private final VkPhysicalDeviceProperties physicalDeviceProperties;
     private final VkPhysicalDeviceFeatures physicalDeviceFeatures;
-    private final VkSurfaceCapabilitiesKHR surfaceCapabilities;
-    private final VkSurfaceFormatKHR.Buffer surfaceFormats;
     private final List<QueueFamily> queueFamilies;
 
     public VulkanPhysicalDevice(VulkanInstance instance, VulkanSurface surface, long physicalDevice) {
@@ -30,8 +26,6 @@ public class VulkanPhysicalDevice {
         this.physicalDeviceMemoryProperties = VkPhysicalDeviceMemoryProperties.calloc();
         this.physicalDeviceProperties = VkPhysicalDeviceProperties.calloc();
         this.physicalDeviceFeatures = VkPhysicalDeviceFeatures.calloc();
-        this.surfaceCapabilities = fetchSurfaceCapabilities(this.physicalDevice, surface);
-        this.surfaceFormats = fetchSurfaceFormats(this.physicalDevice, surface);
         this.queueFamilies = QueueFamily.getQueueFamilies(surface, this.physicalDevice);
 
         VK11.vkGetPhysicalDeviceMemoryProperties(this.physicalDevice, this.physicalDeviceMemoryProperties);
@@ -40,8 +34,6 @@ public class VulkanPhysicalDevice {
     }
 
     public void destroy() {
-        surfaceFormats.free();
-        surfaceCapabilities.free();
         physicalDeviceFeatures.free();
         physicalDeviceProperties.free();
         physicalDeviceMemoryProperties.free();
@@ -62,34 +54,9 @@ public class VulkanPhysicalDevice {
     public VkPhysicalDeviceFeatures getFeatures() {
         return physicalDeviceFeatures;
     }
-
-    public VkSurfaceCapabilitiesKHR getSurfaceCapabilities() {
-        return surfaceCapabilities;
-    }
-
-    public VkSurfaceFormatKHR.Buffer getSurfaceFormats() {
-        return surfaceFormats;
-    }
-
+    
     public List<QueueFamily> getQueueFamilies() {
         return queueFamilies;
-    }
-
-    private static VkSurfaceCapabilitiesKHR fetchSurfaceCapabilities(VkPhysicalDevice physicalDevice, VulkanSurface surface) {
-        VkSurfaceCapabilitiesKHR surfaceCapabilities = VkSurfaceCapabilitiesKHR.calloc();
-        KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface.getHandle(), surfaceCapabilities);
-        return surfaceCapabilities;
-    }
-
-    private static VkSurfaceFormatKHR.Buffer fetchSurfaceFormats(VkPhysicalDevice physicalDevice, VulkanSurface surface) {
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer pSurfaceFormatCount = stack.callocInt(1);
-            KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface.getHandle(), pSurfaceFormatCount, null);
-            
-            VkSurfaceFormatKHR.Buffer surfaceFormats = VkSurfaceFormatKHR.calloc(pSurfaceFormatCount.get(0));
-            KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface.getHandle(), pSurfaceFormatCount, surfaceFormats);
-            return surfaceFormats;
-        }
     }
 
     public static class QueueFamily {

@@ -18,8 +18,8 @@ public class GLFWWindow {
 
     public GLFWWindow() {
         GLFW.glfwDefaultWindowHints();
-        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API);
+        //GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_FALSE);
 
         this.handle = GLFW.glfwCreateWindow(Configuration.WINDOW_WIDTH, Configuration.WINDOW_HEIGHT, Configuration.WINDOW_TITLE, MemoryUtil.NULL, MemoryUtil.NULL);
         if (this.handle == MemoryUtil.NULL) {
