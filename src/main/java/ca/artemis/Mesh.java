@@ -58,14 +58,6 @@ public class Mesh {
                     data.put(offset+4, vertex.colour.y);
                     data.put(offset+5, vertex.colour.z);
                     break;
-                case POS_UV:
-                    offset = i * vertexKind.size;
-                    data.put(offset+0, vertex.pos.x);
-                    data.put(offset+1, vertex.pos.y);
-                    data.put(offset+2, vertex.pos.z);
-                    data.put(offset+3, vertex.texCoord.x);
-                    data.put(offset+4, vertex.texCoord.y);
-                    break;
                 case POS_COLOUR_UV:
                     offset = i * vertexKind.size;
                     data.put(offset+0, vertex.pos.x);
@@ -139,8 +131,8 @@ public class Mesh {
     }
 
     public static Mesh loadModel(VkDevice device, long allocator, VkQueue graphicsQueue, long commandPool, String filePath) {
-	    List<Vec3> positions = new ArrayList<>();
-	    List<Vec2> texCoords = new ArrayList<>();;
+	    List<Vector3f> positions = new ArrayList<>();
+	    List<Vector2f> texCoords = new ArrayList<>();;
 	    List<OBJIndex> indices = new ArrayList<>();;
 
 		try {
@@ -152,13 +144,13 @@ public class Mesh {
 					continue;
 				else if(tokens[0].equals("v"))
 				{
-					positions.add(new Vec3(Float.valueOf(tokens[1]),
+					positions.add(new Vector3f(Float.valueOf(tokens[1]),
 							Float.valueOf(tokens[2]),
 							Float.valueOf(tokens[3])));
 				}
 				else if(tokens[0].equals("vt"))
 				{
-					texCoords.add(new Vec2(Float.valueOf(tokens[1]),
+					texCoords.add(new Vector2f(Float.valueOf(tokens[1]),
 							1.0f - Float.valueOf(tokens[2])));
 				}
 				else if(tokens[0].equals("f"))
@@ -195,7 +187,7 @@ public class Mesh {
 		return result;
 	}
 
-    public static Mesh toIndexedModel(VkDevice device, long allocator, VkQueue graphicsQueue, long commandPool, List<Vec3> positions, List<Vec2> texCoords, List<OBJIndex> indices) {
+    public static Mesh toIndexedModel(VkDevice device, long allocator, VkQueue graphicsQueue, long commandPool, List<Vector3f> positions, List<Vector2f> texCoords, List<OBJIndex> indices) {
 		HashMap<OBJIndex, Integer> resultIndexMap = new HashMap<OBJIndex, Integer>();
         List<Integer> result = new ArrayList<>();
         List<Vertex> vertices = new ArrayList<>();
@@ -203,8 +195,8 @@ public class Mesh {
 		for(int i = 0; i < indices.size(); i++) {
 			OBJIndex currentIndex = indices.get(i);
 
-			Vec3 currentPosition = positions.get(currentIndex.GetVertexIndex());
-			Vec2 currentTexCoord = texCoords.get(currentIndex.GetTexCoordIndex());
+			Vector3f currentPosition = positions.get(currentIndex.GetVertexIndex());
+			Vector2f currentTexCoord = texCoords.get(currentIndex.GetTexCoordIndex());
 
 			Integer modelVertexIndex = resultIndexMap.get(currentIndex);
 

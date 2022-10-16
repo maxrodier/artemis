@@ -75,6 +75,7 @@ import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
 import ca.artemis.Util.ShaderStageKind;
 import ca.artemis.Util.VkImage;
+import ca.artemis.Vertex.VertexKind;
 
 public class Old {
     
@@ -524,8 +525,8 @@ public class Old {
                 fragShaderStageInfo.module(fragShaderModule);
                 fragShaderStageInfo.pName(stack.UTF8("main"));
 
-                VkVertexInputBindingDescription.Buffer bindingDescription = Vertex.getBindingDescriptions(stack);
-                VkVertexInputAttributeDescription.Buffer attributeDescriptions = Vertex.getAttributeDescriptions(stack);
+                VkVertexInputBindingDescription.Buffer bindingDescription = Vertex.getBindingDescriptions(stack, VertexKind.POS_COLOUR_UV);
+                VkVertexInputAttributeDescription.Buffer attributeDescriptions = Vertex.getAttributeDescriptions(stack, VertexKind.POS_COLOUR_UV);
 
                 VkPipelineVertexInputStateCreateInfo vertexInputInfo = VkPipelineVertexInputStateCreateInfo.callocStack(stack);
                 vertexInputInfo.sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO);
@@ -986,9 +987,9 @@ public class Old {
             long currentTime = System.currentTimeMillis();
             float time = ((float)(currentImage - startTime)) / 1000.0f;
 
-            mat4 model = new Quaternion(new Vec3(0.0f, 0.0f, 1.0f), (float)Math.toRadians(90.0f)).toRotationMatrix();
-            mat4 view = new mat4().initIdentity(); 
-            mat4 proj = new mat4().initPerspective((float)Math.toRadians(45.0f), swapChainExtent.width() / (float) swapChainExtent.height(), 0.1f, 10.0f);
+            Matrix4f model = new Quaternion(new Vector3f(0.0f, 0.0f, 1.0f), (float)Math.toRadians(90.0f)).toRotationMatrix();
+            Matrix4f view = new Matrix4f().initIdentity(); 
+            Matrix4f proj = new Matrix4f().initPerspective((float)Math.toRadians(45.0f), swapChainExtent.width() / (float) swapChainExtent.height(), 0.1f, 10.0f);
             proj.set(1, 1, proj.get(1, 1) * -1);
 
             UniformBufferObject ubo = new UniformBufferObject(model, view, proj);

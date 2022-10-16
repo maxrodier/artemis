@@ -14,7 +14,7 @@ public class Quaternion {
 		this.w = w;
 	}
 	
-	public Quaternion(Vec3 axis, float angle) {
+	public Quaternion(Vector3f axis, float angle) {
 		float sinHalfAngle = (float) Math.sin(angle / 2);
 		float cosHalfAngle = (float) Math.cos(angle / 2);
 		
@@ -47,7 +47,7 @@ public class Quaternion {
 		return new Quaternion(x, y, z, w);
 	}
 	
-	public Quaternion mul(Vec3 r) {
+	public Quaternion mul(Vector3f r) {
 		float w = -this.x * r.x - this.y * r.y - this.z * r.z;
 		float x =  this.w * r.x + this.y * r.z - this.z * r.y;
 		float y =  this.w * r.y + this.z * r.x - this.x * r.z;
@@ -56,12 +56,12 @@ public class Quaternion {
 		return new Quaternion(x, y, z, w);
 	}
 
-	public mat4 toRotationMatrix() {
-		Vec3 forward =  new Vec3(2.0f * (x * z - w * y), 2.0f * (y * z + w * x), 1.0f - 2.0f * (x * x + y * y));
-		Vec3 up = new Vec3(2.0f * (x * y + w * z), 1.0f - 2.0f * (x * x + z * z), 2.0f * (y * z - w * x));
-		Vec3 right = new Vec3(1.0f - 2.0f * (y * y + z * z), 2.0f * (x * y - w * z), 2.0f * (x * z + w * y));
+	public Matrix4f toRotationMatrix() {
+		Vector3f forward =  new Vector3f(2.0f * (x * z - w * y), 2.0f * (y * z + w * x), 1.0f - 2.0f * (x * x + y * y));
+		Vector3f up = new Vector3f(2.0f * (x * y + w * z), 1.0f - 2.0f * (x * x + z * z), 2.0f * (y * z - w * x));
+		Vector3f right = new Vector3f(1.0f - 2.0f * (y * y + z * z), 2.0f * (x * y - w * z), 2.0f * (x * z + w * y));
 
-		return new mat4().initRotation(forward, up, right);
+		return new Matrix4f().initRotation(forward, up, right);
 	}
 	
 	public float getX() {

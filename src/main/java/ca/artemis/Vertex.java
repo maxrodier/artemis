@@ -7,32 +7,47 @@ import org.lwjgl.vulkan.VkVertexInputBindingDescription;
 
 public class Vertex {
     
-    public static final int BYTES = Vec3.BYTES + Vec3.BYTES + Vec2.BYTES;
+    public Vector3f pos;
+    public Vector3f colour;
+    public Vector2f texCoord;
 
-    public Vec3 pos;
-    public Vec3 colour;
-    public Vec2 texCoord;
-
-    public Vertex(Vec3 pos, Vec2 texCoord) {
+    public Vertex(Vector3f pos, Vector2f texCoord) {
         this.pos = pos;
-        this.colour = new Vec3(1.0f, 1.0f, 1.0f);
+        this.colour = new Vector3f(1.0f, 1.0f, 1.0f);
         this.texCoord = texCoord;
     }
 
-    public static VkVertexInputBindingDescription.Buffer getBindingDescriptions(MemoryStack stack) {
+    public Vertex(Vector3f pos, Vector3f colour) {
+        this.pos = pos;
+        this.colour = colour;
+    }
+
+    public static VkVertexInputBindingDescription.Buffer getBindingDescriptions(MemoryStack stack, VertexKind vertexKind) {
         VkVertexInputBindingDescription.Buffer bindingDescriptions = VkVertexInputBindingDescription.callocStack(1, stack);
 
         VkVertexInputBindingDescription bindingDescription = bindingDescriptions.get(0);
         bindingDescription.binding(0);
-        bindingDescription.stride(BYTES);
+        bindingDescription.stride(vertexKind.size * 4);
         bindingDescription.inputRate(VK11.VK_VERTEX_INPUT_RATE_VERTEX);
 
         return bindingDescriptions;
     }
 
-    public static VkVertexInputAttributeDescription.Buffer getAttributeDescriptions(MemoryStack stack) {
-        VkVertexInputAttributeDescription.Buffer attributeDescriptions = VkVertexInputAttributeDescription.callocStack(3, stack);
+    public static VkVertexInputAttributeDescription.Buffer getAttributeDescriptions(MemoryStack stack, VertexKind vertexKind) {
+        VkVertexInputAttributeDescription.Buffer attributeDescriptions;
         VkVertexInputAttributeDescription attributeDescription;
+        
+        switch(vertexKind) {
+            case POS_COLOUR:
+                attributeDescriptions = VkVertexInputAttributeDescription.callocStack(2, stack);
+                break;
+            case POS_COLOUR_UV:
+                attributeDescriptions = VkVertexInputAttributeDescription.callocStack(3, stack);
+                break;
+            default:
+                throw new RuntimeException("Default VertexKind is not valid!");
+            
+        }
 
         int offset = 0;
         attributeDescription = attributeDescriptions.get(0);
@@ -41,26 +56,29 @@ public class Vertex {
         attributeDescription.format(VK11.VK_FORMAT_R32G32B32_SFLOAT);
         attributeDescription.offset(offset);
 
-        offset += Vec3.BYTES;
-        attributeDescription = attributeDescriptions.get(1);
-        attributeDescription.binding(0);
-        attributeDescription.location(1);
-        attributeDescription.format(VK11.VK_FORMAT_R32G32B32_SFLOAT);
-        attributeDescription.offset(offset);
+        if(vertexKind == VertexKind.POS_COLOUR || vertexKind == VertexKind.POS_COLOUR_UV) {
+            offset += Vector3f.BYTES;
+            attributeDescription = attributeDescriptions.get(1);
+            attributeDescription.binding(0);
+            attributeDescription.location(1);
+            attributeDescription.format(VK11.VK_FORMAT_R32G32B32_SFLOAT);
+            attributeDescription.offset(offset);
+        }
 
-        offset += Vec3.BYTES;
-        attributeDescription = attributeDescriptions.get(2);
-        attributeDescription.binding(0);
-        attributeDescription.location(2);
-        attributeDescription.format(VK11.VK_FORMAT_R32G32_SFLOAT);
-        attributeDescription.offset(offset);
+        if(vertexKind == VertexKind.POS_COLOUR_UV) {
+            offset += Vector3f.BYTES;
+            attributeDescription = attributeDescriptions.get(2);
+            attributeDescription.binding(0);
+            attributeDescription.location(2);
+            attributeDescription.format(VK11.VK_FORMAT_R32G32_SFLOAT);
+            attributeDescription.offset(offset);
+        }
 
         return attributeDescriptions;
     }
 
     public static enum VertexKind {
         POS_COLOUR(6),
-        POS_UV(5),
         POS_COLOUR_UV(8);
 
         public final int size;

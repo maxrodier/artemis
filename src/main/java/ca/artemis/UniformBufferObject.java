@@ -2,14 +2,14 @@ package ca.artemis;
 
 public class UniformBufferObject {
     
-    public static final int LENGTH = mat4.LENGTH + mat4.LENGTH + mat4.LENGTH;
-    public static final int BYTES = mat4.BYTES + mat4.BYTES + mat4.BYTES;
+    public static final int LENGTH = Matrix4f.LENGTH + Matrix4f.LENGTH + Matrix4f.LENGTH;
+    public static final int BYTES = Matrix4f.BYTES + Matrix4f.BYTES + Matrix4f.BYTES;
 
-    public mat4 model;
-    public mat4 view;
-    public mat4 proj;
+    public Matrix4f model;
+    public Matrix4f view;
+    public Matrix4f proj;
 
-    public UniformBufferObject(mat4 model, mat4 view, mat4 proj) {
+    public UniformBufferObject(Matrix4f model, Matrix4f view, Matrix4f proj) {
         this.model = model;
         this.view = view;
         this.proj = proj;

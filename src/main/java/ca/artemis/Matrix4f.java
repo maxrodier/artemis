@@ -1,17 +1,17 @@
 package ca.artemis;
 
-public class mat4 {
+public class Matrix4f {
     
     public static final int LENGTH = 16;
     public static final int BYTES = LENGTH * Float.BYTES;
 
     private float[] m;
 
-	public mat4() {
+	public Matrix4f() {
 		this.m = new float[16];
 	}
 	
-	public mat4 initIdentity() {
+	public Matrix4f initIdentity() {
 		m[0]  = 1.0f; m[1]  = 0.0f; m[2]  = 0.0f; m[3]  = 0.0f;
 		m[4]  = 0.0f; m[5]  = 1.0f; m[6]  = 0.0f; m[7]  = 0.0f;
 		m[8]  = 0.0f; m[9]  = 0.0f; m[10] = 1.0f; m[11] = 0.0f;
@@ -20,7 +20,7 @@ public class mat4 {
 		return this;
 	}
 	
-	public mat4 initTranslation(float x, float y, float z) {
+	public Matrix4f initTranslation(float x, float y, float z) {
 		m[0]  = 1.0f; m[1]  = 0.0f; m[2]  = 0.0f; m[3]  = x;
 		m[4]  = 0.0f; m[5]  = 1.0f; m[6]  = 0.0f; m[7]  = y;
 		m[8]  = 0.0f; m[9]  = 0.0f; m[10] = 1.0f; m[11] = z;
@@ -29,7 +29,7 @@ public class mat4 {
 		return this;
 	}
 	
-	public mat4 initScaling(float x, float y, float z) {
+	public Matrix4f initScaling(float x, float y, float z) {
 		m[0]  = x;	  m[1]  = 0.0f; m[2]  = 0.0f; m[3]  = 0.0f;
 		m[4]  = 0.0f; m[5]  = y;	m[6]  = 0.0f; m[7]  = 0.0f;
 		m[8]  = 0.0f; m[9]  = 0.0f; m[10] = z;	  m[11] = 0.0f;
@@ -38,11 +38,11 @@ public class mat4 {
 		return this;
 	}
 	
-	public mat4 initRotation(float x, float y, float z) {
+	public Matrix4f initRotation(float x, float y, float z) {
 		
-		mat4 rx = new mat4();
-		mat4 ry = new mat4();
-		mat4 rz = new mat4();
+		Matrix4f rx = new Matrix4f();
+		Matrix4f ry = new Matrix4f();
+		Matrix4f rz = new Matrix4f();
 		
 		x = (float) Math.toRadians(x);
 		y = (float) Math.toRadians(y);
@@ -68,7 +68,7 @@ public class mat4 {
 		return this;
 	}
 	
-	public mat4 initRotation(Vec3 f, Vec3 u, Vec3 r) {
+	public Matrix4f initRotation(Vector3f f, Vector3f u, Vector3f r) {
 		m[0]  = r.x; 	m[1]  = r.y; 	m[2]  = r.z; 	m[3]  = 0.0f;
 		m[4]  = u.x; 	m[5]  = u.y; 	m[6]  = u.z; 	m[7]  = 0.0f;
 		m[8]  = f.x; 	m[9]  = f.y; 	m[10] = f.z; 	m[11] = 0.0f;
@@ -77,7 +77,7 @@ public class mat4 {
 		return this;
 	}
 	
-	public mat4 initPerspective(float fov, float aspectRatio, float zNear, float zFar) {
+	public Matrix4f initPerspective(float fov, float aspectRatio, float zNear, float zFar) {
 		
 		float tanHalfFOV = (float) Math.tan(fov / 2);
 		float zRange = zNear - zFar;
@@ -90,7 +90,7 @@ public class mat4 {
 		return this;
 	}
 
-	public mat4 initOrthographic(float left, float right, float bottom, float top, float near, float far) {
+	public Matrix4f initOrthographic(float left, float right, float bottom, float top, float near, float far) {
 		float width = right - left;
 		float height = top - bottom;
 		float depth = far - near;
@@ -103,8 +103,8 @@ public class mat4 {
 		return this;
 	}
 	
-	public mat4 mul(mat4 r) {
-		mat4 res = new mat4();
+	public Matrix4f mul(Matrix4f r) {
+		Matrix4f res = new Matrix4f();
 		
 		for(int i = 0; i < 4; i++) {
 			for(int j = 0; j < 4; j++) {
