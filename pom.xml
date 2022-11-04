@@ -85,12 +85,7 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<includes>
-					<include>**/*.vert</include>
-					<include>**/*.frag</include>
-					<include>**/*.spv</include>
-					<include>**/*.png</include>
-					<include>**/*.jpg</include>
-					<include>**/*.obj</include>
+					<include>**/*</include>
 				</includes>
 			</resource>
 		</resources>

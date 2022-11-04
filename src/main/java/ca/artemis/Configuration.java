@@ -1,12 +1,13 @@
 package ca.artemis;
 
+import ca.artemis.engine.core.Assertions;
+import ca.artemis.engine.core.Assertions.Level;
+
 public class Configuration {
 
-    public static final String windowTitle = "Game Engine";
-    public static final int windowWidth = 1024;
-    public static final int windowHeight = 720;
+    public static final int WINDOW_WIDTH = 800;
+    public static final int WINDOW_HEIGHT = 600;
+    public static final String WINDOW_TITLE = "Vulkan Game Engine";
 
-    public static final String[] icons = {
-        "icon/icon_512.png"
-    };
+    public static final Assertions.Level LOG_LEVEL = Level.DEBUG;
 }
