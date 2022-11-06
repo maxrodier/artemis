@@ -102,7 +102,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>ca.artemis.Main</mainClass>
+							<mainClass>ca.artemis.game.Main</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
