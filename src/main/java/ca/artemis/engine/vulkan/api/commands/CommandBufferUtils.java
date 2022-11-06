@@ -1,4 +1,4 @@
-package ca.artemis.game;
+package ca.artemis.engine.vulkan.api.commands;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;

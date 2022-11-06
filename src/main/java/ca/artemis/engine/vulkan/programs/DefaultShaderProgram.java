@@ -1,4 +1,4 @@
-package ca.artemis.engine.vulkan.rendering;
+package ca.artemis.engine.vulkan.programs;
 
 import org.lwjgl.vulkan.VK11;
 
@@ -12,6 +12,8 @@ import ca.artemis.engine.vulkan.api.pipeline.GraphicsPipeline;
 import ca.artemis.engine.vulkan.api.pipeline.RasterizationState;
 import ca.artemis.engine.vulkan.api.pipeline.VertexInputState;
 import ca.artemis.engine.vulkan.api.pipeline.ViewportState;
+import ca.artemis.engine.vulkan.rendering.Presenter;
+import ca.artemis.engine.vulkan.rendering.Renderer;
 
 public class DefaultShaderProgram extends ShaderProgram {
     

@@ -22,6 +22,8 @@ import ca.artemis.engine.core.ResourceManager;
 import ca.artemis.engine.core.components.FontRenderer;
 import ca.artemis.engine.core.components.SpriteRenderer;
 import ca.artemis.engine.core.math.Vector2f;
+import ca.artemis.engine.vulkan.api.commands.CommandBufferUtils;
+import ca.artemis.engine.vulkan.api.commands.SecondaryCommandBuffer;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.context.VulkanDevice;
 import ca.artemis.engine.vulkan.api.context.VulkanMemoryAllocator;
@@ -33,11 +35,9 @@ import ca.artemis.engine.vulkan.api.memory.VulkanFramebuffer;
 import ca.artemis.engine.vulkan.api.memory.VulkanTexture;
 import ca.artemis.engine.vulkan.api.pipeline.ShaderModule;
 import ca.artemis.engine.vulkan.api.pipeline.SharderUtils.ShaderStageKind;
-import ca.artemis.engine.vulkan.rendering.DefaultShaderProgram;
+import ca.artemis.engine.vulkan.programs.DefaultShaderProgram;
+import ca.artemis.engine.vulkan.programs.ShaderProgram;
 import ca.artemis.engine.vulkan.rendering.Presenter;
-import ca.artemis.engine.vulkan.rendering.ShaderProgram;
-import ca.artemis.game.CommandBufferUtils;
-import ca.artemis.game.SecondaryCommandBuffer;
 
 public class LevelEditorScene extends Scene {
 
@@ -90,11 +90,6 @@ public class LevelEditorScene extends Scene {
 
         ResourceManager.addShaderProgram("defaultShaderProgram", new DefaultShaderProgram(context.getDevice(), context.getPresenter().getSwapchainRenderer().getRenderPass()));
 
-        testGameObject = new GameObject("test_game_object");
-        testGameObject.addComponent(new SpriteRenderer());
-        testGameObject.addComponent(new FontRenderer());
-
-        addGameObjectToScene(testGameObject);
 
         defaultShaderProgram = new DefaultShaderProgram(context.getDevice(), context.getPresenter().getSwapchainRenderer().getRenderPass());
         vbo = createVertexBufferObject(context.getDevice().getHandle(), context.getMemoryAllocator(), context.getDevice().getGraphicsQueue(), context.getCommandPool(), vertexArray);

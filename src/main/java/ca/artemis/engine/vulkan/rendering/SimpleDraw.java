@@ -15,12 +15,12 @@ import org.lwjgl.vulkan.VkCommandPoolCreateInfo;
 import org.lwjgl.vulkan.VkRenderPassBeginInfo;
 import org.lwjgl.vulkan.VkSubmitInfo;
 
+import ca.artemis.engine.vulkan.api.commands.CommandBuffer;
+import ca.artemis.engine.vulkan.api.commands.PrimaryCommandBuffer;
+import ca.artemis.engine.vulkan.api.commands.SecondaryCommandBuffer;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.context.VulkanPhysicalDevice.QueueFamily;
-import ca.artemis.game.CommandBuffer;
 import ca.artemis.game.Constants;
-import ca.artemis.game.PrimaryCommandBuffer;
-import ca.artemis.game.SecondaryCommandBuffer;
 
 public class SimpleDraw {
     

@@ -1,4 +1,4 @@
-package ca.artemis.vulkan.api.synchronization;
+package ca.artemis.engine.vulkan.api.synchronization;
 
 import java.nio.LongBuffer;
 

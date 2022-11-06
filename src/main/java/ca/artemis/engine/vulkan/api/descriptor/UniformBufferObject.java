@@ -14,8 +14,8 @@ import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.context.VulkanDevice;
 import ca.artemis.engine.vulkan.api.context.VulkanMemoryAllocator;
 import ca.artemis.engine.vulkan.api.memory.VulkanBuffer;
+import ca.artemis.engine.vulkan.programs.ShaderProgram;
 import ca.artemis.engine.vulkan.rendering.Presenter;
-import ca.artemis.engine.vulkan.rendering.ShaderProgram;
 
 public class UniformBufferObject { //TODO: Make this class abstract to handle texture and unfirom and to push float buffers correctly
     

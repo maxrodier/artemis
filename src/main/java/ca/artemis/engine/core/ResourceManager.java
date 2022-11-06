@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.pipeline.ShaderModule;
-import ca.artemis.engine.vulkan.rendering.ShaderProgram;
+import ca.artemis.engine.vulkan.programs.ShaderProgram;
 
 public class ResourceManager {
     

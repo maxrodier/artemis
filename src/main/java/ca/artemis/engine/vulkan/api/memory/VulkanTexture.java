@@ -10,10 +10,10 @@ import org.lwjgl.util.vma.Vma;
 import org.lwjgl.vulkan.VK11;
 
 import ca.artemis.engine.core.utils.FileUtils;
+import ca.artemis.engine.vulkan.api.commands.CommandBufferUtils;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.context.VulkanDevice;
 import ca.artemis.engine.vulkan.api.context.VulkanMemoryAllocator;
-import ca.artemis.game.CommandBufferUtils;
 
 public class VulkanTexture {
     
