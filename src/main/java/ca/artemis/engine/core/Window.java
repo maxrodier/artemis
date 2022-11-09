@@ -1,7 +1,6 @@
 package ca.artemis.engine.core;
 
 import java.nio.IntBuffer;
-import java.nio.LongBuffer;
 
 import org.lwjgl.Version;
 import org.lwjgl.glfw.Callbacks;
@@ -18,6 +17,7 @@ import ca.artemis.engine.core.scenes.Scene;
 import ca.artemis.engine.core.scenes.TestScene;
 import ca.artemis.engine.core.utils.Time;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
+import ca.artemis.engine.vulkan.rendering.RenderingEngine;
 
 public class Window {
     
@@ -32,6 +32,7 @@ public class Window {
     private long handle = 0;
 
     private VulkanContext context; //TODO: I don't like this ...
+    private RenderingEngine renderingEngine;
 
     private Window() {
         this.width = 1600;
@@ -104,6 +105,7 @@ public class Window {
         GLFW.glfwSetKeyCallback(handle, KeyListener::keyCallback);
 
         context = VulkanContext.makeContextCurrent(this);
+        renderingEngine = RenderingEngine.createInstance(context, this);
 
         //GLFW.glfwShowWindow(handle);
 
@@ -119,14 +121,11 @@ public class Window {
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 GLFW.glfwPollEvents();
 
-                context.getPresenter().acquireNextSwapchainImage(stack, context);
-                IntBuffer pImageIndex = stack.callocInt(1);
-                pImageIndex.put(0, context.getPresenter().getCurrentImageIndex());
+                IntBuffer pImageIndex = renderingEngine.prepareRender(stack, context);
 
-                currentScene.update(dt);
+                currentScene.update(dt, renderingEngine.getCurrentFrame());
 
-                LongBuffer pSignalSemaphores = context.getSimpleDraw().draw(stack, context, context.getPresenter(), context.getPresenter().getCurrentImageIndex());
-                context.getPresenter().present(stack, context, pSignalSemaphores, pImageIndex);
+                renderingEngine.render(stack, context, pImageIndex);
 
                 endTime = Time.getTime();
                 dt = endTime - beginTime;

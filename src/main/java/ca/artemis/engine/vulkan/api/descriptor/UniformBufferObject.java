@@ -15,7 +15,7 @@ import ca.artemis.engine.vulkan.api.context.VulkanDevice;
 import ca.artemis.engine.vulkan.api.context.VulkanMemoryAllocator;
 import ca.artemis.engine.vulkan.api.memory.VulkanBuffer;
 import ca.artemis.engine.vulkan.programs.ShaderProgram;
-import ca.artemis.engine.vulkan.rendering.Presenter;
+import ca.artemis.engine.vulkan.rendering.RenderingEngine;
 
 public class UniformBufferObject { //TODO: Make this class abstract to handle texture and unfirom and to push float buffers correctly
     
@@ -28,7 +28,7 @@ public class UniformBufferObject { //TODO: Make this class abstract to handle te
     private void createUniformBuffers(VulkanMemoryAllocator allocator, int bufferSize) {
         uniformBuffers = new ArrayList<>();
 
-        for(int i = 0; i < Presenter.MAX_FRAMES_IN_FLIGHT; i++) {
+        for(int i = 0; i < RenderingEngine.MAX_FRAMES_IN_FLIGHT; i++) {
             VulkanBuffer indexBuffer = new VulkanBuffer.Builder()
                 .setLength(1)
                 .setSize(bufferSize)

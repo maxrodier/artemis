@@ -13,19 +13,19 @@ import ca.artemis.engine.vulkan.api.context.VulkanDevice;
 import ca.artemis.engine.vulkan.api.framebuffer.RenderPass;
 import ca.artemis.engine.vulkan.api.framebuffer.SurfaceSupportDetails;
 import ca.artemis.engine.vulkan.api.framebuffer.Swapchain;
+import ca.artemis.engine.vulkan.api.memory.VulkanFramebuffer;
 import ca.artemis.engine.vulkan.api.synchronization.VulkanFence;
 import ca.artemis.engine.vulkan.api.synchronization.VulkanSemaphore;
 
 public class SwapchainRenderer extends Renderer {
     
     private SurfaceSupportDetails surfaceSupportDetails;
-    private RenderPass renderPass;
     private Swapchain swapchain;
     
     public SwapchainRenderer(VulkanContext context, Window window) {
         this.surfaceSupportDetails = new SurfaceSupportDetails(context.getPhysicalDevice(), context.getSurface(), window); //TODO: I don't like that we need to pass a window here //Could we move code to surface??
-        this.renderPass = createRenderPass(context.getDevice(), surfaceSupportDetails); 
-        this.swapchain = new Swapchain(context.getDevice(), context.getSurface(), renderPass, surfaceSupportDetails);
+        super.renderPass = createRenderPass(context.getDevice(), surfaceSupportDetails); 
+        this.swapchain = new Swapchain(context.getDevice(), context.getSurface(), super.renderPass, surfaceSupportDetails);
     }
 
     public void destroy(VulkanDevice device) {
@@ -71,8 +71,10 @@ public class SwapchainRenderer extends Renderer {
     }
 
     @Override
-    public void render(MemoryStack stack, VulkanContext context, LongBuffer pWaitSemaphores, LongBuffer pSignalSemaphores) {
-
+    public void draw(MemoryStack stack, VulkanContext context, LongBuffer pWaitSemaphores, IntBuffer pWaitDstStageMask, LongBuffer pSignalSemaphores, VulkanFence inFlightFence, int imageIndex, int frameIndex) {
+        VulkanFramebuffer framebuffer = swapchain.getFramebuffer(imageIndex);
+        recordPrimaryCommandBuffer(stack, framebuffer, framebuffer.getWidth(), framebuffer.getHeight(), frameIndex);
+        submitPrimaryCommandBuffer(stack, context, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFence, frameIndex);
     }
 
     public IntBuffer acquireNextSwapchainImage(MemoryStack stack, VulkanContext context, VulkanFence inFlightFence, VulkanSemaphore imageAvailableSemaphore) {

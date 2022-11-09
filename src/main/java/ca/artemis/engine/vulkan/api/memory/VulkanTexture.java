@@ -11,6 +11,7 @@ import org.lwjgl.vulkan.VK11;
 
 import ca.artemis.engine.core.utils.FileUtils;
 import ca.artemis.engine.vulkan.api.commands.CommandBufferUtils;
+import ca.artemis.engine.vulkan.api.commands.CommandPool;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.context.VulkanDevice;
 import ca.artemis.engine.vulkan.api.context.VulkanMemoryAllocator;
@@ -38,14 +39,14 @@ public class VulkanTexture {
         return sampler;
     }
 
-    private static VulkanImageBundle createTexutureImageBundle(VulkanDevice device, VulkanMemoryAllocator memoryAllocator, long commandPool, String filePath, boolean multiSampling) {
+    private static VulkanImageBundle createTexutureImageBundle(VulkanDevice device, VulkanMemoryAllocator memoryAllocator, CommandPool commandPool, String filePath, boolean multiSampling) {
         VulkanImage textureImage = createTextureImage(device, memoryAllocator, commandPool, filePath, multiSampling);
         VulkanImageView textureImageView = createTextureImageView(device, textureImage);
 
         return new VulkanImageBundle(textureImage, textureImageView);
     }
 
-    private static VulkanImage createTextureImage(VulkanDevice device, VulkanMemoryAllocator memoryAllocator, long commandPool, String filePath, boolean multiSampling) {
+    private static VulkanImage createTextureImage(VulkanDevice device, VulkanMemoryAllocator memoryAllocator, CommandPool commandPool, String filePath, boolean multiSampling) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             BufferedImage bufferedImage = FileUtils.getBufferedImage(filePath);
             int imageWidth = bufferedImage.getWidth();
@@ -81,12 +82,12 @@ public class VulkanTexture {
                 .setUsage(VK11.VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK11.VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK11.VK_IMAGE_USAGE_SAMPLED_BIT)
                 .build(memoryAllocator);
 
-            CommandBufferUtils.transitionImageLayout(device.getHandle(), device.getGraphicsQueue(), commandPool, textureImage, VK11.VK_FORMAT_B8G8R8A8_UNORM, VK11.VK_IMAGE_LAYOUT_UNDEFINED, VK11.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
-            CommandBufferUtils.copyBufferToImage(device.getHandle(), device.getGraphicsQueue(), commandPool, stagingBuffer, textureImage, imageWidth, imageHeight);
+            CommandBufferUtils.transitionImageLayout(device, device.getGraphicsQueue(), commandPool, textureImage, VK11.VK_FORMAT_B8G8R8A8_UNORM, VK11.VK_IMAGE_LAYOUT_UNDEFINED, VK11.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
+            CommandBufferUtils.copyBufferToImage(device, device.getGraphicsQueue(), commandPool, stagingBuffer, textureImage, imageWidth, imageHeight);
             if(multiSampling) {
-                CommandBufferUtils.generateMipmaps(device.getHandle(), device.getGraphicsQueue(), commandPool, textureImage, imageWidth, imageHeight, mipLevels);
+                CommandBufferUtils.generateMipmaps(device, device.getGraphicsQueue(), commandPool, textureImage, imageWidth, imageHeight, mipLevels);
             } else {
-                CommandBufferUtils.transitionImageLayout(device.getHandle(), device.getGraphicsQueue(), commandPool, textureImage, VK11.VK_FORMAT_B8G8R8A8_UNORM, VK11.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
+                CommandBufferUtils.transitionImageLayout(device, device.getGraphicsQueue(), commandPool, textureImage, VK11.VK_FORMAT_B8G8R8A8_UNORM, VK11.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mipLevels);
             }
             stagingBuffer.destroy(memoryAllocator);
 

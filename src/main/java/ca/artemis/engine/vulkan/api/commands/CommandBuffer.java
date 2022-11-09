@@ -8,7 +8,6 @@ import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkBufferCopy;
 import org.lwjgl.vulkan.VkBufferImageCopy;
 import org.lwjgl.vulkan.VkCommandBuffer;
-import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkImageBlit;
 import org.lwjgl.vulkan.VkImageMemoryBarrier;
 import org.lwjgl.vulkan.VkRect2D;
@@ -30,11 +29,11 @@ public class CommandBuffer {
         this.commandBuffer = new VkCommandBuffer(this.handle, device.getHandle());
     }
 
-    public void destroy(VkDevice device, long commandPool) {
+    public void destroy(VulkanDevice device, CommandPool commandPool) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             PointerBuffer pHandle = stack.callocPointer(1);
             pHandle.put(0, handle);
-            VK11.vkFreeCommandBuffers(device, commandPool, pHandle);
+            VK11.vkFreeCommandBuffers(device.getHandle(), commandPool.getHandle(), pHandle);
         }
     }
 

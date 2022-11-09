@@ -12,8 +12,8 @@ import ca.artemis.engine.vulkan.api.pipeline.GraphicsPipeline;
 import ca.artemis.engine.vulkan.api.pipeline.RasterizationState;
 import ca.artemis.engine.vulkan.api.pipeline.VertexInputState;
 import ca.artemis.engine.vulkan.api.pipeline.ViewportState;
-import ca.artemis.engine.vulkan.rendering.Presenter;
 import ca.artemis.engine.vulkan.rendering.Renderer;
+import ca.artemis.engine.vulkan.rendering.RenderingEngine;
 
 public class DefaultShaderProgram extends ShaderProgram {
     
@@ -34,9 +34,9 @@ public class DefaultShaderProgram extends ShaderProgram {
     @Override
     protected DescriptorPool createDescriptorPool(VulkanDevice device) {
         return new DescriptorPool.Builder()
-            .addPoolSize(VK11.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Presenter.MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Presenter.MAX_FRAMES_IN_FLIGHT)
-            .setMaxSets(Presenter.MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK11.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, RenderingEngine.MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, RenderingEngine.MAX_FRAMES_IN_FLIGHT)
+            .setMaxSets(RenderingEngine.MAX_FRAMES_IN_FLIGHT)
             .build(device);
     }
 

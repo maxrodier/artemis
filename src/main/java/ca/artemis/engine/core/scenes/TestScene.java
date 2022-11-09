@@ -7,7 +7,7 @@ public class TestScene extends Scene {
     }
 
     @Override
-    public void update(float dt) {
+    public void update(float dt, int frameIndex) {
         // TODO Auto-generated method stub
         
     }

@@ -10,6 +10,7 @@ import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkPresentInfoKHR;
 
+import ca.artemis.engine.core.Window;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.context.VulkanDevice;
 import ca.artemis.engine.vulkan.api.framebuffer.Swapchain;
@@ -28,15 +29,14 @@ public class RenderingEngine {
 
     private int currentFrame = 0;
 
-    public RenderingEngine() {
-        VulkanContext context = VulkanContext.getContext();
+    private static RenderingEngine instance = null;
 
+    private RenderingEngine(VulkanContext context, Window window) {
+        this.swapchainRenderer = new SwapchainRenderer(context, window);
         createSynchronizationObjects(context.getDevice());
     }
 
-    public void destroy() {
-        VulkanContext context = VulkanContext.getContext();
-
+    public void destroy(VulkanContext context) {
         for(VulkanFence fence : inFlightFences) {
             fence.destroy(context.getDevice());
         }
@@ -46,6 +46,20 @@ public class RenderingEngine {
         for(VulkanSemaphore semaphore : imageAvailableSemaphores) {
             semaphore.destroy(context.getDevice());
         }
+
+        swapchainRenderer.destroy(context.getDevice());
+    }
+
+    public static RenderingEngine createInstance(VulkanContext context, Window window) {
+        if(instance != null) {
+            throw new AssertionError("RenderingEngine already created!");
+        }
+        instance = new RenderingEngine(context, window);
+        return instance;
+    }
+
+    public static RenderingEngine getInstance() {
+        return instance;
     }
 
     private void createSynchronizationObjects(VulkanDevice device) {
@@ -60,19 +74,24 @@ public class RenderingEngine {
         }
     }
 
-    public void render() {
-        try(MemoryStack statck = MemoryStack.stackPush()) {
-            VulkanContext context = VulkanContext.getContext();
+    public IntBuffer prepareRender(MemoryStack stack, VulkanContext context) {
+        return swapchainRenderer.acquireNextSwapchainImage(stack, context, inFlightFences.get(currentFrame), imageAvailableSemaphores.get(currentFrame));
+    }
 
-            IntBuffer pImageIndex = swapchainRenderer.acquireNextSwapchainImage(statck, context, inFlightFences.get(currentFrame), imageAvailableSemaphores.get(currentFrame));
+    public void render(MemoryStack stack, VulkanContext context, IntBuffer pImageIndex) {
+        LongBuffer pWaitSemaphores = stack.callocLong(1);
+        pWaitSemaphores.put(0, imageAvailableSemaphores.get(currentFrame).getHandle());
 
-            LongBuffer pSignalSemaphores = statck. 
-            context.getSimpleDraw().draw(stack, context, context.getPresenter(), context.getPresenter().getCurrentImageIndex());
+        IntBuffer pWaitDstStageMask = stack.callocInt(1);
+        pWaitDstStageMask.put(0, VK11.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
-            present(statck, context, null, pImageIndex);
+        LongBuffer pSignalSemaphores = stack.callocLong(1);
+        pSignalSemaphores.put(0, renderFinishedSemaphores.get(currentFrame).getHandle());
 
-            currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-        }
+        swapchainRenderer.draw(stack, context, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFences.get(currentFrame), pImageIndex.get(0), currentFrame);
+        present(stack, context, swapchainRenderer.getSwapchain(), pSignalSemaphores, pImageIndex);
+
+        currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     private static void present(MemoryStack stack, VulkanContext context, Swapchain swapchain, LongBuffer pSignalSemaphores, IntBuffer pImageIndex) {
@@ -94,5 +113,13 @@ public class RenderingEngine {
         } else if (result != VK11.VK_SUCCESS) {
             throw new RuntimeException("failed to present swap chain image!");
         }
+    }
+
+    public SwapchainRenderer getSwapchainRenderer() {
+        return swapchainRenderer;
+    }
+
+    public int getCurrentFrame() {
+        return currentFrame;
     }
 }

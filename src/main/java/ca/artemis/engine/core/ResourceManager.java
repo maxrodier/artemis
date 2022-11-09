@@ -42,7 +42,15 @@ public class ResourceManager {
     }
 
 
-    public static ShaderProgram getShaderProgram(String key) {
-        return ResourceManager.shaderPrograms.getOrDefault(key, null);
+    public static <T extends ShaderProgram> T getShaderProgram(String key, Class<T> shaderProgramClass) {
+        ShaderProgram shaderProgram = ResourceManager.shaderPrograms.getOrDefault(key, null);
+        if(shaderProgram == null) {
+            throw new AssertionError("ShaderProgram does not exist in ResourceManager");
+        }
+        try {
+            return shaderProgramClass.cast(shaderProgram);
+        } catch(ClassCastException e)    {
+            throw new AssertionError("Cannot convert ShaderProgram to shaderProgramClass");
+        }
     }
 }
