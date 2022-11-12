@@ -8,4 +8,6 @@ public class Configuration {
     public static final String[] WINDOW_ICONS = {
         "icons/icon_512.png"
     };
+
+    public static final int MAX_FRAMES_IN_FLIGHT = 2;
 }

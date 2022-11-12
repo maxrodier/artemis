@@ -3,6 +3,8 @@ package ca.artemis.vulkan.rendering.programs;
 import org.lwjgl.vulkan.VK11;
 
 import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.descriptor.DescriptorPool;
+import ca.artemis.vulkan.api.descriptor.DescriptorSet;
 import ca.artemis.vulkan.api.descriptor.DescriptorSetLayout;
 import ca.artemis.vulkan.api.framebuffer.RenderPass;
 import ca.artemis.vulkan.api.pipeline.ColorBlendState;
@@ -14,22 +16,28 @@ import ca.artemis.vulkan.api.pipeline.VertexInputState;
 import ca.artemis.vulkan.api.pipeline.ViewportState;
 
 public class SwapchainShaderProgram extends ShaderProgram {
-    
+
     public SwapchainShaderProgram(VulkanDevice device, RenderPass renderPass) {
-        super(device, renderPass);
+        super(device, renderPass); //TODO: Find correct poolsize
     }
 
-    public DescriptorSetLayout[] getDescriptorSetLayouts() {
-        return descriptorSetLayouts;
+    public DescriptorSetLayout getDescriptorSetLayout() {
+        return descriptorSetLayout;
     }
 
     @Override
-    protected DescriptorSetLayout[] createDescriptorSetLayouts(VulkanDevice device) {
-        return new DescriptorSetLayout[] { 
-            new DescriptorSetLayout.Builder()
-                .addDescriptorSetLayoutBinding(0, VK11.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK11.VK_SHADER_STAGE_VERTEX_BIT)
-                .build(device)
-        };
+    protected DescriptorSetLayout createDescriptorSetLayout(VulkanDevice device) {
+        return new DescriptorSetLayout.Builder()
+            .addDescriptorSetLayoutBinding(0, VK11.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK11.VK_SHADER_STAGE_VERTEX_BIT)
+            .build(device);
+    }
+
+    @Override
+    protected DescriptorPool createDescriptorPool(VulkanDevice device, int poolSize) {
+        return new DescriptorPool.Builder()
+            .addPoolSize(VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, poolSize)
+            .setMaxSets(poolSize)
+            .build(device);
     }
 
     @Override
@@ -50,8 +58,18 @@ public class SwapchainShaderProgram extends ShaderProgram {
                 .setFrontFace(VK11.VK_FRONT_FACE_COUNTER_CLOCKWISE))
             .setColorBlendState(new ColorBlendState()
                 .addColorBlendAttachement(new ColorBlendState.ColorBlendAttachement(false, VK11.VK_COLOR_COMPONENT_R_BIT | VK11.VK_COLOR_COMPONENT_G_BIT | VK11.VK_COLOR_COMPONENT_B_BIT | VK11.VK_COLOR_COMPONENT_A_BIT)))
-            .setDescriptorSetLayouts(descriptorSetLayouts)
+            .setDescriptorSetLayout(descriptorSetLayout)
             .setRenderPass(renderPass)
             .build(device);
+    }
+
+    @Override
+    public DescriptorSet allocate(VulkanDevice device) {
+        DescriptorSet descriptorSet = new DescriptorSet(device, descriptorPool, descriptorSetLayout);
+        if(descriptorSet.getHandle() == VK11.VK_NULL_HANDLE) {
+            throw new AssertionError("Failed to create descriptor set");
+        }
+
+        return descriptorSet;
     }
 }

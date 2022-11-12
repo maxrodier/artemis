@@ -58,7 +58,7 @@ public class GraphicsPipeline {
         private DepthStencilState depthStencilState = new DepthStencilState();
         private ColorBlendState colorBlendState = new ColorBlendState();
         private List<Integer> dynamicStates = new ArrayList<>();
-        private DescriptorSetLayout[] descriptorSetLayouts = {};
+        private DescriptorSetLayout descriptorSetLayout;
         private PushConstantRange[] pushConstantRanges = {};
         private RenderPass renderPass;
         private int subpass;
@@ -90,10 +90,8 @@ public class GraphicsPipeline {
         }
 
         private long createPipelineLayout(VulkanDevice device, MemoryStack stack) {
-            LongBuffer pSetLayouts = descriptorSetLayouts.length == 0 ? null : stack.callocLong(descriptorSetLayouts.length);
-            for(int i = 0; i < descriptorSetLayouts.length; i++) {
-                pSetLayouts.put(i, descriptorSetLayouts[i].getHandle());
-            }
+            LongBuffer pSetLayouts = stack.callocLong(1);
+            pSetLayouts.put(0, descriptorSetLayout.getHandle());
 
             VkPushConstantRange.Buffer pPushConstantRanges = pushConstantRanges.length == 0 ? null : VkPushConstantRange.callocStack(pushConstantRanges.length);
             for(int i = 0; i < pushConstantRanges.length; i++) {
@@ -194,8 +192,8 @@ public class GraphicsPipeline {
             return this;
         }
 
-        public Builder setDescriptorSetLayouts(DescriptorSetLayout[] descriptorSetLayouts) {
-            this.descriptorSetLayouts = descriptorSetLayouts;
+        public Builder setDescriptorSetLayout(DescriptorSetLayout descriptorSetLayout) {
+            this.descriptorSetLayout = descriptorSetLayout;
             return this;
         }
 

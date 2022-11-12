@@ -172,7 +172,7 @@ public class Main {
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 LongBuffer layouts = stack.callocLong(MAX_FRAMES_IN_FLIGHT);
                 for(int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                    layouts.put(i, swapchainRenderer.getSwapchainShaderProgram().getDescriptorSetLayouts()[0].getHandle());
+                    layouts.put(i, swapchainRenderer.getSwapchainShaderProgram().getDescriptorSetLayout().getHandle());
                 }
 
                 VkDescriptorSetAllocateInfo allocInfo = VkDescriptorSetAllocateInfo.callocStack(stack);
