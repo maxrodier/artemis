@@ -10,27 +10,31 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.vma.Vma;
 import org.lwjgl.vulkan.VK11;
-import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkQueue;
 
 import ca.artemis.Vertex.VertexKind;
+import ca.artemis.vulkan.api.commands.CommandBufferUtils;
+import ca.artemis.vulkan.api.commands.CommandPool;
+import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.context.VulkanMemoryAllocator;
+import ca.artemis.vulkan.api.memory.VulkanBuffer;
 
 public class Mesh {
     
     private final VulkanBuffer vertexBuffer;
     private final VulkanBuffer indexBuffer;
 
-    public Mesh(VkDevice device, long allocator, VkQueue graphicsQueue, long commandPool, Vertex[] vertices, Integer[] indices, VertexKind vertexKind) {
+    public Mesh(VulkanDevice device, VulkanMemoryAllocator allocator, VkQueue graphicsQueue, CommandPool commandPool, Vertex[] vertices, Integer[] indices, VertexKind vertexKind) {
         this.vertexBuffer = createVertexBuffer(device, allocator, graphicsQueue, commandPool, vertices, vertexKind);
         this.indexBuffer = createIndexBuffer(device, allocator, graphicsQueue, commandPool, indices);
     }
 
-    public void destroy(long allocator) {
+    public void destroy(VulkanMemoryAllocator allocator) {
         this.indexBuffer.destroy(allocator);
         this.vertexBuffer.destroy(allocator);
     }
 
-    private static VulkanBuffer createVertexBuffer(VkDevice device, long allocator, VkQueue graphicsQueue, long commandPool, Vertex[] vertices, VertexKind vertexKind) {
+    private static VulkanBuffer createVertexBuffer(VulkanDevice device, VulkanMemoryAllocator allocator, VkQueue graphicsQueue, CommandPool commandPool, Vertex[] vertices, VertexKind vertexKind) {
 		int bufferLength = vertices.length;
     	int bufferSize = vertexKind.size * Float.BYTES;
     	
@@ -42,7 +46,7 @@ public class Mesh {
 			.build(allocator);
     	
         PointerBuffer ppData = MemoryUtil.memAllocPointer(1); //TODO: Change this for stack allocation
-        Vma.vmaMapMemory(allocator, stagingBuffer.getAllocationHandle(), ppData);
+        Vma.vmaMapMemory(allocator.getHandle(), stagingBuffer.getAllocationHandle(), ppData);
     	FloatBuffer data = ppData.getFloatBuffer(0, vertices.length * vertexKind.size);
     	
         for(int i = 0; i < vertices.length; i++) {
@@ -74,7 +78,7 @@ public class Mesh {
             }
     	}
     	
-        Vma.vmaUnmapMemory(allocator, stagingBuffer.getAllocationHandle());
+        Vma.vmaUnmapMemory(allocator.getHandle(), stagingBuffer.getAllocationHandle());
 		
 		VulkanBuffer vertexBuffer = new VulkanBuffer.Builder()
 			.setLength(bufferLength)
@@ -89,7 +93,7 @@ public class Mesh {
         return vertexBuffer;
     }
 
-    private static VulkanBuffer createIndexBuffer(VkDevice device, long allocator, VkQueue graphicsQueue, long commandPool, Integer[] indices) {
+    private static VulkanBuffer createIndexBuffer(VulkanDevice device, VulkanMemoryAllocator allocator, VkQueue graphicsQueue, CommandPool commandPool, Integer[] indices) {
 		int bufferLength = indices.length;
     	int bufferSize = Integer.BYTES;
         
@@ -101,13 +105,13 @@ public class Mesh {
             .build(allocator);
 
     	PointerBuffer ppData = MemoryUtil.memAllocPointer(1);
-        Vma.vmaMapMemory(allocator, stagingBuffer.getAllocationHandle(), ppData);
+        Vma.vmaMapMemory(allocator.getHandle(), stagingBuffer.getAllocationHandle(), ppData);
     	IntBuffer data = ppData.getIntBuffer(0, indices.length);
     	for(int i = 0; i < indices.length; i++) {
     		data.put(i, indices[i]);
     	}
     	
-        Vma.vmaUnmapMemory(allocator, stagingBuffer.getAllocationHandle());
+        Vma.vmaUnmapMemory(allocator.getHandle(), stagingBuffer.getAllocationHandle());
 		
 		VulkanBuffer indexBuffer = new VulkanBuffer.Builder()
 			.setLength(bufferLength)
@@ -130,13 +134,13 @@ public class Mesh {
         return indexBuffer;
     }
 
-    public static Mesh loadModel(VkDevice device, long allocator, VkQueue graphicsQueue, long commandPool, String filePath) {
+    public static Mesh loadModel(VulkanDevice device, VulkanMemoryAllocator allocator, VkQueue graphicsQueue, CommandPool commandPool, String filePath) {
 	    List<Vector3f> positions = new ArrayList<>();
 	    List<Vector2f> texCoords = new ArrayList<>();;
 	    List<OBJIndex> indices = new ArrayList<>();;
 
 		try {
-            for(String line : Util.readLines(filePath)) {
+            for(String line : FileUtils.readLines(filePath)) {
 				String[] tokens = line.split(" ");
 				tokens = Util.RemoveEmptyStrings(tokens);
 
@@ -187,7 +191,7 @@ public class Mesh {
 		return result;
 	}
 
-    public static Mesh toIndexedModel(VkDevice device, long allocator, VkQueue graphicsQueue, long commandPool, List<Vector3f> positions, List<Vector2f> texCoords, List<OBJIndex> indices) {
+    public static Mesh toIndexedModel(VulkanDevice device, VulkanMemoryAllocator allocator, VkQueue graphicsQueue, CommandPool commandPool, List<Vector3f> positions, List<Vector2f> texCoords, List<OBJIndex> indices) {
 		HashMap<OBJIndex, Integer> resultIndexMap = new HashMap<OBJIndex, Integer>();
         List<Integer> result = new ArrayList<>();
         List<Vertex> vertices = new ArrayList<>();

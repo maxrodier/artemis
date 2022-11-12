@@ -3,6 +3,7 @@ package ca.artemis.vulkan.rendering.programs;
 import org.lwjgl.vulkan.VK11;
 
 import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.descriptor.DescriptorPool;
 import ca.artemis.vulkan.api.descriptor.DescriptorSetLayout;
 import ca.artemis.vulkan.api.framebuffer.RenderPass;
 import ca.artemis.vulkan.api.pipeline.ColorBlendState;
@@ -12,11 +13,13 @@ import ca.artemis.vulkan.api.pipeline.ShaderModule;
 import ca.artemis.vulkan.api.pipeline.SharderUtils.ShaderStageKind;
 import ca.artemis.vulkan.api.pipeline.VertexInputState;
 import ca.artemis.vulkan.api.pipeline.ViewportState;
+import ca.artemis.vulkan.rendering.RenderingEngine;
+import ca.artemis.vulkan.rendering.renderers.Renderer;
 
 public class SwapchainShaderProgram extends ShaderProgram {
     
-    public SwapchainShaderProgram(VulkanDevice device, RenderPass renderPass) {
-        super(device, renderPass);
+    public SwapchainShaderProgram(VulkanDevice device, Renderer renderer) {
+        super(device, renderer);
     }
 
     public DescriptorSetLayout[] getDescriptorSetLayouts() {
@@ -30,6 +33,14 @@ public class SwapchainShaderProgram extends ShaderProgram {
                 .addDescriptorSetLayoutBinding(0, VK11.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK11.VK_SHADER_STAGE_VERTEX_BIT)
                 .build(device)
         };
+    }
+
+    @Override
+    protected DescriptorPool createDescriptorPool(VulkanDevice device) {
+        return new DescriptorPool.Builder()
+            .addPoolSize(VK11.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, RenderingEngine.MAX_FRAMES_IN_FLIGHT)
+            .setMaxSets(RenderingEngine.MAX_FRAMES_IN_FLIGHT)
+            .build(device);
     }
 
     @Override

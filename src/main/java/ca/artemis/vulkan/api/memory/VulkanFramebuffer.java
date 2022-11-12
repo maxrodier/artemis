@@ -13,9 +13,13 @@ import ca.artemis.vulkan.api.context.VulkanDevice;
 public class VulkanFramebuffer {
 
     public final long handle;
+    private final int width;
+    private final int height;
 
-    public VulkanFramebuffer(long handle) {
+    public VulkanFramebuffer(long handle, int width, int height) {
         this.handle = handle;
+        this.width = width;
+        this.height = height;
     }
 
     public void destroy(VulkanDevice device) {
@@ -24,6 +28,14 @@ public class VulkanFramebuffer {
 
     public long getHandle() {
         return handle;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public static class Builder {
@@ -54,7 +66,7 @@ public class VulkanFramebuffer {
                 if(VK11.vkCreateFramebuffer(device.getHandle(), pCreateInfo, null, pFramebuffer) != VK11.VK_SUCCESS) {
                     throw new AssertionError("Failed to create framebuffer!");
                 }
-                return new VulkanFramebuffer(pFramebuffer.get(0));
+                return new VulkanFramebuffer(pFramebuffer.get(0), width, height);
             }
         }
 

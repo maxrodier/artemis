@@ -1,5 +1,11 @@
 package ca.artemis.vulkan.rendering.renderers;
 
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.util.List;
+
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK11;
 
@@ -8,26 +14,29 @@ import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.framebuffer.RenderPass;
 import ca.artemis.vulkan.api.framebuffer.SurfaceSupportDetails;
 import ca.artemis.vulkan.api.framebuffer.Swapchain;
-import ca.artemis.vulkan.rendering.programs.SwapchainShaderProgram;
+import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
+import ca.artemis.vulkan.api.synchronization.VulkanFence;
+import ca.artemis.vulkan.api.synchronization.VulkanSemaphore;
+import ca.artemis.vulkan.rendering.programs.ShaderProgram;
 
-public class SwapchainRenderer {
+public class SwapchainRenderer extends Renderer {
     
     private SurfaceSupportDetails surfaceSupportDetails;
-    private RenderPass renderPass;
     private Swapchain swapchain;
-    private final SwapchainShaderProgram swapchainShaderProgram;
+
+    private List<ShaderProgram> shaderPrograms;
     
     public SwapchainRenderer(VulkanContext context) {
+        super(context);
         this.surfaceSupportDetails = new SurfaceSupportDetails(context.getPhysicalDevice(), context.getSurface(), context.getWindow()); //TODO: I don't like that we need to pass a window here //Could we move code to surface??
-        this.renderPass = createRenderPass(context.getDevice(), surfaceSupportDetails); 
+        super.renderPass = createRenderPass(context.getDevice(), surfaceSupportDetails); 
         this.swapchain = new Swapchain(context.getDevice(), context.getSurface(), renderPass, surfaceSupportDetails);
-        this.swapchainShaderProgram = new SwapchainShaderProgram(context.getDevice(), renderPass);
     }
 
-    public void destroy(VulkanDevice device) {
-        swapchainShaderProgram.destroy(device);
-        swapchain.destroy(device);
-        renderPass.destroy(device);
+    public void destroy(VulkanContext context) {
+        super.destroy(context);
+        swapchain.destroy(context.getDevice());
+        renderPass.destroy(context.getDevice());
         surfaceSupportDetails.destroy();
     }
 
@@ -43,10 +52,6 @@ public class SwapchainRenderer {
         return swapchain;
     }
 
-    public SwapchainShaderProgram getSwapchainShaderProgram() {
-        return swapchainShaderProgram;
-    }
-
     public void regenerateRenderer(VulkanContext context) { //TODO: Verify renderpass compatibilty
         swapchain.destroy(context.getDevice());
         renderPass.destroy(context.getDevice());
@@ -54,8 +59,11 @@ public class SwapchainRenderer {
 
         this.surfaceSupportDetails = new SurfaceSupportDetails(context.getPhysicalDevice(), context.getSurface(), context.getWindow());
         this.renderPass = createRenderPass(context.getDevice(), surfaceSupportDetails);
-        this.swapchainShaderProgram.regenerateGraphicsPipeline(context.getDevice(), renderPass);
         this.swapchain = new Swapchain(context.getDevice(), context.getSurface(), renderPass, surfaceSupportDetails);
+
+        for(ShaderProgram shaderProgram : shaderPrograms) {
+            shaderProgram.regenerateGraphicsPipeline(context.getDevice(), renderPass);
+        }
     }
 
     private RenderPass createRenderPass(VulkanDevice device, SurfaceSupportDetails surfaceSupportDetails) {
@@ -70,5 +78,49 @@ public class SwapchainRenderer {
                 .setInitialLayout(VK11.VK_IMAGE_LAYOUT_UNDEFINED)
                 .setFinalLayout(KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR))
             .build(device);
+    }
+
+    public IntBuffer acquireNextSwapchainImage(MemoryStack stack, VulkanContext context, VulkanFence inFlightFence, VulkanSemaphore imageAvailableSemaphore) {
+        LongBuffer pFence = stack.callocLong(1);
+        pFence.put(0, inFlightFence.getHandle());
+        VK11.vkWaitForFences(context.getDevice().getHandle(), pFence, true, Long.MAX_VALUE);
+
+        IntBuffer pImageIndex = stack.callocInt(1);
+        int result = KHRSwapchain.vkAcquireNextImageKHR(context.getDevice().getHandle(), swapchain.getHandle(), Long.MAX_VALUE, imageAvailableSemaphore.getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
+        if(result == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR) {
+            System.out.println("Should recrate swapchain");
+            recreateSwapchain(context);
+        } else if(result != VK11.VK_SUCCESS && result != KHRSwapchain.VK_SUBOPTIMAL_KHR) {
+            throw new RuntimeException("Failed to acquire swapchain image!");
+        }
+
+        VK11.vkResetFences(context.getDevice().getHandle(), pFence);
+
+        return pImageIndex;
+    }
+
+    @Override
+    public void draw(MemoryStack stack, VulkanContext context, LongBuffer pWaitSemaphores, IntBuffer pWaitDstStageMask, LongBuffer pSignalSemaphores, VulkanFence inFlightFence, int imageIndex, int frameIndex) {
+        VulkanFramebuffer framebuffer = swapchain.getFramebuffer(imageIndex);
+        recordCommandBuffer(stack, framebuffer,  framebuffer.getWidth(), framebuffer.getHeight(), frameIndex);
+        submitPrimaryCommandBuffer(stack, context, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFence, frameIndex);
+    }
+
+    public void recreateSwapchain(VulkanContext context) {
+        //Code to wait recreation of the swapchain while minimized //Can this pause a game also? //This has not been tested
+        try(MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer width = stack.callocInt(1), height = stack.callocInt(1);
+            GLFW.glfwGetFramebufferSize(context.getWindow().getHandle(), width, height);
+            while (width.get(0) == 0 || height.get(0) == 0) {
+                System.out.println("Is minimized");
+                width.clear(); height.clear();
+                GLFW.glfwGetFramebufferSize(context.getWindow().getHandle(), width, height);
+                GLFW.glfwWaitEvents();
+            }
+        }
+
+        VK11.vkDeviceWaitIdle(context.getDevice().getHandle());
+
+        regenerateRenderer(context);
     }
 }

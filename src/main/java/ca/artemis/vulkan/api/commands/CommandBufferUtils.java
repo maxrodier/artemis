@@ -1,10 +1,9 @@
-package ca.artemis;
+package ca.artemis.vulkan.api.commands;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkBufferCopy;
 import org.lwjgl.vulkan.VkBufferImageCopy;
-import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkImageBlit;
 import org.lwjgl.vulkan.VkImageMemoryBarrier;
 import org.lwjgl.vulkan.VkImageSubresourceLayers;
@@ -13,11 +12,13 @@ import org.lwjgl.vulkan.VkOffset3D;
 import org.lwjgl.vulkan.VkQueue;
 import org.lwjgl.vulkan.VkSubmitInfo;
 
-import ca.artemis.Util.VkImage;
+import ca.artemis.vulkan.api.context.VulkanDevice;
+import ca.artemis.vulkan.api.memory.VulkanBuffer;
+import ca.artemis.vulkan.api.memory.VulkanImage;
 
 public class CommandBufferUtils {
 
-    public static void copyBuffer(VkDevice device, VkQueue queue, long commandPool, VulkanBuffer srcBuffer, VulkanBuffer dstBuffer, int size) {
+    public static void copyBuffer(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanBuffer srcBuffer, VulkanBuffer dstBuffer, int size) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
 
             VkBufferCopy.Buffer pRegions = VkBufferCopy.callocStack(1, stack);
@@ -33,7 +34,7 @@ public class CommandBufferUtils {
         }
     }
 
-    public static void copyBufferToImage(VkDevice device, VkQueue queue, long commandPool, VulkanBuffer buffer, VkImage image, int width, int height) {
+    public static void copyBufferToImage(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanBuffer buffer, VulkanImage image, int width, int height) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkImageSubresourceLayers subresourceLayers = VkImageSubresourceLayers.callocStack(stack)
                 .aspectMask(VK11.VK_IMAGE_ASPECT_COLOR_BIT)
@@ -59,7 +60,7 @@ public class CommandBufferUtils {
         }
     }
 
-    public static void transitionImageLayout(VkDevice device, VkQueue queue, long commandPool, VkImage image, int format, int oldLayout, int newLayout, int mipLevels) {
+    public static void transitionImageLayout(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanImage image, int format, int oldLayout, int newLayout, int mipLevels) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkImageSubresourceRange pSubresourceRange = VkImageSubresourceRange.callocStack(stack)
                 .baseMipLevel(0)
@@ -74,7 +75,7 @@ public class CommandBufferUtils {
                 .newLayout(newLayout)
                 .srcQueueFamilyIndex(VK11.VK_QUEUE_FAMILY_IGNORED)
                 .dstQueueFamilyIndex(VK11.VK_QUEUE_FAMILY_IGNORED)
-                .image(image.image)
+                .image(image.getHandle())
                 .subresourceRange(pSubresourceRange);
             
             if(newLayout == VK11.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
@@ -118,13 +119,13 @@ public class CommandBufferUtils {
         }
     }
 
-    public static void generateMipmaps(VkDevice device, VkQueue queue, long commandPool, VkImage image, int width, int height, int mipLevels) {
+    public static void generateMipmaps(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanImage image, int width, int height, int mipLevels) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             VkImageMemoryBarrier.Buffer pBarriers = VkImageMemoryBarrier.callocStack(1, stack);
             VkImageMemoryBarrier pBarrier = pBarriers.get(0);
             pBarrier
                 .sType(VK11.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
-                .image(image.image)
+                .image(image.getHandle())
                 .srcQueueFamilyIndex(VK11.VK_QUEUE_FAMILY_IGNORED)
                 .dstQueueFamilyIndex(VK11.VK_QUEUE_FAMILY_IGNORED)
                 .subresourceRange()
