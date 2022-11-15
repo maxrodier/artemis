@@ -12,7 +12,7 @@ import org.lwjgl.vulkan.VkExtent2D;
 import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
 import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 
-import ca.artemis.vulkan.api.context.GLFWWindow;
+import ca.artemis.engine.core.GLFWWindow;
 import ca.artemis.vulkan.api.context.VulkanPhysicalDevice;
 import ca.artemis.vulkan.api.context.VulkanSurface;
 

@@ -1,14 +1,11 @@
 package ca.artemis.vulkan.api.context;
 
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVulkan;
 
-public class VulkanContext {
-    
-    private static VulkanContext context = null;
+import ca.artemis.engine.core.GLFWWindow;
 
-    private final GLFWWindow window;
+public class VulkanContext {
+
     private final VulkanInstance instance;
     private final VulkanSurface surface;
     private final DeviceManager deviceManager;
@@ -17,9 +14,8 @@ public class VulkanContext {
     private final VulkanMemoryAllocator memoryAllocator;
     //private final CommandPool commandPool;
 
-    private VulkanContext() {
+    public VulkanContext(GLFWWindow window) {
         initialize();
-        this.window = new GLFWWindow();
         this.instance = new VulkanInstance();
         this.surface = new VulkanSurface(instance, window);
         this.deviceManager = new DeviceManager(instance, surface);
@@ -34,12 +30,6 @@ public class VulkanContext {
         deviceManager.destroy();
         surface.destroy(instance);
         instance.destroy();
-        window.destroy();
-        GLFW.glfwTerminate();
-    }
-
-    public GLFWWindow getWindow() {
-        return window;
     }
 
     public VulkanInstance getInstance() {
@@ -63,20 +53,8 @@ public class VulkanContext {
     }
 
     private void initialize() {
-        GLFWErrorCallback.createPrint().set();
-        if (!GLFW.glfwInit()) {
-            throw new IllegalStateException("Unable to initialize GLFW");
-        }
-
         if (!GLFWVulkan.glfwVulkanSupported()) {
             throw new IllegalStateException("Cannot find a compatible Vulkan installable client driver");
         }
-    }
-
-    public static VulkanContext create() {
-        if(context == null) {
-            context = new VulkanContext();
-        }
-        return context;
     }
 }

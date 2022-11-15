@@ -23,6 +23,7 @@ import ca.artemis.vulkan.api.framebuffer.RenderPass;
 import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
 import ca.artemis.vulkan.api.synchronization.VulkanFence;
 import ca.artemis.vulkan.rendering.RenderingEngine;
+import ca.artemis.vulkan.rendering.programs.ShaderProgram;
 
 public abstract class Renderer {
     
@@ -32,6 +33,8 @@ public abstract class Renderer {
     private List<PrimaryCommandBuffer> commandBuffers;
     private HashMap<String, List<SecondaryCommandBuffer>> secondaryCommandBuffersMaps;
     private List<List<String>> executionLists;
+
+    protected List<ShaderProgram> shaderPrograms;
     
     protected Renderer(VulkanContext context) {
         createCommandPools(context.getDevice(), context.getPhysicalDevice());
@@ -43,6 +46,8 @@ public abstract class Renderer {
         for(int i = 0; i < RenderingEngine.MAX_FRAMES_IN_FLIGHT; i++) {
             executionLists.add(new ArrayList<>());
         }
+
+        this.shaderPrograms = new ArrayList<>();
     }
 
     public void destroy(VulkanContext context) {
@@ -131,6 +136,10 @@ public abstract class Renderer {
     }
 
     public abstract void draw(MemoryStack stack, VulkanContext context, LongBuffer pWaitSemaphores, IntBuffer pWaitDstStageMask, LongBuffer pSignalSemaphores, VulkanFence inFlightFence, int imageIndex, int frameIndex);
+
+    public void registerShaderProgram(ShaderProgram shaderProgram) {
+        shaderPrograms.add(shaderProgram);
+    }
 
     public RenderPass getRenderPass() {
         return renderPass;

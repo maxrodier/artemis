@@ -7,6 +7,8 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSurface;
 import org.lwjgl.vulkan.VK11;
 
+import ca.artemis.engine.core.GLFWWindow;
+
 public class VulkanSurface {
 
     private final long handle;

@@ -9,16 +9,15 @@ import ca.artemis.vulkan.rendering.renderers.Renderer;
 
 public abstract class ShaderProgram {
     
-    protected final Renderer renderer;
     protected final DescriptorSetLayout[] descriptorSetLayouts;
     protected final DescriptorPool descriptorPool;
     protected GraphicsPipeline graphicsPipeline;
 
     protected ShaderProgram(VulkanDevice device, Renderer renderer) {
-        this.renderer = renderer;
+        renderer.registerShaderProgram(this);
         this.descriptorSetLayouts = createDescriptorSetLayouts(device);
         this.descriptorPool = createDescriptorPool(device);
-        this.graphicsPipeline = createGraphicsPipeline(device, this.renderer.getRenderPass());
+        this.graphicsPipeline = createGraphicsPipeline(device, renderer.getRenderPass());
     }
 
     public void destroy(VulkanDevice device) {

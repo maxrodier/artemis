@@ -2,13 +2,13 @@ package ca.artemis.vulkan.rendering.renderers;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.List;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK11;
 
+import ca.artemis.engine.core.GLFWWindow;
 import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.framebuffer.RenderPass;
@@ -16,19 +16,17 @@ import ca.artemis.vulkan.api.framebuffer.SurfaceSupportDetails;
 import ca.artemis.vulkan.api.framebuffer.Swapchain;
 import ca.artemis.vulkan.api.memory.VulkanFramebuffer;
 import ca.artemis.vulkan.api.synchronization.VulkanFence;
-import ca.artemis.vulkan.api.synchronization.VulkanSemaphore;
+import ca.artemis.vulkan.rendering.FrameInfo;
 import ca.artemis.vulkan.rendering.programs.ShaderProgram;
 
 public class SwapchainRenderer extends Renderer {
     
     private SurfaceSupportDetails surfaceSupportDetails;
     private Swapchain swapchain;
-
-    private List<ShaderProgram> shaderPrograms;
     
-    public SwapchainRenderer(VulkanContext context) {
+    public SwapchainRenderer(VulkanContext context, GLFWWindow window) {
         super(context);
-        this.surfaceSupportDetails = new SurfaceSupportDetails(context.getPhysicalDevice(), context.getSurface(), context.getWindow()); //TODO: I don't like that we need to pass a window here //Could we move code to surface??
+        this.surfaceSupportDetails = new SurfaceSupportDetails(context.getPhysicalDevice(), context.getSurface(), window); //TODO: I don't like that we need to pass a window here //Could we move code to surface??
         super.renderPass = createRenderPass(context.getDevice(), surfaceSupportDetails); 
         this.swapchain = new Swapchain(context.getDevice(), context.getSurface(), renderPass, surfaceSupportDetails);
     }
@@ -52,20 +50,6 @@ public class SwapchainRenderer extends Renderer {
         return swapchain;
     }
 
-    public void regenerateRenderer(VulkanContext context) { //TODO: Verify renderpass compatibilty
-        swapchain.destroy(context.getDevice());
-        renderPass.destroy(context.getDevice());
-        surfaceSupportDetails.destroy();
-
-        this.surfaceSupportDetails = new SurfaceSupportDetails(context.getPhysicalDevice(), context.getSurface(), context.getWindow());
-        this.renderPass = createRenderPass(context.getDevice(), surfaceSupportDetails);
-        this.swapchain = new Swapchain(context.getDevice(), context.getSurface(), renderPass, surfaceSupportDetails);
-
-        for(ShaderProgram shaderProgram : shaderPrograms) {
-            shaderProgram.regenerateGraphicsPipeline(context.getDevice(), renderPass);
-        }
-    }
-
     private RenderPass createRenderPass(VulkanDevice device, SurfaceSupportDetails surfaceSupportDetails) {
         return new RenderPass.Builder()
             .addColorAttachment(new RenderPass.Attachement()
@@ -80,16 +64,16 @@ public class SwapchainRenderer extends Renderer {
             .build(device);
     }
 
-    public IntBuffer acquireNextSwapchainImage(MemoryStack stack, VulkanContext context, VulkanFence inFlightFence, VulkanSemaphore imageAvailableSemaphore) {
+    public IntBuffer acquireNextSwapchainImage(MemoryStack stack, VulkanContext context, GLFWWindow window, FrameInfo frameInfo) {
         LongBuffer pFence = stack.callocLong(1);
-        pFence.put(0, inFlightFence.getHandle());
+        pFence.put(0, frameInfo.inFlightFence.getHandle());
         VK11.vkWaitForFences(context.getDevice().getHandle(), pFence, true, Long.MAX_VALUE);
 
         IntBuffer pImageIndex = stack.callocInt(1);
-        int result = KHRSwapchain.vkAcquireNextImageKHR(context.getDevice().getHandle(), swapchain.getHandle(), Long.MAX_VALUE, imageAvailableSemaphore.getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
+        int result = KHRSwapchain.vkAcquireNextImageKHR(context.getDevice().getHandle(), swapchain.getHandle(), Long.MAX_VALUE, frameInfo.imageAvailableSemaphore.getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
         if(result == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR) {
             System.out.println("Should recrate swapchain");
-            recreateSwapchain(context);
+            recreateSwapchain(context, window);
         } else if(result != VK11.VK_SUCCESS && result != KHRSwapchain.VK_SUBOPTIMAL_KHR) {
             throw new RuntimeException("Failed to acquire swapchain image!");
         }
@@ -106,21 +90,35 @@ public class SwapchainRenderer extends Renderer {
         submitPrimaryCommandBuffer(stack, context, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFence, frameIndex);
     }
 
-    public void recreateSwapchain(VulkanContext context) {
+    public void recreateSwapchain(VulkanContext context, GLFWWindow window) {
         //Code to wait recreation of the swapchain while minimized //Can this pause a game also? //This has not been tested
         try(MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer width = stack.callocInt(1), height = stack.callocInt(1);
-            GLFW.glfwGetFramebufferSize(context.getWindow().getHandle(), width, height);
+            GLFW.glfwGetFramebufferSize(window.getHandle(), width, height);
             while (width.get(0) == 0 || height.get(0) == 0) {
                 System.out.println("Is minimized");
                 width.clear(); height.clear();
-                GLFW.glfwGetFramebufferSize(context.getWindow().getHandle(), width, height);
+                GLFW.glfwGetFramebufferSize(window.getHandle(), width, height);
                 GLFW.glfwWaitEvents();
             }
         }
 
         VK11.vkDeviceWaitIdle(context.getDevice().getHandle());
 
-        regenerateRenderer(context);
+        regenerateRenderer(context, window);
+    }
+
+    public void regenerateRenderer(VulkanContext context, GLFWWindow window) { //TODO: Verify renderpass compatibilty
+        swapchain.destroy(context.getDevice());
+        renderPass.destroy(context.getDevice());
+        surfaceSupportDetails.destroy();
+
+        this.surfaceSupportDetails = new SurfaceSupportDetails(context.getPhysicalDevice(), context.getSurface(), window);
+        this.renderPass = createRenderPass(context.getDevice(), surfaceSupportDetails);
+        this.swapchain = new Swapchain(context.getDevice(), context.getSurface(), renderPass, surfaceSupportDetails);
+
+        for(ShaderProgram shaderProgram : shaderPrograms) {
+            shaderProgram.regenerateGraphicsPipeline(context.getDevice(), renderPass);
+        }
     }
 }

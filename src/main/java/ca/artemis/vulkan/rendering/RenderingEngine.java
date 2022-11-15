@@ -12,6 +12,7 @@ import org.lwjgl.vulkan.KHRSwapchain;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkPresentInfoKHR;
 
+import ca.artemis.engine.core.GLFWWindow;
 import ca.artemis.vulkan.api.context.VulkanContext;
 import ca.artemis.vulkan.api.context.VulkanDevice;
 import ca.artemis.vulkan.api.framebuffer.Swapchain;
@@ -23,7 +24,8 @@ public class RenderingEngine {
     
     public static final int MAX_FRAMES_IN_FLIGHT = 2;
 
-    private SwapchainRenderer swapchainRenderer;
+    private final VulkanContext context;
+    private final SwapchainRenderer swapchainRenderer;
 
     private List<VulkanSemaphore> imageAvailableSemaphores; //One per frame in flight
     private List<VulkanSemaphore> renderFinishedSemaphores; //One per frame in flight
@@ -32,14 +34,14 @@ public class RenderingEngine {
     private int currentFrame = 0;
     private boolean framebufferResized = false;
 
-    private static RenderingEngine instance = null;
-
-    private RenderingEngine(VulkanContext context) {
-        this.swapchainRenderer = new SwapchainRenderer(context);
-        createSynchronizationObjects(context.getDevice());
+    public RenderingEngine(GLFWWindow window) {
+        this.context = new VulkanContext(window);
+        this.swapchainRenderer = new SwapchainRenderer(this.context, window);
+        createSynchronizationObjects(this.context.getDevice());
+        setFramebufferSizeCallback(window);
     }
 
-    public void destroy(VulkanContext context) {
+    public void destroy() {
         for(VulkanFence fence : inFlightFences) {
             fence.destroy(context.getDevice());
         }
@@ -51,18 +53,6 @@ public class RenderingEngine {
         }
 
         swapchainRenderer.destroy(context);
-    }
-
-    public static RenderingEngine createInstance(VulkanContext context) {
-        if(instance != null) {
-            throw new AssertionError("RenderingEngine already created!");
-        }
-        instance = new RenderingEngine(context);
-        return instance;
-    }
-
-    public static RenderingEngine getInstance() {
-        return instance;
     }
 
     private void createSynchronizationObjects(VulkanDevice device) {
@@ -77,11 +67,27 @@ public class RenderingEngine {
         }
     }
 
-    public IntBuffer prepareRender(MemoryStack stack, VulkanContext context) {
-        return swapchainRenderer.acquireNextSwapchainImage(stack, context, inFlightFences.get(currentFrame), imageAvailableSemaphores.get(currentFrame));
+    private void setFramebufferSizeCallback(GLFWWindow window) {
+        GLFW.glfwSetFramebufferSizeCallback(window.getHandle(), new GLFWFramebufferSizeCallbackI() {
+            @Override
+            public void invoke(long window, int width, int height) {
+                framebufferResized = true;
+            }
+        });
     }
 
-    public void render(MemoryStack stack, VulkanContext context, IntBuffer pImageIndex) {
+    public FrameInfo prepareRender(MemoryStack stack, GLFWWindow window) {
+        FrameInfo frameInfo = new FrameInfo();
+        frameInfo.frameIndex = currentFrame;
+        frameInfo.imageAvailableSemaphore = imageAvailableSemaphores.get(currentFrame);
+        frameInfo.renderFinishedSemaphore = renderFinishedSemaphores.get(currentFrame);
+        frameInfo.inFlightFence = inFlightFences.get(currentFrame);
+
+        frameInfo.pImageIndex = swapchainRenderer.acquireNextSwapchainImage(stack, context, window, frameInfo);
+        return frameInfo;    
+    }
+
+    public void render(MemoryStack stack, GLFWWindow window, FrameInfo frameInfo) {
         LongBuffer pWaitSemaphores = stack.callocLong(1);
         pWaitSemaphores.put(0, imageAvailableSemaphores.get(currentFrame).getHandle());
 
@@ -91,13 +97,13 @@ public class RenderingEngine {
         LongBuffer pSignalSemaphores = stack.callocLong(1);
         pSignalSemaphores.put(0, renderFinishedSemaphores.get(currentFrame).getHandle());
 
-        swapchainRenderer.draw(stack, context, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFences.get(currentFrame), pImageIndex.get(0), currentFrame);
-        present(stack, context, swapchainRenderer.getSwapchain(), pSignalSemaphores, pImageIndex);
+        swapchainRenderer.draw(stack, context, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFences.get(currentFrame), frameInfo.pImageIndex.get(0), currentFrame);
+        present(stack, window, swapchainRenderer.getSwapchain(), pSignalSemaphores, frameInfo.pImageIndex);
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    private void present(MemoryStack stack, VulkanContext context, Swapchain swapchain, LongBuffer pSignalSemaphores, IntBuffer pImageIndex) {
+    private void present(MemoryStack stack, GLFWWindow window, Swapchain swapchain, LongBuffer pSignalSemaphores, IntBuffer pImageIndex) {
         VkPresentInfoKHR presentInfo = VkPresentInfoKHR.callocStack(stack);
         presentInfo.sType(KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
         presentInfo.pWaitSemaphores(pSignalSemaphores);
@@ -113,26 +119,17 @@ public class RenderingEngine {
         if (result == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR || result == KHRSwapchain.VK_SUBOPTIMAL_KHR || framebufferResized) {
             System.out.println("Should recrate swapchain");
             framebufferResized = false;
-            swapchainRenderer.recreateSwapchain(context);
+            swapchainRenderer.recreateSwapchain(context, window);
         } else if (result != VK11.VK_SUCCESS) {
             throw new RuntimeException("failed to present swap chain image!");
         }
     }
 
-    public void setFramebufferSizeCallback(VulkanContext context) {
-        GLFW.glfwSetFramebufferSizeCallback(context.getWindow().getHandle(), new GLFWFramebufferSizeCallbackI() {
-            @Override
-            public void invoke(long window, int width, int height) {
-                framebufferResized = true;
-            }
-        });
+    public VulkanContext getContext() {
+        return context;
     }
 
     public SwapchainRenderer getSwapchainRenderer() {
         return swapchainRenderer;
-    }
-
-    public int getCurrentFrame() {
-        return currentFrame;
     }
 }

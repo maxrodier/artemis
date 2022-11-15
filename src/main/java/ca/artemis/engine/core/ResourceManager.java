@@ -1,4 +1,4 @@
-package ca.artemis.core;
+package ca.artemis.engine.core;
 
 import java.util.HashMap;
 
@@ -29,11 +29,11 @@ public class ResourceManager {
         ResourceManager.shaderModules.put(key, shaderModule);
     }
 
-    public static void addShaderProgram(String key, ShaderProgram shaderModule) {
+    public static void addShaderProgram(String key, ShaderProgram shaderProgram) {
         if(shaderPrograms.containsKey(key)) {
             throw new AssertionError("ResourceManager already contains a ShaderProgram with this key!");
         }
-        ResourceManager.shaderPrograms.put(key, shaderModule);
+        ResourceManager.shaderPrograms.put(key, shaderProgram);
     }
 
     public static ShaderModule getShaderModule(String key) {
