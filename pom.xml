@@ -8,8 +8,8 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>	    
-		<maven.compiler.target>16</maven.compiler.target>
-	    <maven.compiler.source>16</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+	    <maven.compiler.source>17</maven.compiler.source>
 
 		<lwjgl.version>3.2.3</lwjgl.version>
 	</properties>
@@ -102,7 +102,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>ca.artemis.Main</mainClass>
+							<mainClass>ca.artemis.game.Main</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

@@ -1,5 +1,7 @@
 package ca.artemis;
 
+import ca.artemis.engine.maths.Matrix4f;
+
 public class UniformBufferObject {
     
     public static final int LENGTH = Matrix4f.LENGTH + Matrix4f.LENGTH + Matrix4f.LENGTH;
