@@ -57,8 +57,6 @@ public class UiRenderData extends RenderData {
 
     //EndTempStuff
 
-    private int imageIndex;
-
     @Override
     public void update(MemoryStack stack) {
         VulkanContext context = LowPolyEngine.instance().getContext();
@@ -68,14 +66,6 @@ public class UiRenderData extends RenderData {
         uiRenderer.getinFlightFences().get(this.getFrameIndex()).reset(stack, context.getDevice());
 
         descriptorSets.get(getFrameIndex()).updateDescriptorImageBuffer(context.getDevice(), uiRenderer.getRenderSource().getImageView(getFrameIndex()), textureSamplers.get(getFrameIndex()), VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-    }
-
-    public int getImageIndex() {
-        return imageIndex;
-    }
-
-    public void setImageIndex(int imageIndex) {
-        this.imageIndex = imageIndex;
     }
 
     public Quad getQuad() {
