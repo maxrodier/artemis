@@ -29,7 +29,7 @@ public class Quad extends Mesh {
     }
 
     private static final Integer[] indices = {
-        0, 1, 2, 2, 3, 0
+        0, 2, 3, 0, 1, 2
     };
 
     public Quad(VulkanContext context, VertexKind vertexKind) {

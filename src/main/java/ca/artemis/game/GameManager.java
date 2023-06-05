@@ -49,6 +49,7 @@ public class GameManager implements AutoCloseable {
                     lastTime = currentTime;
                     frameCounter += deltaTime;
 
+
                     Session session = sessionManager.getActiveSession();
                     session.update(stack, deltaTime);
 

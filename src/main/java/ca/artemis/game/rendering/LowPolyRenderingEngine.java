@@ -12,6 +12,7 @@ import ca.artemis.engine.core.Window;
 import ca.artemis.engine.rendering.RenderingEngine;
 import ca.artemis.engine.rendering.entity.EntityRenderer;
 import ca.artemis.engine.rendering.swapchain.SwapchainRenderer;
+import ca.artemis.engine.rendering.ui.UiRenderer;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 
 public class LowPolyRenderingEngine extends RenderingEngine {
@@ -23,6 +24,7 @@ public class LowPolyRenderingEngine extends RenderingEngine {
     private final VulkanContext context;
 
     private final EntityRenderer entityRenderer;
+    private final UiRenderer uiRenderer;
     private final SwapchainRenderer swapchainRenderer;
 
     private int currentFrameIndex;
@@ -30,7 +32,8 @@ public class LowPolyRenderingEngine extends RenderingEngine {
     private LowPolyRenderingEngine() {
         this.context = LowPolyEngine.instance().getContext();
         this.entityRenderer = new EntityRenderer(context.getDevice(), context.getPhysicalDevice(), null);
-        this.swapchainRenderer = new SwapchainRenderer(context.getDevice(), context.getPhysicalDevice(), context.getSurface(), context.getSurfaceSupportDetails(), entityRenderer);
+        this.uiRenderer = new UiRenderer(context.getDevice(), context.getPhysicalDevice(), entityRenderer);
+        this.swapchainRenderer = new SwapchainRenderer(context.getDevice(), context.getPhysicalDevice(), uiRenderer);
         
         //TempStuff
         addResizeListener(context, LowPolyEngine.instance().getWindow(), this);
@@ -39,6 +42,7 @@ public class LowPolyRenderingEngine extends RenderingEngine {
     @Override
     public void close() throws Exception {
         swapchainRenderer.close();
+        uiRenderer.close();
         entityRenderer.close();
     }
 
@@ -59,11 +63,13 @@ public class LowPolyRenderingEngine extends RenderingEngine {
 
     public void render(MemoryStack stack) {
         entityRenderer.render(stack, context);  
+        uiRenderer.render(stack, context);
         swapchainRenderer.render(stack, context);
         present(stack);
 
         currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
         entityRenderer.getRenderData().setFrameIndex(currentFrameIndex);
+        uiRenderer.getRenderData().setFrameIndex(currentFrameIndex);
         swapchainRenderer.getRenderData().setFrameIndex(currentFrameIndex);
     }
 
@@ -97,6 +103,7 @@ public class LowPolyRenderingEngine extends RenderingEngine {
 
         context.updateSurfaceSupportDetails(window);
         entityRenderer.regenerate();
+        uiRenderer.regenerate();
         swapchainRenderer.regenerate();
     }
 
@@ -106,6 +113,10 @@ public class LowPolyRenderingEngine extends RenderingEngine {
 
     public EntityRenderer getEntityRenderer() {
         return entityRenderer;
+    }
+
+    public UiRenderer getUiRenderer() {
+        return uiRenderer;
     }
 
     public SwapchainRenderer getSwapchainRenderer() {
