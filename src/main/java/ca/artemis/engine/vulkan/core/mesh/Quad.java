@@ -22,7 +22,7 @@ public class Quad extends Mesh {
 
         vertices.put(VertexKind.POS_UV, new Vertex[] {
             new Vertex(new Vector3f(-1f, -1f, 0.0f), new Vector2f(0.0f, 0.0f)),
-            new Vertex(new Vector3f(1f, -1f, 0.0f), new Vector2f(1.0f, 1.0f)),
+            new Vertex(new Vector3f(1f, -1f, 0.0f), new Vector2f(1.0f, 0.0f)),
             new Vertex(new Vector3f(1f, 1f, 0.0f), new Vector2f(1.0f, 1.0f)),
             new Vertex(new Vector3f(-1f, 1f, 0.0f), new Vector2f(0.0f, 1.0f)),
         });

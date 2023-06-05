@@ -77,31 +77,49 @@ public class SurfaceSupportDetails {
         }
     
         private static VkExtent2D chooseSurfaceExtent(long window, VkSurfaceCapabilitiesKHR surfaceCapabilities) {
+            IntBuffer width = MemoryUtil.memCallocInt(1), height = MemoryUtil.memCallocInt(1);
+            GLFW.glfwGetFramebufferSize(window, width, height);
+
+            VkExtent2D actualExtent = VkExtent2D.calloc();
+            actualExtent.width(clamp(width.get(0), surfaceCapabilities.minImageExtent().width(), surfaceCapabilities.maxImageExtent().width()));
+            actualExtent.height(clamp(height.get(0), surfaceCapabilities.minImageExtent().height(), surfaceCapabilities.maxImageExtent().height()));
+
+            MemoryUtil.memFree(width);
+            MemoryUtil.memFree(height);
+
+            return actualExtent;
+            /* 
+            
             if(surfaceCapabilities.currentExtent().width() != Integer.MAX_VALUE) {
                 VkExtent2D actualExtent = VkExtent2D.calloc();
                 actualExtent.width(surfaceCapabilities.currentExtent().width());
                 actualExtent.height(surfaceCapabilities.currentExtent().height());
                 return actualExtent;
             } else {
-                IntBuffer width = IntBuffer.allocate(1), height = IntBuffer.allocate(1);
+                IntBuffer width = MemoryUtil.memCallocInt(1), height = MemoryUtil.memCallocInt(1);
                 GLFW.glfwGetFramebufferSize(window, width, height);
     
                 VkExtent2D actualExtent = VkExtent2D.calloc();
                 actualExtent.width(clamp(width.get(0), surfaceCapabilities.minImageExtent().width(), surfaceCapabilities.maxImageExtent().width()));
                 actualExtent.height(clamp(height.get(0), surfaceCapabilities.minImageExtent().height(), surfaceCapabilities.maxImageExtent().height()));
     
+                MemoryUtil.memFree(width);
+                MemoryUtil.memFree(height);
+
                 return actualExtent;
             }
+            */
         }
     
         private static int chooseSurfacePresentMode(IntBuffer surfacePresentModes) {
+            /* //TODO: Enable when we implement framelimitting inside the gameloop
             for(int i = 0; i < surfacePresentModes.limit(); i++) {
                 int presentMode = surfacePresentModes.get(i);
                 if(presentMode == KHRSurface.VK_PRESENT_MODE_MAILBOX_KHR) {
                     return presentMode;
                 }
             }
-    
+            */
             return KHRSurface.VK_PRESENT_MODE_FIFO_KHR;
         }
     

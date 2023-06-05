@@ -12,10 +12,10 @@ import org.lwjgl.util.vma.Vma;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkQueue;
 
-import ca.artemis.FileUtils;
-import ca.artemis.Util;
 import ca.artemis.engine.maths.Vector2f;
 import ca.artemis.engine.maths.Vector3f;
+import ca.artemis.engine.utils.FileUtils;
+import ca.artemis.engine.utils.Util;
 import ca.artemis.engine.vulkan.api.commands.CommandBufferUtils;
 import ca.artemis.engine.vulkan.api.commands.CommandPool;
 import ca.artemis.engine.vulkan.api.context.VulkanDevice;

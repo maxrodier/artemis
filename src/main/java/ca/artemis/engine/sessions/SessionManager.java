@@ -27,9 +27,9 @@ public class SessionManager implements AutoCloseable {
         this.sessionInWaiting = new Session(new MainScene()); //TODO: Externalize scene
     }
 
-    public void updatePublicSession() {
+    public boolean updatePublicSession() {
         if(sessionInWaiting == null) {
-            return;
+            return false;
         }
 
         Session oldSession = activeSession;
@@ -44,6 +44,8 @@ public class SessionManager implements AutoCloseable {
                 new RuntimeException("Could not close session.", e);
             }
         }
+        
+        return true;
     }
 
     public Session getActiveSession() {

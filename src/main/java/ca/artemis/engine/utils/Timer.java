@@ -33,7 +33,8 @@ public class Timer {
     }
 
     public void update() {
-        if(isRunning && System.currentTimeMillis() - lastTime >= delay) {
+        long passedTime = (System.currentTimeMillis() - lastTime);
+        if(isRunning && (passedTime >= delay)) {
             task.run();
             isRunning = false;
         }

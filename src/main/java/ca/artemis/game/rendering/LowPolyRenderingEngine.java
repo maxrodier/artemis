@@ -45,13 +45,12 @@ public class LowPolyRenderingEngine extends RenderingEngine {
     //TempStuff
     private static void addResizeListener(VulkanContext context, Window window, LowPolyRenderingEngine lowPolyRenderingEngine) {
         window.addResizeListener(() -> {
-            lowPolyRenderingEngine.regenerate();
+            //lowPolyRenderingEngine.regenerate();
         });
     }
 
     public boolean update(MemoryStack stack) {
-        int result = swapchainRenderer.acquireNextSwapchainImage(stack, context);
-        if(result == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR || result == KHRSwapchain.VK_SUBOPTIMAL_KHR){
+        if(swapchainRenderer.acquireNextSwapchainImage(stack, context) == KHRSwapchain.VK_SUBOPTIMAL_KHR){
             regenerate();
             return false;
         }
@@ -79,20 +78,24 @@ public class LowPolyRenderingEngine extends RenderingEngine {
         VulkanContext context = LowPolyEngine.instance().getContext();
         Window window = LowPolyEngine.instance().getWindow();
         
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer width = stack.callocInt(1), height = stack.callocInt(1);
-            GLFW.glfwGetFramebufferSize(window.getId(), width, height);
-            while (width.get(0) == 0 || height.get(0) == 0) {
-                width.clear(); height.clear();
-                GLFW.glfwGetFramebufferSize(window.getId(), width, height);
-                GLFW.glfwWaitEvents();
-            }
-        }
+        System.out.println("Regenerate");
 
         VK11.vkDeviceWaitIdle(context.getDevice().getHandle());
-        
-        context.updateSurfaceSupportDetails(window);
 
+        while(window.isResizing()) {
+            try(MemoryStack stack = MemoryStack.stackPush()) {
+                IntBuffer width = stack.callocInt(1), height = stack.callocInt(1);
+                GLFW.glfwGetFramebufferSize(window.getId(), width, height);
+                while (width.get(0) == 0 || height.get(0) == 0) {
+                    width.clear(); height.clear();
+                    GLFW.glfwGetFramebufferSize(window.getId(), width, height);
+                    GLFW.glfwWaitEvents();
+                }
+            }
+            window.update();
+        }
+
+        context.updateSurfaceSupportDetails(window);
         entityRenderer.regenerate();
         swapchainRenderer.regenerate();
     }

@@ -35,14 +35,14 @@ public class VulkanFence {
         }
     }
 
-    public void reset(VulkanDevice device) {
-        int error = VK11.vkResetFences(device.getHandle(), handle);
+    public void reset(MemoryStack stack, VulkanDevice device) {
+        int error = VK11.vkResetFences(device.getHandle(), stack.callocLong(1).put(0, handle));
         if(error != VK11.VK_SUCCESS) 
             throw new AssertionError("Failed to reset fence");
     }
 
-    public void waitFor(VulkanDevice device) {
-        int error = VK11.vkWaitForFences(device.getHandle(), handle, true, 1000000000l);
+    public void waitFor(MemoryStack stack, VulkanDevice device) {
+        int error = VK11.vkWaitForFences(device.getHandle(), stack.callocLong(1).put(0, handle), true, Long.MAX_VALUE);
         if(error != VK11.VK_SUCCESS) 
             throw new AssertionError("Failed to wait for fence");
     }

@@ -1,5 +1,6 @@
 package ca.artemis.game;
 
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 
 import ca.artemis.engine.LowPolyEngine;
@@ -14,6 +15,10 @@ public class GameManager implements AutoCloseable {
     private final LowPolyEngine engine;
     private final LowPolyRenderingEngine renderingEngine;
     private final SessionManager sessionManager;
+
+    private long lastTime = System.nanoTime();
+    private float frameCounter = 0;
+    private int frames;
 
     private GameManager() {
         this.engine = LowPolyEngine.instance();
@@ -33,12 +38,29 @@ public class GameManager implements AutoCloseable {
     }
 
     public void update() {
-        if(!engine.getWindow().isResizing()) {
-            sessionManager.updatePublicSession();
-            if(sessionManager.hasActiveSession()) {
-                Session session = sessionManager.getActiveSession();
-                session.update();
-                session.render();
+        if(sessionManager.updatePublicSession()) {
+            lastTime = System.nanoTime();
+        }
+        if(sessionManager.hasActiveSession()) {
+            try(MemoryStack stack = MemoryStack.stackPush()) {
+                if(renderingEngine.update(stack)) {
+                    long currentTime = System.nanoTime();
+                    float deltaTime = (currentTime - lastTime) / 1_000_000_000f;
+                    lastTime = currentTime;
+                    frameCounter += deltaTime;
+
+                    Session session = sessionManager.getActiveSession();
+                    session.update(stack, deltaTime);
+
+                    if(frameCounter >= 1) {
+                        System.out.println(frames + " fps");
+                        frames = 0;
+                        frameCounter -= 1;
+                    }
+
+                    renderingEngine.render(stack);
+                    frames++;
+                }
             }
         }
         engine.update();

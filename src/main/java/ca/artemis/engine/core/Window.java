@@ -14,12 +14,12 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
-import ca.artemis.FileUtils;
+import ca.artemis.engine.utils.FileUtils;
 import ca.artemis.engine.utils.Timer;
 
 public class Window implements AutoCloseable {
     
-    private static final long RESIZE_DEBOUNCE_DELAY_MS = 25; // Delay in miliseconds before calling resize callback after window is resized
+    private static final long RESIZE_DEBOUNCE_DELAY_MS = 10; // Delay in miliseconds before calling resize callback after window is resized
 
     private final long id;
 

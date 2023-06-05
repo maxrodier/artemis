@@ -27,21 +27,9 @@ public class MainScene extends Scene {
     }
 
     @Override
-    public void update() {
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            if(!lowPolyRenderingEngine.update(stack)) {
-                return;
-            }
-            entityRenderData.update(stack);
-            swapchainRenderData.update(stack);
-        }
-    }
-
-    @Override
-    public void render() {
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            lowPolyRenderingEngine.render(stack);
-        }
+    public void update(MemoryStack stack, float delta) {
+        entityRenderData.update(stack);
+        swapchainRenderData.update(stack);
     }
 
     @Override

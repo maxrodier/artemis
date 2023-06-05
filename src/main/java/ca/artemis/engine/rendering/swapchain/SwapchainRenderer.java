@@ -119,18 +119,32 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
     //We signal that the image is available with the imageAvailableSemaphore
     //If the KHR is out of date, we need to recreate the swapchain
     public int acquireNextSwapchainImage(MemoryStack stack, VulkanContext context) {
-        LongBuffer pFence = stack.callocLong(1);
-        pFence.put(0, inFlightFences.get(renderData.getFrameIndex()).getHandle());
-        VK11.vkWaitForFences(context.getDevice().getHandle(), pFence, true, Long.MAX_VALUE);
+        VulkanFence inFlightFence = inFlightFences.get(renderData.getFrameIndex());
+        inFlightFence.waitFor(stack, context.getDevice());
 
         IntBuffer pImageIndex = stack.callocInt(1);
         int result = KHRSwapchain.vkAcquireNextImageKHR(context.getDevice().getHandle(), framebufferObject.getHandle(), Long.MAX_VALUE, imageAvailableSemaphores.get(renderData.getFrameIndex()).getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
         if(result != VK11.VK_SUCCESS && result != KHRSwapchain.VK_SUBOPTIMAL_KHR) {
             throw new RuntimeException("Failed to acquire swapchain image!");
-        }
+        } 
+        inFlightFence.reset(stack, context.getDevice());
         renderData.setImageIndex(pImageIndex.get(0));
         
-        VK11.vkResetFences(context.getDevice().getHandle(), pFence);
+        if(result == KHRSwapchain.VK_SUBOPTIMAL_KHR) { //TODO: We wait for the semaphore to be signaled else since we don't wait for it in the render because we regenerated renderers because of a suboptiomal swapchain
+            LongBuffer pWaitSemaphores = stack.callocLong(1);
+            pWaitSemaphores.put(0, imageAvailableSemaphores.get(renderData.getFrameIndex()).getHandle());
+
+            IntBuffer pWaitDstStageMask = stack.callocInt(1);
+            pWaitDstStageMask.put(0, VK11.VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
+
+            VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
+            submitInfo.sType(VK11.VK_STRUCTURE_TYPE_SUBMIT_INFO);
+            submitInfo.pWaitSemaphores(pWaitSemaphores);
+            submitInfo.waitSemaphoreCount(1);
+            submitInfo.pWaitDstStageMask(pWaitDstStageMask);
+
+            VK11.vkQueueSubmit(context.getDevice().getGraphicsQueue(), submitInfo, inFlightFence.getHandle());
+        }
 
         return result;
     }

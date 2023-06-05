@@ -137,8 +137,8 @@ public class EntityRenderData extends RenderData {
         EntityRenderer entityRenderer = LowPolyRenderingEngine.instance().getEntityRenderer(); 
         EntityShaderProgram entityShaderProgram = entityRenderer.getShaderProgram();
 
-        entityRenderer.getinFlightFences().get(this.getFrameIndex()).waitFor(context.getDevice());
-        entityRenderer.getinFlightFences().get(this.getFrameIndex()).reset(context.getDevice());
+        entityRenderer.getinFlightFences().get(this.getFrameIndex()).waitFor(stack, context.getDevice());
+        entityRenderer.getinFlightFences().get(this.getFrameIndex()).reset(stack, context.getDevice());
 
         updateUniformBuffer(stack, context, uniformBuffers.get(this.getFrameIndex()));
         recordSecondaryCommandBuffer(stack, context, entityRenderer, entityShaderProgram, secondaryCommandBuffers.get(this.getFrameIndex()), descriptorSets.get(this.getFrameIndex()), quad, this);

@@ -1,5 +1,7 @@
 package ca.artemis.engine.sessions;
 
+import org.lwjgl.system.MemoryStack;
+
 import ca.artemis.engine.scenes.Scene;
 
 public class Session implements AutoCloseable {
@@ -21,11 +23,7 @@ public class Session implements AutoCloseable {
         activeScene.init();
     }
 
-    public void update() {
-        activeScene.update();
-    }
-
-    public void render() {
-        activeScene.render();
+    public void update(MemoryStack stack, float delta) {
+        activeScene.update(stack, delta);
     }
 }
