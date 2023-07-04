@@ -2,10 +2,10 @@ package ca.artemis.engine.maths;
 
 public class Quaternion {
 	
-	private float x;
-	private float y;
-	private float z;
-	private float w;
+	public float x;
+	public float y;
+	public float z;
+	public float w;
 	
 	public Quaternion(float x, float y, float z, float w) {
 		this.x = x;
@@ -28,6 +28,15 @@ public class Quaternion {
 		return (float)Math.sqrt(x * x + y * y + z * z + w * w);
 	}
 	
+	public void normalize() {
+		float length = length();
+		
+		this.x = this.x / length;
+		this.y = this.y / length;
+		this.z = this.z / length;
+		this.w = this.w / length;
+	}
+
 	public Quaternion normalized() {
 		float length = length();
 		
@@ -37,63 +46,66 @@ public class Quaternion {
 	public Quaternion conjugate() {
 		return new Quaternion(-x, -y, -z, w);
 	}
-	
+
+	// Quaternion-quaternion multiplication
 	public Quaternion mul(Quaternion r) {
-		float x = this.x * r.getW() + this.w * r.x + this.y * r.z - this.z * r.y;
-		float y = this.y * r.getW() + this.w * r.y + this.z * r.x - this.x * r.z;
-		float z = this.z * r.getW() + this.w * r.z + this.x * r.y - this.y * r.x;
-		float w = this.w * r.getW() - this.x * r.x - this.y * r.y - this.z * r.z;
+		float w = this.w * r.w - this.x * r.x - this.y * r.y - this.z * r.z;
+		float x = this.w * r.x + this.x * r.w + this.y * r.z - this.z * r.y;
+		float y = this.w * r.y - this.x * r.z + this.y * r.w + this.z * r.x;
+		float z = this.w * r.z + this.x * r.y - this.y * r.x + this.z * r.w;
 		
 		return new Quaternion(x, y, z, w);
 	}
-	
+
+	// Quaternion-vector multiplication
 	public Quaternion mul(Vector3f r) {
 		float w = -this.x * r.x - this.y * r.y - this.z * r.z;
 		float x =  this.w * r.x + this.y * r.z - this.z * r.y;
-		float y =  this.w * r.y + this.z * r.x - this.x * r.z;
+		float y =  this.w * r.y - this.x * r.z + this.z * r.x;
 		float z =  this.w * r.z + this.x * r.y - this.y * r.x;
 		
 		return new Quaternion(x, y, z, w);
 	}
 
+	public Vector3f getForward() {
+    	// Calculate the components of the forward vector
+		float x = 2.0f * (this.x * this.z - this.w * this.y);
+        float y = 2.0f * (this.y * this.z + this.w * this.x);
+        float z = 1.0f - 2.0f * (this.x * this.x + this.y * this.y);
+
+		Vector3f forward = new Vector3f(x, y, z); // Create a new Vector3f object with the calculated components
+		forward.normalize(); // Normalize the forward vector to ensure it has a length of 1
+		return forward;
+	}
+
+	public Vector3f getUp() {
+    	// Calculate the components of the up vector
+        float x = 2.0f * (this.x * this.y + this.w * this.z);
+        float y = 1.0f - 2.0f * (this.x * this.x + this.z * this.z);
+        float z = 2.0f * (this.y * this.z - this.w * this.x);
+
+		Vector3f up = new Vector3f(x, y, z); // Create a new Vector3f object with the calculated components
+		up.normalize(); // Normalize the up vector to ensure it has a length of 1
+		return up;
+	}
+
+	public Vector3f getRight() {
+    	// Calculate the components of the right vector
+        float x = 1.0f - 2.0f * (this.y * this.y + this.z * this.z);
+        float y = 2.0f * (this.x * this.y - this.w * this.z);
+        float z = 2.0f * (this.x * this.z + this.w * this.y);
+
+		Vector3f right = new Vector3f(x, y, z); // Create a new Vector3f object with the calculated components
+		right.normalize(); // Normalize the right vector to ensure it has a length of 1
+		return right;
+	}
+
 	public Matrix4f toRotationMatrix() {
-		Vector3f forward =  new Vector3f(2.0f * (x * z - w * y), 2.0f * (y * z + w * x), 1.0f - 2.0f * (x * x + y * y));
-		Vector3f up = new Vector3f(2.0f * (x * y + w * z), 1.0f - 2.0f * (x * x + z * z), 2.0f * (y * z - w * x));
-		Vector3f right = new Vector3f(1.0f - 2.0f * (y * y + z * z), 2.0f * (x * y - w * z), 2.0f * (x * z + w * y));
+		Vector3f forward =  getForward();
+		Vector3f up = getUp();
+		Vector3f right = getRight();
 
 		return new Matrix4f().initRotation(forward, up, right);
-	}
-	
-	public float getX() {
-		return x;
-	}
-
-	public void setX(float x) {
-		this.x = x;
-	}
-
-	public float getY() {
-		return y;
-	}
-
-	public void setY(float y) {
-		this.y = y;
-	}
-
-	public float getZ() {
-		return z;
-	}
-
-	public void setZ(float z) {
-		this.z = z;
-	}
-
-	public float getW() {
-		return w;
-	}
-
-	public void setW(float w) {
-		this.w = w;
 	}
 
 	@Override

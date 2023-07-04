@@ -1,4 +1,4 @@
-package ca.artemis;
+package ca.artemis.engine.utils;
 
 
 import java.awt.image.BufferedImage;

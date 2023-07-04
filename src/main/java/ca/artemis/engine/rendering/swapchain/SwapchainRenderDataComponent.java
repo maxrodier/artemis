@@ -7,25 +7,28 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VK11;
 
 import ca.artemis.engine.LowPolyEngine;
-import ca.artemis.engine.rendering.RenderData;
+import ca.artemis.engine.rendering.RenderDataComponent;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.context.VulkanDevice;
 import ca.artemis.engine.vulkan.api.descriptor.DescriptorSet;
+import ca.artemis.engine.vulkan.api.memory.VulkanImageView;
 import ca.artemis.engine.vulkan.api.memory.VulkanSampler;
 import ca.artemis.engine.vulkan.core.mesh.Quad;
 import ca.artemis.engine.vulkan.core.mesh.Vertex.VertexKind;
 import ca.artemis.game.rendering.LowPolyRenderingEngine;
 
-public class SwapchainRenderData extends RenderData {
+public class SwapchainRenderDataComponent extends RenderDataComponent {
 
     private Quad quad;
     private List<VulkanSampler> textureSamplers;
     private List<DescriptorSet> descriptorSets;
 
-    public SwapchainRenderData() {
+    @Override
+    public void init() {
         VulkanContext context = LowPolyEngine.instance().getContext();
 
-        this.quad = new Quad(context, VertexKind.POS_UV);
+        this.quad = new Quad(VertexKind.POS_UV);
+        this.quad.init();
         createTextureSamplers(context.getDevice());
         createDescriptorSets(context, LowPolyRenderingEngine.instance().getSwapchainRenderer());
     }
@@ -55,15 +58,17 @@ public class SwapchainRenderData extends RenderData {
         }
     }
 
-    //EndTempStuff
-
     private int imageIndex;
 
     @Override
-    public void update(MemoryStack stack) {
+    public void update(MemoryStack stack, int frameIndex) {
         VulkanContext context = LowPolyEngine.instance().getContext();
         SwapchainRenderer swapchainRenderer = LowPolyRenderingEngine.instance().getSwapchainRenderer();
-        descriptorSets.get(getFrameIndex()).updateDescriptorImageBuffer(context.getDevice(), swapchainRenderer.getRenderSource().getImageView(getFrameIndex()), textureSamplers.get(getFrameIndex()), VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+        VulkanImageView imageView = swapchainRenderer.getRenderSource().getImageView(frameIndex);
+        VulkanSampler sampler = textureSamplers.get(frameIndex);
+
+        descriptorSets.get(frameIndex).updateDescriptorImageBuffer(context.getDevice(), imageView, sampler, VK11.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, VK11.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     }
 
     public int getImageIndex() {
@@ -83,11 +88,11 @@ public class SwapchainRenderData extends RenderData {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         VulkanContext context = LowPolyEngine.instance().getContext();
         for(VulkanSampler textureSampler : textureSamplers) {
             textureSampler.destroy(context.getDevice());
         }
-        quad.destroy(context.getMemoryAllocator());
+        quad.close();
     }
 }

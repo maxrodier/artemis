@@ -14,7 +14,6 @@ import org.lwjgl.vulkan.VkPresentInfoKHR;
 import org.lwjgl.vulkan.VkSubmitInfo;
 
 import ca.artemis.engine.LowPolyEngine;
-import ca.artemis.engine.rendering.RenderData;
 import ca.artemis.engine.rendering.Renderer;
 import ca.artemis.engine.rendering.RenderingEngine;
 import ca.artemis.engine.vulkan.api.commands.CommandPool;
@@ -32,22 +31,31 @@ import ca.artemis.engine.vulkan.api.synchronization.VulkanFence;
 import ca.artemis.engine.vulkan.api.synchronization.VulkanSemaphore;
 import ca.artemis.engine.vulkan.core.ShaderProgram;
 
-public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, SwapchainShaderProgram> {
+public class SwapchainRenderer extends Renderer<Swapchain, SwapchainShaderProgram> {
 
     //TempStuff
     private List<CommandPool> commandPools;
     private List<PrimaryCommandBuffer> commandBuffers;
-
-    private Renderer<? extends RenderData, ? extends FramebufferObject, ? extends ShaderProgram> renderSource;
+    
+    private Renderer<? extends FramebufferObject, ? extends ShaderProgram> renderSource;
     private List<VulkanSemaphore> imageAvailableSemaphores;
 
-    public SwapchainRenderer(VulkanDevice device, VulkanPhysicalDevice physicalDevice, VulkanSurface surface, SurfaceSupportDetails surfaceSupportDetails, Renderer<? extends RenderData, ? extends FramebufferObject, ? extends ShaderProgram> renderSource) {
+    private SwapchainRenderDataComponent renderData;
+    
+    public SwapchainRenderer(VulkanDevice device, VulkanPhysicalDevice physicalDevice, VulkanSurface surface, SurfaceSupportDetails surfaceSupportDetails, Renderer<? extends FramebufferObject, ? extends ShaderProgram> renderSource) {
         super(renderSource.getSignalSemaphores());
 
         this.renderSource = renderSource;
+        
+        this.renderData = new SwapchainRenderDataComponent();
 
         createCommandPools(device, physicalDevice);
         createCommandBuffers(device);
+    }
+
+    //TODO: We need to do this only for the swapchainRenderer because of weird init .... We should think of something better to do.
+    public void init() {
+        this.renderData.init();
     }
 
     @Override
@@ -118,13 +126,13 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
     //QUESTION: Why wait for fence
     //We signal that the image is available with the imageAvailableSemaphore
     //If the KHR is out of date, we need to recreate the swapchain
-    public int acquireNextSwapchainImage(MemoryStack stack, VulkanContext context) {
+    public int acquireNextSwapchainImage(MemoryStack stack, VulkanContext context, int frameIndex) {
         LongBuffer pFence = stack.callocLong(1);
-        pFence.put(0, inFlightFences.get(renderData.getFrameIndex()).getHandle());
+        pFence.put(0, inFlightFences.get(frameIndex).getHandle());
         VK11.vkWaitForFences(context.getDevice().getHandle(), pFence, true, Long.MAX_VALUE);
 
         IntBuffer pImageIndex = stack.callocInt(1);
-        int result = KHRSwapchain.vkAcquireNextImageKHR(context.getDevice().getHandle(), framebufferObject.getHandle(), Long.MAX_VALUE, imageAvailableSemaphores.get(renderData.getFrameIndex()).getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
+        int result = KHRSwapchain.vkAcquireNextImageKHR(context.getDevice().getHandle(), framebufferObject.getHandle(), Long.MAX_VALUE, imageAvailableSemaphores.get(frameIndex).getHandle(), VK11.VK_NULL_HANDLE, pImageIndex);
         if(result != VK11.VK_SUCCESS && result != KHRSwapchain.VK_SUBOPTIMAL_KHR) {
             throw new RuntimeException("Failed to acquire swapchain image!");
         }
@@ -139,35 +147,35 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
     //QUESTION: Validate the waitdstStageMask
     //We need to render using the renderData
     @Override
-    public void render(MemoryStack stack, VulkanContext context) {
+    public void render(MemoryStack stack, VulkanContext context, int frameIndex) {
         int waitSemaphoreCount = waitSemaphores == null ? 1 : 2;
 
         LongBuffer pWaitSemaphores = stack.callocLong(waitSemaphoreCount);
-        pWaitSemaphores.put(0, imageAvailableSemaphores.get(renderData.getFrameIndex()).getHandle());
+        pWaitSemaphores.put(0, imageAvailableSemaphores.get(frameIndex).getHandle());
         if(waitSemaphoreCount == 2) {
-            pWaitSemaphores.put(1, waitSemaphores.get(renderData.getFrameIndex()).getHandle());
+            pWaitSemaphores.put(1, waitSemaphores.get(frameIndex).getHandle());
         }
 
         IntBuffer pWaitDstStageMask = stack.callocInt(1);
         pWaitDstStageMask.put(0, VK11.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
         LongBuffer pSignalSemaphores = stack.callocLong(1);
-        pSignalSemaphores.put(0, signalSemaphores.get(renderData.getFrameIndex()).getHandle());
+        pSignalSemaphores.put(0, signalSemaphores.get(frameIndex).getHandle());
 
         VulkanFramebuffer framebuffer = framebufferObject.getFramebuffer(renderData.getImageIndex());
-        recordCommandBuffer(stack, framebuffer,  framebuffer.getWidth(), framebuffer.getHeight(), renderData.getFrameIndex());
-        submitPrimaryCommandBuffer(stack, context, waitSemaphoreCount, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFences.get(renderData.getFrameIndex()), renderData.getFrameIndex());
+        recordCommandBuffer(stack, framebuffer,  framebuffer.getWidth(), framebuffer.getHeight(), frameIndex);
+        submitPrimaryCommandBuffer(stack, context, waitSemaphoreCount, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFences.get(frameIndex), frameIndex);
     }
 
 
     //When the signalSempahre is signal we know the render is finished and we can present the render target
     //We recreate the swapchain if needed.
-    public int present(MemoryStack stack, VulkanContext context) {
+    public int present(MemoryStack stack, VulkanContext context, int frameIndex) {
         IntBuffer pImageIndex = stack.callocInt(1);
         pImageIndex.put(0, renderData.getImageIndex());
 
         LongBuffer pSignalSemaphores = stack.callocLong(1);
-        pSignalSemaphores.put(0, signalSemaphores.get(renderData.getFrameIndex()).getHandle());
+        pSignalSemaphores.put(0, signalSemaphores.get(frameIndex).getHandle());
 
         VkPresentInfoKHR presentInfo = VkPresentInfoKHR.callocStack(stack);
         presentInfo.sType(KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);

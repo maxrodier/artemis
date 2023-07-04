@@ -21,17 +21,17 @@ public class UniformBufferObject {
         float[] result = new float[LENGTH];
         int pos = 0;
         
-        for (float element : model.getMemoryLayout()) {
+        for (float element : model.getFloats()) {
             result[pos] = element;
             pos++;
         }
 
-        for (float element : view.getMemoryLayout()) {
+        for (float element : view.getFloats()) {
             result[pos] = element;
             pos++;
         }
 
-        for (float element : proj.getMemoryLayout()) {
+        for (float element : proj.getFloats()) {
             result[pos] = element;
             pos++;
         }

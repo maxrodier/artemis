@@ -3,7 +3,6 @@ package ca.artemis.engine.rendering.entity;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.lwjgl.PointerBuffer;
@@ -17,7 +16,6 @@ import ca.artemis.engine.rendering.Renderer;
 import ca.artemis.engine.rendering.RenderingEngine;
 import ca.artemis.engine.vulkan.api.commands.CommandPool;
 import ca.artemis.engine.vulkan.api.commands.PrimaryCommandBuffer;
-import ca.artemis.engine.vulkan.api.commands.SecondaryCommandBuffer;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.context.VulkanDevice;
 import ca.artemis.engine.vulkan.api.context.VulkanMemoryAllocator;
@@ -29,21 +27,18 @@ import ca.artemis.engine.vulkan.api.memory.VulkanFramebuffer;
 import ca.artemis.engine.vulkan.api.synchronization.VulkanFence;
 import ca.artemis.engine.vulkan.api.synchronization.VulkanSemaphore;
 
-public class EntityRenderer extends Renderer<EntityRenderData, FramebufferObject, EntityShaderProgram> {
+public class EntityRenderer extends Renderer<FramebufferObject, EntityShaderProgram> {
 
     //TempStuff
     private List<CommandPool> commandPools;
     private List<PrimaryCommandBuffer> commandBuffers;
-    private HashMap<String, List<SecondaryCommandBuffer>> secondaryCommandBuffersMaps;
-    private List<List<String>> executionLists;
+    private List<List<EntityRenderDataComponent>> executionLists;
 
 	public EntityRenderer(VulkanDevice device, VulkanPhysicalDevice physicalDevice, List<VulkanSemaphore> waitSemaphores) {
         super(waitSemaphores);
 
         createCommandPools(device, physicalDevice);
         createCommandBuffers(device);
-
-        this.secondaryCommandBuffersMaps = new HashMap<>();
 
         this.executionLists = new ArrayList<>();
         for(int i = 0; i < RenderingEngine.MAX_FRAMES_IN_FLIGHT; i++) {
@@ -108,24 +103,24 @@ public class EntityRenderer extends Renderer<EntityRenderData, FramebufferObject
     }
 
     @Override
-    public void render(MemoryStack stack, VulkanContext context) {
+    public void render(MemoryStack stack, VulkanContext context, int frameIndex) {
         
         LongBuffer pWaitSemaphores = null;
         IntBuffer pWaitDstStageMask = null;
         if(waitSemaphores != null) {
             pWaitSemaphores = stack.callocLong(1);
-            pWaitSemaphores.put(0, waitSemaphores.get(renderData.getFrameIndex()).getHandle());
+            pWaitSemaphores.put(0, waitSemaphores.get(frameIndex).getHandle());
 
             pWaitDstStageMask = stack.callocInt(1);
             pWaitDstStageMask.put(0, VK11.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
         }
 
         LongBuffer pSignalSemaphores = stack.callocLong(1);
-        pSignalSemaphores.put(0, signalSemaphores.get(renderData.getFrameIndex()).getHandle());
+        pSignalSemaphores.put(0, signalSemaphores.get(frameIndex).getHandle());
 
-        VulkanFramebuffer framebuffer = framebufferObject.getFramebuffer(renderData.getFrameIndex());
-        recordCommandBuffer(stack, framebuffer,  framebuffer.getWidth(), framebuffer.getHeight(), renderData.getFrameIndex());
-        submitPrimaryCommandBuffer(stack, context, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFences.get(renderData.getFrameIndex()), renderData.getFrameIndex());
+        VulkanFramebuffer framebuffer = framebufferObject.getFramebuffer(frameIndex);
+        recordCommandBuffer(stack, framebuffer,  framebuffer.getWidth(), framebuffer.getHeight(), frameIndex);
+        submitPrimaryCommandBuffer(stack, context, pWaitSemaphores, pWaitDstStageMask, pSignalSemaphores, inFlightFences.get(frameIndex), frameIndex);
     }
 
     //TempStuff
@@ -145,22 +140,8 @@ public class EntityRenderer extends Renderer<EntityRenderData, FramebufferObject
         }
     }
 
-    public void addToExecutionList(String key, int frameIndex) {
-        executionLists.get(frameIndex).add(key);
-    }
-
-    public List<SecondaryCommandBuffer> allocateSecondaryCommandBuffers(VulkanDevice device, String key) {
-        if(secondaryCommandBuffersMaps.containsKey(key)) {
-            throw new AssertionError("SecondaryCommandBuffers already allocated for the following key:" + key);
-        }
-
-        List<SecondaryCommandBuffer> secondaryCommandBuffers = new ArrayList<>();
-        for(int i = 0; i < RenderingEngine.MAX_FRAMES_IN_FLIGHT; i++) {
-            secondaryCommandBuffers.add(new SecondaryCommandBuffer(device, commandPools.get(i)));
-        }
-        secondaryCommandBuffersMaps.put(key, secondaryCommandBuffers);
-
-        return secondaryCommandBuffers;
+    public void addToExecutionList(int frameIndex, EntityRenderDataComponent component) {
+        executionLists.get(frameIndex).add(component);
     }
 
     public void recordCommandBuffer(MemoryStack stack, VulkanFramebuffer framebuffer, int width, int height, int frameIndex) {
@@ -176,10 +157,10 @@ public class EntityRenderer extends Renderer<EntityRenderData, FramebufferObject
         commandBuffer.beginRecording(stack, 0);
         commandBuffer.beginRenderPassCmd(stack, renderPass.getHandle(), framebuffer.getHandle(), width, height, pClearValues, VK11.VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-        List<String> executionList = executionLists.get(frameIndex);
+        List<EntityRenderDataComponent> executionList = executionLists.get(frameIndex);
         PointerBuffer pSecondaryCommandBuffers = stack.callocPointer(executionList.size());
         for(int i = 0; i < executionList.size(); i++) {
-            pSecondaryCommandBuffers.put(i, secondaryCommandBuffersMaps.get(executionList.get(i)).get(frameIndex).getHandle());
+            pSecondaryCommandBuffers.put(i, executionList.get(i).getSecondaryCommandBuffer(frameIndex).getHandle());
         }
         executionList.clear();
         VK11.vkCmdExecuteCommands(commandBuffer.getCommandBuffer(), pSecondaryCommandBuffers);
@@ -205,8 +186,14 @@ public class EntityRenderer extends Renderer<EntityRenderData, FramebufferObject
 
         submitInfo.pSignalSemaphores(pSignalSemaphores);
 
+        inFlightFence.reset(context.getDevice());
+
         if(VK11.vkQueueSubmit(context.getDevice().getGraphicsQueue(), submitInfo, inFlightFence.getHandle()) != VK11.VK_SUCCESS) {
             throw new RuntimeException("Failed to submit draw command buffer!");
         }
+    }
+
+    public CommandPool getCommandPool(int index) {
+        return commandPools.get(index);
     }
 }

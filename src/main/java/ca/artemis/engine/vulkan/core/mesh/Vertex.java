@@ -12,6 +12,7 @@ public class Vertex {
     
     public Vector3f pos;
     public Vector3f colour;
+    public Vector3f normal;
     public Vector2f texCoord;
 
     public Vertex(Vector3f pos, Vector2f texCoord) {
@@ -24,9 +25,9 @@ public class Vertex {
         this.colour = colour;
     }
 
-    public Vertex(Vector3f pos, Vector3f colour, Vector2f texCoord) {
+    public Vertex(Vector3f pos, Vector3f normal, Vector2f texCoord) {
         this.pos = pos;
-        this.colour = colour;
+        this.normal = normal;
         this.texCoord = texCoord;
     }
 
@@ -52,7 +53,7 @@ public class Vertex {
             case POS_UV:
                 attributeDescriptions = VkVertexInputAttributeDescription.callocStack(2, stack);
                 break;
-            case POS_COLOUR_UV:
+            case POS_NORMAL_UV:
                 attributeDescriptions = VkVertexInputAttributeDescription.callocStack(3, stack);
                 break;
             default:
@@ -67,7 +68,7 @@ public class Vertex {
         attributeDescription.format(VK11.VK_FORMAT_R32G32B32_SFLOAT);
         attributeDescription.offset(offset);
 
-        if(vertexKind == VertexKind.POS_COLOUR || vertexKind == VertexKind.POS_COLOUR_UV) {
+        if(vertexKind == VertexKind.POS_COLOUR || vertexKind == VertexKind.POS_NORMAL_UV) {
             offset += Vector3f.BYTES;
             attributeDescription = attributeDescriptions.get(1);
             attributeDescription.binding(0);
@@ -76,7 +77,7 @@ public class Vertex {
             attributeDescription.offset(offset);
         }
 
-        if(vertexKind == VertexKind.POS_UV || vertexKind == VertexKind.POS_COLOUR_UV) {
+        if(vertexKind == VertexKind.POS_UV || vertexKind == VertexKind.POS_NORMAL_UV) {
             offset += Vector3f.BYTES;
             attributeDescription = attributeDescriptions.get(2);
             attributeDescription.binding(0);
@@ -91,7 +92,7 @@ public class Vertex {
     public static enum VertexKind {
         POS_COLOUR(6),
         POS_UV(5),
-        POS_COLOUR_UV(8);
+        POS_NORMAL_UV(8);
 
         public final int size;
 

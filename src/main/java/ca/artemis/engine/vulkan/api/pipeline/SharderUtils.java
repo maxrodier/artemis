@@ -7,7 +7,7 @@ import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.shaderc.Shaderc;
 import org.lwjgl.vulkan.VK11;
 
-import ca.artemis.FileUtils;
+import ca.artemis.engine.utils.FileUtils;
 
 public class SharderUtils {
 

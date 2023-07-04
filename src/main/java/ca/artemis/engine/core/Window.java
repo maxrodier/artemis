@@ -14,7 +14,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
-import ca.artemis.FileUtils;
+import ca.artemis.engine.utils.FileUtils;
 import ca.artemis.engine.utils.Timer;
 
 public class Window implements AutoCloseable {
@@ -159,6 +159,8 @@ public class Window implements AutoCloseable {
                 GLFW.glfwSetWindowPos(id, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
             }
             
+            GLFW.glfwSetInputMode(id, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+
             GLFW.glfwSetWindowSizeLimits(id, minWidth, minHeight, maxWidth, maxHeight);
             loadIcons();
 

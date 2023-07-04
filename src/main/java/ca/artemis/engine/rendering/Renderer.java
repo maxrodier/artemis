@@ -14,10 +14,8 @@ import ca.artemis.engine.vulkan.api.synchronization.VulkanFence;
 import ca.artemis.engine.vulkan.api.synchronization.VulkanSemaphore;
 import ca.artemis.engine.vulkan.core.ShaderProgram;
 
-public abstract class Renderer<T extends RenderData, F extends FramebufferObject, P extends ShaderProgram> implements AutoCloseable {
+public abstract class Renderer<F extends FramebufferObject, P extends ShaderProgram> implements AutoCloseable {
     
-    protected T renderData;
-
     protected RenderPass renderPass;
     protected F framebufferObject;
     protected P shaderProgram;
@@ -58,7 +56,7 @@ public abstract class Renderer<T extends RenderData, F extends FramebufferObject
     protected abstract F createFramebufferObject();
     protected abstract void createSynchronizationObjects();
 
-    public abstract void render(MemoryStack stack, VulkanContext context);
+    public abstract void render(MemoryStack stack, VulkanContext context, int frameIndex);
 
     public void regenerate() {
         VulkanContext context = LowPolyEngine.instance().getContext();
@@ -70,14 +68,6 @@ public abstract class Renderer<T extends RenderData, F extends FramebufferObject
         this.framebufferObject = createFramebufferObject();
 
         this.shaderProgram.regenerateGraphicsPipeline(context.getDevice(), renderPass);
-    }
-
-    public T getRenderData() {
-        return renderData;
-    }
-
-    public void setRenderData(T renderData) { //TODO: do we want to set render data?
-        this.renderData = renderData;
     }
 
     public RenderPass getRenderPass() {

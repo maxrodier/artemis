@@ -27,8 +27,8 @@ public class EntityShaderProgram extends ShaderProgram {
     @Override
     protected DescriptorPool createDescriptorPool(VulkanDevice device) {
         return new DescriptorPool.Builder()
-            .addPoolSize(VK11.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, RenderingEngine.MAX_FRAMES_IN_FLIGHT)
-            .setMaxSets(RenderingEngine.MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK11.VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, RenderingEngine.MAX_FRAMES_IN_FLIGHT * 2)
+            .setMaxSets(RenderingEngine.MAX_FRAMES_IN_FLIGHT * 2)
             .build(device);
     }
 
@@ -49,9 +49,10 @@ public class EntityShaderProgram extends ShaderProgram {
             .addShaderModule(new ShaderModule(device, "shaders/simple.vert", ShaderStageKind.VERTEX_SHADER))
             .addShaderModule(new ShaderModule(device, "shaders/simple.frag", ShaderStageKind.FRAGMENT_SHADER))
             .setVertexInputState(new VertexInputState()
-                .addBinding(new VertexInputState.VertexInputBindingDescription(0, 24, VK11.VK_VERTEX_INPUT_RATE_VERTEX)
+                .addBinding(new VertexInputState.VertexInputBindingDescription(0, 32, VK11.VK_VERTEX_INPUT_RATE_VERTEX)
                     .addAttributes(0, VK11.VK_FORMAT_R32G32B32_SFLOAT, 0)
-                    .addAttributes(1, VK11.VK_FORMAT_R32G32B32_SFLOAT, 12)))
+                    .addAttributes(1, VK11.VK_FORMAT_R32G32B32_SFLOAT, 12)
+                    .addAttributes(2, VK11.VK_FORMAT_R32G32_SFLOAT, 24)))
             .setViewportState(new ViewportState()
                 .addViewport(new ViewportState.Viewport(0, 0, surfaceSupportDetails.getSurfaceExtent().width(), surfaceSupportDetails.getSurfaceExtent().height(), 0.0f, 1.0f))
                 .addScissors(new ViewportState.Scissor(0, 0, surfaceSupportDetails.getSurfaceExtent().width(), surfaceSupportDetails.getSurfaceExtent().height())))

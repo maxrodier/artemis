@@ -13,30 +13,42 @@ import org.lwjgl.vulkan.VkWriteDescriptorSet;
 
 import ca.artemis.UniformBufferObject;
 import ca.artemis.engine.LowPolyEngine;
-import ca.artemis.engine.rendering.RenderData;
+import ca.artemis.engine.core.Camera;
+import ca.artemis.engine.maths.Matrix4f;
+import ca.artemis.engine.rendering.RenderDataComponent;
+import ca.artemis.engine.rendering.RenderingEngine;
+import ca.artemis.engine.scenes.GameObject;
 import ca.artemis.engine.vulkan.api.commands.SecondaryCommandBuffer;
 import ca.artemis.engine.vulkan.api.context.VulkanContext;
 import ca.artemis.engine.vulkan.api.descriptor.DescriptorSet;
 import ca.artemis.engine.vulkan.api.memory.VulkanBuffer;
-import ca.artemis.engine.vulkan.core.mesh.Quad;
-import ca.artemis.engine.vulkan.core.mesh.Vertex.VertexKind;
+import ca.artemis.engine.vulkan.core.mesh.Mesh;
+import ca.artemis.engine.vulkan.core.mesh.MeshComponent;
+import ca.artemis.engine.vulkan.core.mesh.TransformComponent;
 import ca.artemis.game.rendering.LowPolyRenderingEngine;
 import glm.mat._4.Mat4;
 
-public class EntityRenderData extends RenderData {
+public class EntityRenderDataComponent extends RenderDataComponent {
 
-    private Quad quad;
+    public static Camera camera;
+
+    private List<SecondaryCommandBuffer> secondaryCommandBuffers; //One per frame in flight
     private List<VulkanBuffer> uniformBuffers; //One per frame in flight
     private List<DescriptorSet> descriptorSets; //One per frame in flight
-    private List<SecondaryCommandBuffer> secondaryCommandBuffers; //One per frame in flight
 
-    public EntityRenderData() {
+    //During the init phase of the EntityRenderDataComponent we create all vulkan objects needed by the class
+    @Override
+    public void init() { 
         VulkanContext context = LowPolyEngine.instance().getContext();
 
-        this.quad = new Quad(context, VertexKind.POS_COLOUR);
+        if(camera == null) {
+            camera = new Camera();
+        }
+
+        this.secondaryCommandBuffers = allocateSecondaryCommandBuffers(LowPolyRenderingEngine.instance());
+        
         createUniformBuffers(context);
         createDescriptorSets(context, LowPolyRenderingEngine.instance().getEntityRenderer().getShaderProgram());
-        allocateSecondaryCommandBuffers(LowPolyRenderingEngine.instance());
     }
 
     private void createUniformBuffers(VulkanContext context) {
@@ -88,68 +100,77 @@ public class EntityRenderData extends RenderData {
         }
     }
 
-    private void allocateSecondaryCommandBuffers(LowPolyRenderingEngine lowPolyRenderingEngine) {
+    private List<SecondaryCommandBuffer> allocateSecondaryCommandBuffers(LowPolyRenderingEngine lowPolyRenderingEngine) {
         VulkanContext context = LowPolyEngine.instance().getContext();
-        secondaryCommandBuffers = lowPolyRenderingEngine.getEntityRenderer().allocateSecondaryCommandBuffers(context.getDevice(), "TestRender1");
+        List<SecondaryCommandBuffer> secondaryCommandBuffers = new ArrayList<>();
+        for(int i = 0; i < RenderingEngine.MAX_FRAMES_IN_FLIGHT; i++) {
+            secondaryCommandBuffers.add(new SecondaryCommandBuffer(context.getDevice(), lowPolyRenderingEngine.getEntityRenderer().getCommandPool(i)));
+        }
+        return secondaryCommandBuffers;
     }
 
 
-    private static void updateUniformBuffer(MemoryStack stack, VulkanContext context, VulkanBuffer uniformBuffer) {
-        //Mat4 model = new Mat4(1.0f).rotate((float)Math.toRadians(0.0f), new Vec3(0.0f, 0.0f, 1.0f));
-        //Mat4 view = new Mat4(1.0f).lookAt(new Vec3(2.0f, 2.0f, 2.0f), new Vec3(0.0f, 0.0f, 0.0f), new Vec3(0.0f, 0.0f, 1.0f));
-        //Mat4 proj = new Mat4(1.0f).perspective((float) Math.toRadians(45.0f), context.getSurfaceSupportDetails().getSurfaceExtent().width() / (float) context.getSurfaceSupportDetails().getSurfaceExtent().height(), 0.1f, 10.0f);
-        //proj.set(1, 1, proj.m11 * -1);
+    private static void updateUniformBuffer(MemoryStack stack, VulkanContext context, VulkanBuffer uniformBuffer, TransformComponent transformComponent) {
+        Matrix4f model = transformComponent.getTransformationMatrix();
+        Mat4 _model = new Mat4(model.getFloats());
 
-        Mat4 model = new Mat4().identity();
-        Mat4 view = new Mat4().identity();
-        Mat4 proj = new Mat4().identity();
+        Matrix4f projection = camera.getProjectionMatrix();
+        Mat4 _projection = new Mat4(projection.getFloats());
+
+        _projection.print();
+
+        Matrix4f view = camera.getViewMatrix();
+        Mat4 _view = new Mat4(view.getFloats());
 
         PointerBuffer ppData = stack.callocPointer(1);
         Vma.vmaMapMemory(context.getMemoryAllocator().getHandle(), uniformBuffer.getAllocationHandle(), ppData);
         FloatBuffer data = ppData.getFloatBuffer(0, 48);
-        model.toDfb(data, 0);
-        view.toDfb(data, 16);
-        proj.toDfb(data, 32);
+        _model.toDfb(data, 0);
+        _view.toDfb(data, 16);
+        _projection.toDfb(data, 32);
         Vma.vmaUnmapMemory(context.getMemoryAllocator().getHandle(), uniformBuffer.getAllocationHandle());
     }
 
-    private static void recordSecondaryCommandBuffer(MemoryStack stack, VulkanContext context, EntityRenderer entityRenderer, EntityShaderProgram  entityShaderProgram, SecondaryCommandBuffer secondaryCommandBuffer, DescriptorSet descriptorSet, Quad quad, EntityRenderData entityRenderData) {
+    private static void recordSecondaryCommandBuffer(MemoryStack stack, VulkanContext context, EntityRenderer entityRenderer, EntityShaderProgram  entityShaderProgram, SecondaryCommandBuffer secondaryCommandBuffer, DescriptorSet descriptorSet, Mesh mesh, int frameIndex) {
         //Record Secondary frame buffer
         VK11.vkResetCommandBuffer(secondaryCommandBuffer.getCommandBuffer(), 0);        
-        secondaryCommandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT, entityRenderer.getRenderPass(), entityRenderer.getFramebufferObject().getFramebuffer(entityRenderData.getFrameIndex()));
+        secondaryCommandBuffer.beginRecording(stack, VK11.VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT, entityRenderer.getRenderPass(), entityRenderer.getFramebufferObject().getFramebuffer(frameIndex));
         secondaryCommandBuffer.bindPipelineCmd(VK11.VK_PIPELINE_BIND_POINT_GRAPHICS, entityShaderProgram.getGraphicsPipeline());
-        secondaryCommandBuffer.bindVertexBufferCmd(stack, quad.getVertexBuffer());
-        secondaryCommandBuffer.bindIndexBufferCmd(quad.getIndexBuffer());
+        secondaryCommandBuffer.bindVertexBufferCmd(stack, mesh.getVertexBuffer());
+        secondaryCommandBuffer.bindIndexBufferCmd(mesh.getIndexBuffer());
         secondaryCommandBuffer.bindDescriptorSetsCmd(stack, VK11.VK_PIPELINE_BIND_POINT_GRAPHICS, entityShaderProgram.getGraphicsPipeline().getPipelineLayout(), descriptorSet);
-        secondaryCommandBuffer.drawIndexedCmd(quad.getIndexBuffer().getLenght(), 1);
+        secondaryCommandBuffer.drawIndexedCmd(mesh.getIndexBuffer().getLenght(), 1);
         secondaryCommandBuffer.endRecording();
-
-        //Add object to execution list if not culled
-        entityRenderer.addToExecutionList("TestRender1", entityRenderData.getFrameIndex());
     }
 
 
     //EndTempStuff
     @Override
-    public void update(MemoryStack stack) {
+    public void update(MemoryStack stack, int frameIndex) {
         //TempStuff
         VulkanContext context = LowPolyEngine.instance().getContext();
         EntityRenderer entityRenderer = LowPolyRenderingEngine.instance().getEntityRenderer(); 
         EntityShaderProgram entityShaderProgram = entityRenderer.getShaderProgram();
 
-        entityRenderer.getinFlightFences().get(this.getFrameIndex()).waitFor(context.getDevice());
-        entityRenderer.getinFlightFences().get(this.getFrameIndex()).reset(context.getDevice());
+        entityRenderer.getinFlightFences().get(frameIndex).waitFor(context.getDevice());
 
-        updateUniformBuffer(stack, context, uniformBuffers.get(this.getFrameIndex()));
-        recordSecondaryCommandBuffer(stack, context, entityRenderer, entityShaderProgram, secondaryCommandBuffers.get(this.getFrameIndex()), descriptorSets.get(this.getFrameIndex()), quad, this);
+        GameObject parent = super.getParent();
+        MeshComponent meshComponent = parent.getComponent(MeshComponent.class);
+        TransformComponent transformComponent = parent.getComponent(TransformComponent.class);
+
+        updateUniformBuffer(stack, context, uniformBuffers.get(frameIndex), transformComponent);
+        recordSecondaryCommandBuffer(stack, context, entityRenderer, entityShaderProgram, secondaryCommandBuffers.get(frameIndex), descriptorSets.get(frameIndex), meshComponent.getMesh(), frameIndex);
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         VulkanContext context = LowPolyEngine.instance().getContext();
         for(int i = 0; i < LowPolyRenderingEngine.MAX_FRAMES_IN_FLIGHT; i++) {
             uniformBuffers.get(i).destroy(context.getMemoryAllocator());
         }
-        quad.destroy(context.getMemoryAllocator());
+    }
+
+    public SecondaryCommandBuffer getSecondaryCommandBuffer(int index) {
+        return secondaryCommandBuffers.get(index);
     }
 }

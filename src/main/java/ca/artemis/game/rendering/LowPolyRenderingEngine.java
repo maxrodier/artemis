@@ -25,15 +25,17 @@ public class LowPolyRenderingEngine extends RenderingEngine {
     private final EntityRenderer entityRenderer;
     private final SwapchainRenderer swapchainRenderer;
 
-    private int currentFrameIndex;
-
     private LowPolyRenderingEngine() {
         this.context = LowPolyEngine.instance().getContext();
         this.entityRenderer = new EntityRenderer(context.getDevice(), context.getPhysicalDevice(), null);
         this.swapchainRenderer = new SwapchainRenderer(context.getDevice(), context.getPhysicalDevice(), context.getSurface(), context.getSurfaceSupportDetails(), entityRenderer);
-        
+
         //TempStuff
         addResizeListener(context, LowPolyEngine.instance().getWindow(), this);
+    }
+
+    public void init() {
+        swapchainRenderer.init();
     }
 
     @Override
@@ -49,8 +51,8 @@ public class LowPolyRenderingEngine extends RenderingEngine {
         });
     }
 
-    public boolean update(MemoryStack stack) {
-        int result = swapchainRenderer.acquireNextSwapchainImage(stack, context);
+    public boolean update(MemoryStack stack, int frameIndex) {
+        int result = swapchainRenderer.acquireNextSwapchainImage(stack, context, frameIndex);
         if(result == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR || result == KHRSwapchain.VK_SUBOPTIMAL_KHR){
             regenerate();
             return false;
@@ -58,18 +60,14 @@ public class LowPolyRenderingEngine extends RenderingEngine {
         return true;
     }
 
-    public void render(MemoryStack stack) {
-        entityRenderer.render(stack, context);  
-        swapchainRenderer.render(stack, context);
-        present(stack);
-
-        currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
-        entityRenderer.getRenderData().setFrameIndex(currentFrameIndex);
-        swapchainRenderer.getRenderData().setFrameIndex(currentFrameIndex);
+    public void render(MemoryStack stack, int frameIndex) {
+        entityRenderer.render(stack, context, frameIndex);  
+        swapchainRenderer.render(stack, context, frameIndex);
+        present(stack, frameIndex);
     }
 
-    private void present(MemoryStack stack) {
-        int result = swapchainRenderer.present(stack, context);
+    private void present(MemoryStack stack, int frameIndex) {
+        int result = swapchainRenderer.present(stack, context, frameIndex);
         if (result == KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR || result == KHRSwapchain.VK_SUBOPTIMAL_KHR) {
             regenerate();
         }
@@ -112,6 +110,7 @@ public class LowPolyRenderingEngine extends RenderingEngine {
     public static LowPolyRenderingEngine instance() {
         if(currentInstance == null) {
             currentInstance = new LowPolyRenderingEngine();
+            currentInstance.init();
         }
 
         return currentInstance;
