@@ -16,7 +16,7 @@ public class VertexInputState {
     public VkPipelineVertexInputStateCreateInfo buildVertexInputStateCreateInfo(MemoryStack stack) {
         List<VertexInputAttributeDescription> attributeDescriptions = new ArrayList<>(); 
 
-        VkVertexInputBindingDescription.Buffer pVertexInputBindingDescription = VkVertexInputBindingDescription.callocStack(bindingDescriptions.size(), stack);
+        VkVertexInputBindingDescription.Buffer pVertexInputBindingDescription = VkVertexInputBindingDescription.calloc(bindingDescriptions.size(), stack);
         for(int i = 0; i < bindingDescriptions.size(); i++) {
             VertexInputBindingDescription bindingDescription = bindingDescriptions.get(i); 
             pVertexInputBindingDescription.get(i)
@@ -27,7 +27,7 @@ public class VertexInputState {
             attributeDescriptions.addAll(bindingDescription.attributeDescriptions);
         }
 
-        VkVertexInputAttributeDescription.Buffer pVertexInputAttributeDescription = VkVertexInputAttributeDescription.callocStack(attributeDescriptions.size(), stack);
+        VkVertexInputAttributeDescription.Buffer pVertexInputAttributeDescription = VkVertexInputAttributeDescription.calloc(attributeDescriptions.size(), stack);
         for(int i = 0; i < attributeDescriptions.size(); i++) {
             VertexInputAttributeDescription attributeDescription = attributeDescriptions.get(i); 
             pVertexInputAttributeDescription.get(i)
@@ -37,7 +37,7 @@ public class VertexInputState {
                 .offset(attributeDescription.offset);
         }
 
-        return VkPipelineVertexInputStateCreateInfo.callocStack(stack)
+        return VkPipelineVertexInputStateCreateInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO)
             .pVertexBindingDescriptions(pVertexInputBindingDescription)
             .pVertexAttributeDescriptions(pVertexInputAttributeDescription);

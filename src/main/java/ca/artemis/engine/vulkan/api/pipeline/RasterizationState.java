@@ -18,7 +18,7 @@ public class RasterizationState {
     private float lineWidth = 1.0f;
 
     public VkPipelineRasterizationStateCreateInfo buildRasterizationStateCreateInfo(MemoryStack stack) {
-        return VkPipelineRasterizationStateCreateInfo.callocStack(stack)
+        return VkPipelineRasterizationStateCreateInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO)
             .depthClampEnable(depthClampEnable)
             .rasterizerDiscardEnable(rasterizerDiscardEnable)

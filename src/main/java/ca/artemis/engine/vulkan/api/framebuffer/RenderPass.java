@@ -38,33 +38,33 @@ public class RenderPass {
         public RenderPass build(VulkanDevice device) {
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 int size = depthAttachement == null ? colorAttachments.size() : colorAttachments.size() + 1;
-                VkAttachmentDescription.Buffer pAttachments = VkAttachmentDescription.callocStack(size, stack);
+                VkAttachmentDescription.Buffer pAttachments = VkAttachmentDescription.calloc(size, stack);
                 for(int i = 0; i < colorAttachments.size(); i++) {
                     buildAttachement(pAttachments.get(i), colorAttachments.get(0));
                 }
                 if(depthAttachement != null)
                     buildAttachement(pAttachments.get(colorAttachments.size()), depthAttachement);
 
-                VkAttachmentReference.Buffer pColorAttachments = VkAttachmentReference.callocStack(colorAttachments.size(), stack);
+                VkAttachmentReference.Buffer pColorAttachments = VkAttachmentReference.calloc(colorAttachments.size(), stack);
                 for(int i = 0; i < colorAttachments.size(); i++) {
                     buildAttachementReference(pColorAttachments.get(i), i, VK11.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                 }
                 
                 VkAttachmentReference pDepthAttachement = null;
                 if(depthAttachement != null) {
-                    pDepthAttachement = VkAttachmentReference.callocStack(stack);
+                    pDepthAttachement = VkAttachmentReference.calloc(stack);
                     buildAttachementReference(pDepthAttachement, colorAttachments.size(), VK11.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);    
                 }
 
                 //TODO : Externalize subpasses and subpasses dependencies 
-                VkSubpassDescription.Buffer pSubpasses = VkSubpassDescription.callocStack(1, stack);
+                VkSubpassDescription.Buffer pSubpasses = VkSubpassDescription.calloc(1, stack);
                 pSubpasses.get(0)
                     .pipelineBindPoint(VK11.VK_PIPELINE_BIND_POINT_GRAPHICS)
                     .colorAttachmentCount(colorAttachments.size())
                     .pColorAttachments(pColorAttachments)
                     .pDepthStencilAttachment(pDepthAttachement);
 
-                VkSubpassDependency.Buffer pDependencies = VkSubpassDependency.callocStack(1, stack)
+                VkSubpassDependency.Buffer pDependencies = VkSubpassDependency.calloc(1, stack)
                     .srcSubpass(VK11.VK_SUBPASS_EXTERNAL)
                     .dstSubpass(0)        	
                     .srcStageMask(VK11.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
@@ -73,7 +73,7 @@ public class RenderPass {
                     .dstAccessMask(VK11.VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK11.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
         
                 
-                VkRenderPassCreateInfo pCreateInfo = VkRenderPassCreateInfo.callocStack(stack)
+                VkRenderPassCreateInfo pCreateInfo = VkRenderPassCreateInfo.calloc(stack)
                     .sType(VK11.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO)
                     .pAttachments(pAttachments)
                     .pSubpasses(pSubpasses)

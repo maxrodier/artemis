@@ -13,7 +13,7 @@ public class DepthStencilState {
     private boolean stencilTestEnable = false;
 
     public VkPipelineDepthStencilStateCreateInfo buildDepthStencilStateCreateInfo(MemoryStack stack) {
-        return VkPipelineDepthStencilStateCreateInfo.callocStack(stack)
+        return VkPipelineDepthStencilStateCreateInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
             .depthTestEnable(depthTestEnable)
             .depthWriteEnable(depthWriteEnable)

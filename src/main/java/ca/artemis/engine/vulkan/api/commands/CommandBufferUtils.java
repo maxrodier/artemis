@@ -21,7 +21,7 @@ public class CommandBufferUtils {
     public static void copyBuffer(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanBuffer srcBuffer, VulkanBuffer dstBuffer, int size) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
 
-            VkBufferCopy.Buffer pRegions = VkBufferCopy.callocStack(1, stack);
+            VkBufferCopy.Buffer pRegions = VkBufferCopy.calloc(1, stack);
             pRegions.get(0)
                     .size(size);
             
@@ -36,13 +36,13 @@ public class CommandBufferUtils {
 
     public static void copyBufferToImage(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanBuffer buffer, VulkanImage image, int width, int height) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkImageSubresourceLayers subresourceLayers = VkImageSubresourceLayers.callocStack(stack)
+            VkImageSubresourceLayers subresourceLayers = VkImageSubresourceLayers.calloc(stack)
                 .aspectMask(VK11.VK_IMAGE_ASPECT_COLOR_BIT)
                 .mipLevel(0)
                 .baseArrayLayer(0)
                 .layerCount(1);
         
-            VkBufferImageCopy.Buffer pRegions = VkBufferImageCopy.callocStack(1, stack);
+            VkBufferImageCopy.Buffer pRegions = VkBufferImageCopy.calloc(1, stack);
             pRegions.get(0)
                 .bufferOffset(0)
                 .bufferRowLength(0)
@@ -62,13 +62,13 @@ public class CommandBufferUtils {
 
     public static void transitionImageLayout(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanImage image, int format, int oldLayout, int newLayout, int mipLevels) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkImageSubresourceRange pSubresourceRange = VkImageSubresourceRange.callocStack(stack)
+            VkImageSubresourceRange pSubresourceRange = VkImageSubresourceRange.calloc(stack)
                 .baseMipLevel(0)
                 .levelCount(mipLevels)
                 .baseArrayLayer(0)
                 .layerCount(1);
 
-            VkImageMemoryBarrier.Buffer pBarriers = VkImageMemoryBarrier.callocStack(1, stack);
+            VkImageMemoryBarrier.Buffer pBarriers = VkImageMemoryBarrier.calloc(1, stack);
             pBarriers.get(0)
                 .sType(VK11.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
                 .oldLayout(oldLayout)
@@ -121,7 +121,7 @@ public class CommandBufferUtils {
 
     public static void generateMipmaps(VulkanDevice device, VkQueue queue, CommandPool commandPool, VulkanImage image, int width, int height, int mipLevels) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkImageMemoryBarrier.Buffer pBarriers = VkImageMemoryBarrier.callocStack(1, stack);
+            VkImageMemoryBarrier.Buffer pBarriers = VkImageMemoryBarrier.calloc(1, stack);
             VkImageMemoryBarrier pBarrier = pBarriers.get(0);
             pBarrier
                 .sType(VK11.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
@@ -149,29 +149,29 @@ public class CommandBufferUtils {
                     .subresourceRange().baseMipLevel(i - 1);
                 commandBuffer.pipelineBarrierCmd(VK11.VK_PIPELINE_STAGE_TRANSFER_BIT, VK11.VK_PIPELINE_STAGE_TRANSFER_BIT, pBarriers);
             
-                VkOffset3D.Buffer pSrcOffsets = VkOffset3D.callocStack(2, stack);
+                VkOffset3D.Buffer pSrcOffsets = VkOffset3D.calloc(2, stack);
                 pSrcOffsets.get(0)
                     .set(0, 0, 0);
                     pSrcOffsets.get(1)
                     .set(mipWidth, mipHeight, 1);
-                VkImageSubresourceLayers pSrcSubresourceLayers = VkImageSubresourceLayers.callocStack(stack)
+                VkImageSubresourceLayers pSrcSubresourceLayers = VkImageSubresourceLayers.calloc(stack)
                     .aspectMask(VK11.VK_IMAGE_ASPECT_COLOR_BIT)
                     .mipLevel(i-1)
                     .baseArrayLayer(0)
                     .layerCount(1);
 
-                VkOffset3D.Buffer pDstOffsets = VkOffset3D.callocStack(2, stack);
+                VkOffset3D.Buffer pDstOffsets = VkOffset3D.calloc(2, stack);
                 pDstOffsets.get(0)
                     .set(0, 0, 0);
                 pDstOffsets.get(1)
                     .set(mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1);
-                VkImageSubresourceLayers pDstSubresourceLayers = VkImageSubresourceLayers.callocStack(stack)
+                VkImageSubresourceLayers pDstSubresourceLayers = VkImageSubresourceLayers.calloc(stack)
                     .aspectMask(VK11.VK_IMAGE_ASPECT_COLOR_BIT)
                     .mipLevel(i)
                     .baseArrayLayer(0)
                     .layerCount(1);
 
-                VkImageBlit.Buffer pBlits = VkImageBlit.callocStack(1, stack);;
+                VkImageBlit.Buffer pBlits = VkImageBlit.calloc(1, stack);;
                 pBlits.get(0)
                     .srcOffsets(pSrcOffsets)
                     .srcSubresource(pSrcSubresourceLayers)
@@ -204,7 +204,7 @@ public class CommandBufferUtils {
     } 
 
     private static void singleCommandBufferSubmit(VkQueue queue, CommandBuffer commandBuffer, MemoryStack stack) {
-    	VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack)
+    	VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack)
     		.sType(VK11.VK_STRUCTURE_TYPE_SUBMIT_INFO)
     		.pCommandBuffers(stack.callocPointer(1).put(0, commandBuffer.getHandle()));
     		

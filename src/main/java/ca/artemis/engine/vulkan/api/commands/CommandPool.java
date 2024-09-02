@@ -22,7 +22,7 @@ public class CommandPool {
 
     private static long createHandle(VulkanDevice device, int queueFamilyIndex, int flags) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkCommandPoolCreateInfo comandPoolInfo = VkCommandPoolCreateInfo.callocStack(stack)
+            VkCommandPoolCreateInfo comandPoolInfo = VkCommandPoolCreateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
                 .queueFamilyIndex(queueFamilyIndex)
                 .flags(flags);

@@ -84,7 +84,7 @@ public class Swapchain extends FramebufferObject {
             }
     
             try(MemoryStack stack = MemoryStack.stackPush()) {
-                VkSwapchainCreateInfoKHR pCreateInfo = VkSwapchainCreateInfoKHR.callocStack(stack)
+                VkSwapchainCreateInfoKHR pCreateInfo = VkSwapchainCreateInfoKHR.calloc(stack)
                     .sType(KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR)
                     .surface(surface.getHandle())
                     .minImageCount(minImageCount)

@@ -65,13 +65,13 @@ public class EntityRenderData extends RenderData {
 
                 descriptorSets.add(descriptorSet);
 
-                VkDescriptorBufferInfo.Buffer pBufferInfo = VkDescriptorBufferInfo.callocStack(1, stack);
+                VkDescriptorBufferInfo.Buffer pBufferInfo = VkDescriptorBufferInfo.calloc(1, stack);
                 VkDescriptorBufferInfo bufferInfo = pBufferInfo.get(0);
                 bufferInfo.buffer(uniformBuffers.get(i).getHandle());
                 bufferInfo.offset(0);
                 bufferInfo.range(UniformBufferObject.BYTES);
     
-                VkWriteDescriptorSet.Buffer descriptorWrites = VkWriteDescriptorSet.callocStack(1, stack);
+                VkWriteDescriptorSet.Buffer descriptorWrites = VkWriteDescriptorSet.calloc(1, stack);
                 VkWriteDescriptorSet descriptorWrite;
 
                 descriptorWrite = descriptorWrites.get(0);

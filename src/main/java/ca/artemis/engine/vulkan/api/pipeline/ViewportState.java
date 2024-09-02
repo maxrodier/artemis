@@ -19,16 +19,16 @@ public class ViewportState {
     private List<Scissor> scissors = new ArrayList<>();
 
     public VkPipelineViewportStateCreateInfo buildViewportStateCreateInfo(MemoryStack stack) {
-        VkViewport.Buffer pViewports = viewports.size() == 0 ? null : VkViewport.callocStack(viewports.size(), stack);
+        VkViewport.Buffer pViewports = viewports.size() == 0 ? null : VkViewport.calloc(viewports.size(), stack);
         for(int i = 0; i < viewports.size(); i++) {
             pViewports.put(i, viewports.get(i).build(stack));
         }  
-        VkRect2D.Buffer pScissors = scissors.size() == 0 ? null : VkRect2D.callocStack(scissors.size(), stack);
+        VkRect2D.Buffer pScissors = scissors.size() == 0 ? null : VkRect2D.calloc(scissors.size(), stack);
         for(int i = 0; i < scissors.size(); i++) {
             pScissors.put(i, scissors.get(i).build(stack));
         }
 
-        return VkPipelineViewportStateCreateInfo.callocStack(stack)
+        return VkPipelineViewportStateCreateInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO)
             .viewportCount(viewportCount > 0 ? viewportCount : viewports.size())
             .pViewports(pViewports)
@@ -75,7 +75,7 @@ public class ViewportState {
         }
 
         public VkViewport build(MemoryStack stack) {
-            return VkViewport.callocStack(stack).set(x, y, width, height, minDepth, maxDepth);
+            return VkViewport.calloc(stack).set(x, y, width, height, minDepth, maxDepth);
         }
     }
 
@@ -94,7 +94,7 @@ public class ViewportState {
         }
 
         public VkRect2D build(MemoryStack stack) {
-            return VkRect2D.callocStack(stack).set(VkOffset2D.callocStack(stack).set(x, y), VkExtent2D.callocStack(stack).set(width, height));
+            return VkRect2D.calloc(stack).set(VkOffset2D.calloc(stack).set(x, y), VkExtent2D.calloc(stack).set(width, height));
         }
     }
 }

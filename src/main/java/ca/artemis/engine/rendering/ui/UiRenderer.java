@@ -135,7 +135,7 @@ public class UiRenderer extends Renderer<UiRenderData, FramebufferObject, UiShad
     }
 
     public void recordCommandBuffer(MemoryStack stack, VulkanFramebuffer framebuffer, int width, int height, int frameIndex) {
-        VkClearValue.Buffer pClearValues = VkClearValue.callocStack(1, stack);
+        VkClearValue.Buffer pClearValues = VkClearValue.calloc(1, stack);
         pClearValues.get(0).color().float32(0, 0.0f);
         pClearValues.get(0).color().float32(1, 0.0f);
         pClearValues.get(0).color().float32(2, 0.0f);
@@ -158,7 +158,7 @@ public class UiRenderer extends Renderer<UiRenderData, FramebufferObject, UiShad
     }
 
     public void submitPrimaryCommandBuffer(MemoryStack stack, VulkanContext context, int waitSemaphoreCount, LongBuffer pWaitSemaphores, IntBuffer pWaitDstStageMask, LongBuffer pSignalSemaphores, VulkanFence inFlightFence, int frameIndex) {
-        VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
+        VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack);
         submitInfo.sType(VK11.VK_STRUCTURE_TYPE_SUBMIT_INFO);
 
         submitInfo.waitSemaphoreCount(waitSemaphoreCount);

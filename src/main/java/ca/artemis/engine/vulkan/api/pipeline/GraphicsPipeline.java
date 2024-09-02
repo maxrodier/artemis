@@ -65,7 +65,7 @@ public class GraphicsPipeline {
 
         private VkPipelineShaderStageCreateInfo.Buffer buildShaderStageCreateInfo(MemoryStack stack) {
             ByteBuffer pMain = stack.UTF8("main");
-            VkPipelineShaderStageCreateInfo.Buffer pShaderStages = shaderModules.size() == 0 ? null : VkPipelineShaderStageCreateInfo.callocStack(shaderModules.size(), stack);
+            VkPipelineShaderStageCreateInfo.Buffer pShaderStages = shaderModules.size() == 0 ? null : VkPipelineShaderStageCreateInfo.calloc(shaderModules.size(), stack);
             for(int i = 0; i < shaderModules.size(); i++) {
                 ShaderModule shaderModule = shaderModules.get(i);
                 pShaderStages.get(i)
@@ -84,7 +84,7 @@ public class GraphicsPipeline {
                 pDynamicStates.put(i, dynamicStates.get(i));
             }
 
-            return VkPipelineDynamicStateCreateInfo.callocStack(stack)
+            return VkPipelineDynamicStateCreateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO)
                 .pDynamicStates(pDynamicStates);
         }
@@ -95,16 +95,16 @@ public class GraphicsPipeline {
                 pSetLayouts.put(i, descriptorSetLayouts[i].getHandle());
             }
 
-            VkPushConstantRange.Buffer pPushConstantRanges = pushConstantRanges.length == 0 ? null : VkPushConstantRange.callocStack(pushConstantRanges.length);
+            VkPushConstantRange.Buffer pPushConstantRanges = pushConstantRanges.length == 0 ? null : VkPushConstantRange.calloc(pushConstantRanges.length);
             for(int i = 0; i < pushConstantRanges.length; i++) {
-                VkPushConstantRange vkPushConstantRange = VkPushConstantRange.callocStack(stack);
+                VkPushConstantRange vkPushConstantRange = VkPushConstantRange.calloc(stack);
                 vkPushConstantRange.stageFlags(pushConstantRanges[i].getStageFlags());
                 vkPushConstantRange.offset(pushConstantRanges[i].getOffset());
                 vkPushConstantRange.size(pushConstantRanges[i].getSize());
                 pPushConstantRanges.put(i, vkPushConstantRange);
             }
 
-            VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = VkPipelineLayoutCreateInfo.callocStack(stack)
+            VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = VkPipelineLayoutCreateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)
                 .pSetLayouts(pSetLayouts)
                 .pPushConstantRanges(pPushConstantRanges);
@@ -123,7 +123,7 @@ public class GraphicsPipeline {
 
                 long pipelineLayout = createPipelineLayout(device, stack);
             
-                VkGraphicsPipelineCreateInfo.Buffer pCreateInfos = VkGraphicsPipelineCreateInfo.callocStack(1, stack);
+                VkGraphicsPipelineCreateInfo.Buffer pCreateInfos = VkGraphicsPipelineCreateInfo.calloc(1, stack);
                 pCreateInfos.get(0)
                     .sType(VK11.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO)
                     .pStages(buildShaderStageCreateInfo(stack))

@@ -31,6 +31,8 @@ public class Window implements AutoCloseable {
 
     private boolean fullscreen;
 
+    private boolean isWaylandPlatformEnabled;
+
     protected Window(Builder builder) {
         this.id = builder.id;
 
@@ -43,6 +45,8 @@ public class Window implements AutoCloseable {
         this.desiredHeight = builder.height;
 
         this.fullscreen = builder.fullscreen;
+
+        this.isWaylandPlatformEnabled = builder.isWaylandPlatformEnabled;
     }
 
     @Override
@@ -71,7 +75,9 @@ public class Window implements AutoCloseable {
 
         if(fullscreen) {
 		    GLFW.glfwSetWindowMonitor(id, MemoryUtil.NULL, 0, 0, desiredWidth, desiredHeight, vidMode.refreshRate());
-		    GLFW.glfwSetWindowPos(id, (vidMode.width() - desiredWidth) / 2, (vidMode.height() - desiredHeight) / 2);
+            if(!isWaylandPlatformEnabled) {
+                GLFW.glfwSetWindowPos(id, (vidMode.width() - desiredWidth) / 2, (vidMode.height() - desiredHeight) / 2);
+            }
         } else {
             GLFW.glfwSetWindowMonitor(id, monitor, 0, 0, vidMode.width(), vidMode.height(), vidMode.refreshRate());
         }
@@ -109,6 +115,8 @@ public class Window implements AutoCloseable {
         private int maxWidth = GLFW.GLFW_DONT_CARE;
         private int maxHeight = GLFW.GLFW_DONT_CARE;
 
+        private boolean isWaylandPlatformEnabled = false;
+
         public Builder(int width, int height, String title) {
             this.width = width;
             this.height = height;
@@ -143,8 +151,12 @@ public class Window implements AutoCloseable {
         public Window build() {
             GLFWErrorCallback.createPrint().set();
 
-            GLFW.glfwInitHint(GLFW.GLFW_PLATFORM, GLFW.GLFW_PLATFORM_WAYLAND);
-            GLFW.glfwInitHint(GLFW.GLFW_WAYLAND_LIBDECOR, GLFW.GLFW_WAYLAND_DISABLE_LIBDECOR);
+            //Currently Wayland doesn't support every features
+            this.isWaylandPlatformEnabled = GLFW.glfwPlatformSupported(GLFW.GLFW_PLATFORM_WAYLAND); 
+            if(isWaylandPlatformEnabled) {
+                GLFW.glfwInitHint(GLFW.GLFW_PLATFORM, GLFW.GLFW_PLATFORM_WAYLAND);
+                GLFW.glfwInitHint(GLFW.GLFW_WAYLAND_LIBDECOR, GLFW.GLFW_WAYLAND_DISABLE_LIBDECOR);
+            }
 
             if(!GLFW.glfwInit()) {
                 throw new RuntimeException("Could not intialize GLFW");
@@ -160,11 +172,16 @@ public class Window implements AutoCloseable {
                 this.id = GLFW.glfwCreateWindow(vidMode.width(), vidMode.height(), title, GLFW.glfwGetPrimaryMonitor(), MemoryUtil.NULL);
             } else {
                 this.id = GLFW.glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL);
-                GLFW.glfwSetWindowPos(id, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
+                if(!isWaylandPlatformEnabled) {
+                    GLFW.glfwSetWindowPos(id, (vidMode.width() - width) / 2, (vidMode.height() - height) / 2);
+                }
             }
             
             GLFW.glfwSetWindowSizeLimits(id, minWidth, minHeight, maxWidth, maxHeight);
-            //loadIcons();
+            
+            if(!isWaylandPlatformEnabled) {
+                loadIcons();
+            }
 
             return new Window(this);
         }
@@ -172,7 +189,7 @@ public class Window implements AutoCloseable {
         private void loadIcons() {
             try (MemoryStack stack = MemoryStack.stackPush()) {
             
-                GLFWImage.Buffer buffer = GLFWImage.callocStack(icons.length, stack);
+                GLFWImage.Buffer buffer = GLFWImage.calloc(icons.length, stack);
     
                 for(int i = 0; i < icons.length; i++) {
                     BufferedImage bufferedImage = FileUtils.getBufferedImage(icons[i]);
@@ -195,7 +212,7 @@ public class Window implements AutoCloseable {
                     }
                     byteBuffer.flip();
         
-                    GLFWImage icon = GLFWImage.callocStack(stack);
+                    GLFWImage icon = GLFWImage.calloc(stack);
                     icon.set(width, height, byteBuffer);
                     buffer.put(i, icon);
                 }

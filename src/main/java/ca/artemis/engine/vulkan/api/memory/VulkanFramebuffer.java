@@ -54,7 +54,7 @@ public class VulkanFramebuffer {
                     pAttachements.put(i, attachements.get(i).getHandle());
                 }
 
-                VkFramebufferCreateInfo pCreateInfo = VkFramebufferCreateInfo.callocStack(stack)
+                VkFramebufferCreateInfo pCreateInfo = VkFramebufferCreateInfo.calloc(stack)
                     .sType(VK11.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
                     .pAttachments(pAttachements)
                     .renderPass(renderPass)

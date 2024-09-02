@@ -22,7 +22,7 @@ public class VulkanSemaphore {
 
     private long createHandle(VulkanDevice device) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkSemaphoreCreateInfo pSemaphoreCreateInfo = VkSemaphoreCreateInfo.callocStack(stack)
+            VkSemaphoreCreateInfo pSemaphoreCreateInfo = VkSemaphoreCreateInfo.calloc(stack)
 	            .sType(VK11.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO)
                 .flags(0);
                 

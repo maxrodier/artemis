@@ -42,7 +42,7 @@ public class VulkanImageView {
         public VulkanImageView build(VulkanDevice device) {
             try(MemoryStack stack = MemoryStack.stackPush()) {
 
-                VkImageViewCreateInfo pImageViewCreateInfo = VkImageViewCreateInfo.callocStack(stack)
+                VkImageViewCreateInfo pImageViewCreateInfo = VkImageViewCreateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO)
                 .image(image)
                 .viewType(viewType)

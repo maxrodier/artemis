@@ -23,7 +23,7 @@ public class MultisampleState {
             pSampleMask.put(i, sampleMasks.get(i));
         }
 
-        return VkPipelineMultisampleStateCreateInfo.callocStack(stack)
+        return VkPipelineMultisampleStateCreateInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO)
             .pSampleMask(pSampleMask)
             .rasterizationSamples(rasterizationSamples) //VK_SAMPLE_COUNT_1_BIT

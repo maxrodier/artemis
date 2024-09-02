@@ -45,7 +45,7 @@ public class QueueFamily {
             IntBuffer pQueueFamilyPropertyCount = stack.callocInt(1);
             VK11.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, pQueueFamilyPropertyCount, null);
         
-            VkQueueFamilyProperties.Buffer pQueueFamilyProperties= VkQueueFamilyProperties.callocStack(pQueueFamilyPropertyCount.get(0), stack);
+            VkQueueFamilyProperties.Buffer pQueueFamilyProperties= VkQueueFamilyProperties.calloc(pQueueFamilyPropertyCount.get(0), stack);
             VK11.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, pQueueFamilyPropertyCount, pQueueFamilyProperties);
             
             IntBuffer pSupportPresentation = stack.callocInt(1);

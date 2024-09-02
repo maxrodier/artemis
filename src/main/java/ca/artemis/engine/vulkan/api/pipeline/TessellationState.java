@@ -9,7 +9,7 @@ public class TessellationState {
     private int patchControlPoints;
 
     public VkPipelineTessellationStateCreateInfo buildTessellationStateCreateInfo(MemoryStack stack) {
-        return VkPipelineTessellationStateCreateInfo.callocStack(stack)
+        return VkPipelineTessellationStateCreateInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO)
             .patchControlPoints(patchControlPoints);
     }

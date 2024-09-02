@@ -19,7 +19,7 @@ public class SecondaryCommandBuffer extends CommandBuffer {
 
     private static long createHandle(VulkanDevice device, CommandPool commandPool) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkCommandBufferAllocateInfo pAllocateInfo = VkCommandBufferAllocateInfo.callocStack(stack)
+            VkCommandBufferAllocateInfo pAllocateInfo = VkCommandBufferAllocateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
                 .commandPool(commandPool.getHandle())
                 .level(VK11.VK_COMMAND_BUFFER_LEVEL_SECONDARY)
@@ -35,13 +35,13 @@ public class SecondaryCommandBuffer extends CommandBuffer {
     }
     
     public void beginRecording(MemoryStack stack, int flags, RenderPass renderPass, VulkanFramebuffer framebuffer) {
-        VkCommandBufferInheritanceInfo pInheritanceInfo = VkCommandBufferInheritanceInfo.callocStack(stack)
+        VkCommandBufferInheritanceInfo pInheritanceInfo = VkCommandBufferInheritanceInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
             .renderPass(renderPass.getHandle())
             .subpass(0)
             .framebuffer(framebuffer.getHandle());
         
-        VkCommandBufferBeginInfo pBeginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+        VkCommandBufferBeginInfo pBeginInfo = VkCommandBufferBeginInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
             .flags(flags)
             .pInheritanceInfo(pInheritanceInfo);

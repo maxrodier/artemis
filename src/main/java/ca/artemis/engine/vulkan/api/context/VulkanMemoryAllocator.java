@@ -25,10 +25,10 @@ public class VulkanMemoryAllocator {
 
     private long createHandle(VulkanInstance instance, VulkanPhysicalDevice physicalDevice, VulkanDevice device) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VmaVulkanFunctions pVulkanFunctions = VmaVulkanFunctions.callocStack(stack)
+            VmaVulkanFunctions pVulkanFunctions = VmaVulkanFunctions.calloc(stack)
                 .set(instance.getHandle(), device.getHandle());
 
-            VmaAllocatorCreateInfo pCreateInfo = VmaAllocatorCreateInfo.callocStack()
+            VmaAllocatorCreateInfo pCreateInfo = VmaAllocatorCreateInfo.calloc()
                 .physicalDevice(physicalDevice.getHandle())
                 .device(device.getHandle())
                 .pVulkanFunctions(pVulkanFunctions)

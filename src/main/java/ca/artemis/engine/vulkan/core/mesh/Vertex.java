@@ -31,7 +31,7 @@ public class Vertex {
     }
 
     public static VkVertexInputBindingDescription.Buffer getBindingDescriptions(MemoryStack stack, VertexKind vertexKind) {
-        VkVertexInputBindingDescription.Buffer bindingDescriptions = VkVertexInputBindingDescription.callocStack(1, stack);
+        VkVertexInputBindingDescription.Buffer bindingDescriptions = VkVertexInputBindingDescription.calloc(1, stack);
 
         VkVertexInputBindingDescription bindingDescription = bindingDescriptions.get(0);
         bindingDescription.binding(0);
@@ -47,13 +47,13 @@ public class Vertex {
         
         switch(vertexKind) {
             case POS_COLOUR:
-                attributeDescriptions = VkVertexInputAttributeDescription.callocStack(2, stack);
+                attributeDescriptions = VkVertexInputAttributeDescription.calloc(2, stack);
                 break;
             case POS_UV:
-                attributeDescriptions = VkVertexInputAttributeDescription.callocStack(2, stack);
+                attributeDescriptions = VkVertexInputAttributeDescription.calloc(2, stack);
                 break;
             case POS_COLOUR_UV:
-                attributeDescriptions = VkVertexInputAttributeDescription.callocStack(3, stack);
+                attributeDescriptions = VkVertexInputAttributeDescription.calloc(3, stack);
                 break;
             default:
                 throw new RuntimeException("Default VertexKind is not valid!");

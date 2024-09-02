@@ -35,7 +35,7 @@ public class VulkanDevice {
 
     private static VkDevice createHandle(VulkanPhysicalDevice physicalDevice) {
     	try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkDeviceQueueCreateInfo.Buffer ppQueueCreateInfos = VkDeviceQueueCreateInfo.callocStack(1, stack);
+            VkDeviceQueueCreateInfo.Buffer ppQueueCreateInfos = VkDeviceQueueCreateInfo.calloc(1, stack);
             ppQueueCreateInfos.get(0)
                 .sType(VK11.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO)
                 .flags(0)
@@ -51,7 +51,7 @@ public class VulkanDevice {
             }
             ppEnabledExtensionNames.flip();
             
-            VkDeviceCreateInfo pCreateInfo = VkDeviceCreateInfo.callocStack(stack)
+            VkDeviceCreateInfo pCreateInfo = VkDeviceCreateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
                 .flags(0)
                 .pQueueCreateInfos(ppQueueCreateInfos)

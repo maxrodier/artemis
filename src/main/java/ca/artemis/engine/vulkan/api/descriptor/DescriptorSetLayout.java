@@ -33,7 +33,7 @@ public class DescriptorSetLayout {
 
         public DescriptorSetLayout build(VulkanDevice device) {
             try(MemoryStack stack = MemoryStack.stackPush()) {
-                VkDescriptorSetLayoutBinding.Buffer pLayoutBindings = VkDescriptorSetLayoutBinding.callocStack(descriptorSetLayoutBindings.size(), stack);
+                VkDescriptorSetLayoutBinding.Buffer pLayoutBindings = VkDescriptorSetLayoutBinding.calloc(descriptorSetLayoutBindings.size(), stack);
                 for(int i = 0; i < descriptorSetLayoutBindings.size(); i++) {
                     DescriptorSetLayoutBinding descriptorSetLayoutBinding = descriptorSetLayoutBindings.get(i);
                     pLayoutBindings.get(i)
@@ -43,7 +43,7 @@ public class DescriptorSetLayout {
                         .stageFlags(descriptorSetLayoutBinding.stageFlags);
                 }
 
-                VkDescriptorSetLayoutCreateInfo pLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo.callocStack(stack)
+                VkDescriptorSetLayoutCreateInfo pLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo.calloc(stack)
                     .sType(VK11.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO)
                     .pBindings(pLayoutBindings);
 

@@ -70,10 +70,10 @@ public class VulkanImage {
         public VulkanImage build(VulkanMemoryAllocator allocator) {
             try(MemoryStack stack = MemoryStack.stackPush()) {
 
-                VkImageCreateInfo pImageCreateInfo = VkImageCreateInfo.callocStack(stack)
+                VkImageCreateInfo pImageCreateInfo = VkImageCreateInfo.calloc(stack)
                     .sType(VK11.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO)
                     .imageType(imageType)
-                    .extent(VkExtent3D.callocStack(stack).set(extentWidth, extentHeight, extentDepth))
+                    .extent(VkExtent3D.calloc(stack).set(extentWidth, extentHeight, extentDepth))
                     .mipLevels(mipLevels)
                     .arrayLayers(arrayLayers)
                     .format(format)
@@ -83,7 +83,7 @@ public class VulkanImage {
                     .sharingMode(sharingMode)
                     .samples(samples);
                 
-                VmaAllocationCreateInfo pAllocationCreateInfo = VmaAllocationCreateInfo.callocStack(stack)
+                VmaAllocationCreateInfo pAllocationCreateInfo = VmaAllocationCreateInfo.calloc(stack)
                     .usage(Vma.VMA_MEMORY_USAGE_GPU_ONLY);
 
                 LongBuffer pImage = stack.callocLong(1);

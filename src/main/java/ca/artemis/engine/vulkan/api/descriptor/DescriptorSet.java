@@ -24,12 +24,12 @@ public class DescriptorSet {
 
     public void updateDescriptorBuffer(VulkanDevice device, VulkanBuffer buffer, long range, long offset, int binding, int descriptorType){
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkDescriptorBufferInfo.Buffer pBufferInfos = VkDescriptorBufferInfo.callocStack(1, stack)
+            VkDescriptorBufferInfo.Buffer pBufferInfos = VkDescriptorBufferInfo.calloc(1, stack)
                 .buffer(buffer.getHandle())
                 .offset(offset)
                 .range(range);
 
-            VkWriteDescriptorSet.Buffer pDescriptorWrites = VkWriteDescriptorSet.callocStack(1, stack)
+            VkWriteDescriptorSet.Buffer pDescriptorWrites = VkWriteDescriptorSet.calloc(1, stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
                 .dstSet(handle)
                 .dstBinding(binding)
@@ -44,12 +44,12 @@ public class DescriptorSet {
 
     public void updateDescriptorImageBuffer(VulkanDevice device, VulkanImageView imageView, VulkanSampler sampler, int imageLayout, int binding, int descriptorType){
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkDescriptorImageInfo.Buffer pImageInfos = VkDescriptorImageInfo.callocStack(1, stack)
+            VkDescriptorImageInfo.Buffer pImageInfos = VkDescriptorImageInfo.calloc(1, stack)
                 .imageView(imageView.getHandle())
                 .sampler(sampler.getHandle())
                 .imageLayout(imageLayout);
 
-            VkWriteDescriptorSet.Buffer pDescriptorWrites = VkWriteDescriptorSet.callocStack(1, stack)
+            VkWriteDescriptorSet.Buffer pDescriptorWrites = VkWriteDescriptorSet.calloc(1, stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
                 .dstSet(handle)
                 .dstBinding(binding)
@@ -64,7 +64,7 @@ public class DescriptorSet {
 
     private long createHandle(VulkanDevice device, DescriptorPool descriptorPool, DescriptorSetLayout descriptorSetLayout) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkDescriptorSetAllocateInfo pAllocateInfo = VkDescriptorSetAllocateInfo.callocStack(stack)
+            VkDescriptorSetAllocateInfo pAllocateInfo = VkDescriptorSetAllocateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
                 .descriptorPool(descriptorPool.getHandle())
                 .pSetLayouts(stack.callocLong(1).put(0, descriptorSetLayout.getHandle()));

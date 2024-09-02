@@ -137,7 +137,7 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
             IntBuffer pWaitDstStageMask = stack.callocInt(1);
             pWaitDstStageMask.put(0, VK11.VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
 
-            VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
+            VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack);
             submitInfo.sType(VK11.VK_STRUCTURE_TYPE_SUBMIT_INFO);
             submitInfo.pWaitSemaphores(pWaitSemaphores);
             submitInfo.waitSemaphoreCount(1);
@@ -183,7 +183,7 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
         LongBuffer pSignalSemaphores = stack.callocLong(1);
         pSignalSemaphores.put(0, signalSemaphores.get(renderData.getFrameIndex()).getHandle());
 
-        VkPresentInfoKHR presentInfo = VkPresentInfoKHR.callocStack(stack);
+        VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack);
         presentInfo.sType(KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
         presentInfo.pWaitSemaphores(pSignalSemaphores);
 
@@ -219,7 +219,7 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
     }
 
     public void recordCommandBuffer(MemoryStack stack, VulkanFramebuffer framebuffer, int width, int height, int frameIndex) {
-        VkClearValue.Buffer pClearValues = VkClearValue.callocStack(1, stack);
+        VkClearValue.Buffer pClearValues = VkClearValue.calloc(1, stack);
         pClearValues.get(0).color().float32(0, 0.0f);
         pClearValues.get(0).color().float32(1, 0.0f);
         pClearValues.get(0).color().float32(2, 0.0f);
@@ -242,7 +242,7 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
     }
 
     public void submitPrimaryCommandBuffer(MemoryStack stack, VulkanContext context, int waitSemaphoreCount, LongBuffer pWaitSemaphores, IntBuffer pWaitDstStageMask, LongBuffer pSignalSemaphores, VulkanFence inFlightFence, int frameIndex) {
-        VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
+        VkSubmitInfo submitInfo = VkSubmitInfo.calloc(stack);
         submitInfo.sType(VK11.VK_STRUCTURE_TYPE_SUBMIT_INFO);
 
         submitInfo.waitSemaphoreCount(waitSemaphoreCount);

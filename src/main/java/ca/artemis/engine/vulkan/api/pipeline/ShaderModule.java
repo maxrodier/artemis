@@ -27,7 +27,7 @@ public class ShaderModule {
 
     private long createHandle(VulkanDevice device, Spirv spirv) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkShaderModuleCreateInfo pCreateInfo = VkShaderModuleCreateInfo.callocStack(stack)
+            VkShaderModuleCreateInfo pCreateInfo = VkShaderModuleCreateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)
                 .pCode(spirv.getBytecode());
 

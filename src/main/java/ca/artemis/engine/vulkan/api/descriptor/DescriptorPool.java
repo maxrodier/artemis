@@ -35,7 +35,7 @@ public class DescriptorPool {
 
         public DescriptorPool build(VulkanDevice device) {
             try(MemoryStack stack = MemoryStack.stackPush()) {
-                VkDescriptorPoolSize.Buffer pPoolSizes = VkDescriptorPoolSize.callocStack(poolSizes.size(), stack);
+                VkDescriptorPoolSize.Buffer pPoolSizes = VkDescriptorPoolSize.calloc(poolSizes.size(), stack);
                 for(int i = 0; i < poolSizes.size(); i++) {
                     PoolSize poolSize = poolSizes.get(i);
                     pPoolSizes.get(i)
@@ -43,7 +43,7 @@ public class DescriptorPool {
                         .descriptorCount(poolSize.descriptorCount);
                 }
 
-                VkDescriptorPoolCreateInfo pCreateInfo = VkDescriptorPoolCreateInfo.callocStack(stack)
+                VkDescriptorPoolCreateInfo pCreateInfo = VkDescriptorPoolCreateInfo.calloc(stack)
                     .sType(VK11.VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO)
                     .pPoolSizes(pPoolSizes)
                     .maxSets(maxSets);

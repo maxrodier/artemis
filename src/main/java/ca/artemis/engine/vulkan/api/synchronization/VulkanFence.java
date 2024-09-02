@@ -22,7 +22,7 @@ public class VulkanFence {
 
     private long createHandle(VulkanDevice device) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkFenceCreateInfo pFenceCreateInfo = VkFenceCreateInfo.callocStack(stack);
+            VkFenceCreateInfo pFenceCreateInfo = VkFenceCreateInfo.calloc(stack);
             pFenceCreateInfo.sType(VK11.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO);
             pFenceCreateInfo.flags(VK11.VK_FENCE_CREATE_SIGNALED_BIT);
 

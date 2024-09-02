@@ -10,7 +10,7 @@ public class InputAssemblyState {
     private boolean primitiveRestartEnable = false;
 
     public VkPipelineInputAssemblyStateCreateInfo buildInputAssemblyStateCreateInfo(MemoryStack stack) {
-        return VkPipelineInputAssemblyStateCreateInfo.callocStack(stack)
+        return VkPipelineInputAssemblyStateCreateInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO)
             .topology(topology)
             .primitiveRestartEnable(primitiveRestartEnable);

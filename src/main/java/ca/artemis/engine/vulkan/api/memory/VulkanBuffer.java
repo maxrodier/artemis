@@ -54,12 +54,12 @@ public class VulkanBuffer {
 
         public VulkanBuffer build(VulkanMemoryAllocator allocator) {
             try(MemoryStack stack = MemoryStack.stackPush()) {
-                VkBufferCreateInfo pBufferCreateInfo = VkBufferCreateInfo.callocStack(stack)
+                VkBufferCreateInfo pBufferCreateInfo = VkBufferCreateInfo.calloc(stack)
                     .sType(VK11.VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO)
                     .size(length * size)
                     .usage(bufferUsage);
 
-                VmaAllocationCreateInfo pAllocationCreateInfo = VmaAllocationCreateInfo.callocStack(stack);
+                VmaAllocationCreateInfo pAllocationCreateInfo = VmaAllocationCreateInfo.calloc(stack);
                 pAllocationCreateInfo.usage(memoryUsage);
 
                 LongBuffer pBuffer = stack.callocLong(1);

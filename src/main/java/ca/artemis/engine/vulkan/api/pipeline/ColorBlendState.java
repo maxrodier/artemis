@@ -13,7 +13,7 @@ public class ColorBlendState {
     private List<ColorBlendAttachement> colorBlendAttachements = new ArrayList<>();
 
     public VkPipelineColorBlendStateCreateInfo buildColorBlendStateCreateInfo(MemoryStack stack) {
-        VkPipelineColorBlendAttachmentState.Buffer pAttachments = VkPipelineColorBlendAttachmentState.callocStack(colorBlendAttachements.size(), stack);
+        VkPipelineColorBlendAttachmentState.Buffer pAttachments = VkPipelineColorBlendAttachmentState.calloc(colorBlendAttachements.size(), stack);
         for(int i = 0; i < colorBlendAttachements.size(); i++) {
             ColorBlendAttachement colorBlendAttachement = colorBlendAttachements.get(i);
             pAttachments.get(i)
@@ -27,7 +27,7 @@ public class ColorBlendState {
                 .colorWriteMask(colorBlendAttachement.colorWriteMask);
         }
 
-        return VkPipelineColorBlendStateCreateInfo.callocStack(stack)
+        return VkPipelineColorBlendStateCreateInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO)
             .pAttachments(pAttachments);
     }

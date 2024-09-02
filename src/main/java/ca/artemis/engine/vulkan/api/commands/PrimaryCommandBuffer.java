@@ -18,7 +18,7 @@ public class PrimaryCommandBuffer extends CommandBuffer {
 
     private static long createHandle(VulkanDevice device, CommandPool commandPool) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
-            VkCommandBufferAllocateInfo pAllocateInfo = VkCommandBufferAllocateInfo.callocStack(stack)
+            VkCommandBufferAllocateInfo pAllocateInfo = VkCommandBufferAllocateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
                 .commandPool(commandPool.getHandle())
                 .level(VK11.VK_COMMAND_BUFFER_LEVEL_PRIMARY)
@@ -34,7 +34,7 @@ public class PrimaryCommandBuffer extends CommandBuffer {
     }
     
     public void beginRecording(MemoryStack stack, int flags) {
-        VkCommandBufferBeginInfo pBeginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+        VkCommandBufferBeginInfo pBeginInfo = VkCommandBufferBeginInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
             .flags(flags);
 
@@ -44,7 +44,7 @@ public class PrimaryCommandBuffer extends CommandBuffer {
     }
 
     public void beginRenderPassCmd(MemoryStack stack, long renderPass, long framebuffer, int width, int height, VkClearValue.Buffer pClearValues, int flags) {
-        VkRenderPassBeginInfo pRenderPassBegin = VkRenderPassBeginInfo.callocStack(stack)
+        VkRenderPassBeginInfo pRenderPassBegin = VkRenderPassBeginInfo.calloc(stack)
             .sType(VK11.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
             .renderPass(renderPass)
             .framebuffer(framebuffer)

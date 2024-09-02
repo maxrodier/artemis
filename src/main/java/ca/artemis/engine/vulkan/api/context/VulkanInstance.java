@@ -39,7 +39,7 @@ public class VulkanInstance {
             }
     		ppEnabledLayerNames.flip();
             
-            VkApplicationInfo pApplicationInfo = VkApplicationInfo.callocStack(stack)
+            VkApplicationInfo pApplicationInfo = VkApplicationInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_APPLICATION_INFO)
                 .pApplicationName(stack.UTF8("Application Name"))
                 .applicationVersion(VK11.VK_MAKE_VERSION(1, 0, 0))
@@ -47,10 +47,10 @@ public class VulkanInstance {
                 .engineVersion(VK11.VK_MAKE_VERSION(1, 0, 0))
                 .apiVersion(VK11.VK_API_VERSION_1_1);
     
-            VkInstanceCreateInfo pCreateInfo = VkInstanceCreateInfo.callocStack(stack)
+            VkInstanceCreateInfo pCreateInfo = VkInstanceCreateInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO)
                 .pApplicationInfo(pApplicationInfo)
-                //.ppEnabledLayerNames(ppEnabledLayerNames)
+                .ppEnabledLayerNames(ppEnabledLayerNames)
                 .ppEnabledExtensionNames(ppRequiredExtentions);
     
             PointerBuffer pInstance = stack.callocPointer(1);
