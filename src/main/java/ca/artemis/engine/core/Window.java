@@ -142,6 +142,10 @@ public class Window implements AutoCloseable {
 
         public Window build() {
             GLFWErrorCallback.createPrint().set();
+
+            GLFW.glfwInitHint(GLFW.GLFW_PLATFORM, GLFW.GLFW_PLATFORM_WAYLAND);
+            GLFW.glfwInitHint(GLFW.GLFW_WAYLAND_LIBDECOR, GLFW.GLFW_WAYLAND_DISABLE_LIBDECOR);
+
             if(!GLFW.glfwInit()) {
                 throw new RuntimeException("Could not intialize GLFW");
             }
@@ -160,7 +164,7 @@ public class Window implements AutoCloseable {
             }
             
             GLFW.glfwSetWindowSizeLimits(id, minWidth, minHeight, maxWidth, maxHeight);
-            loadIcons();
+            //loadIcons();
 
             return new Window(this);
         }

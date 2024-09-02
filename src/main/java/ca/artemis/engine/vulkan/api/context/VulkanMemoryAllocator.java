@@ -31,7 +31,8 @@ public class VulkanMemoryAllocator {
             VmaAllocatorCreateInfo pCreateInfo = VmaAllocatorCreateInfo.callocStack()
                 .physicalDevice(physicalDevice.getHandle())
                 .device(device.getHandle())
-                .pVulkanFunctions(pVulkanFunctions);
+                .pVulkanFunctions(pVulkanFunctions)
+                .instance(instance.getHandle());
 
             PointerBuffer pAllocator = stack.callocPointer(1);
             if(Vma.vmaCreateAllocator(pCreateInfo, pAllocator) != VK11.VK_SUCCESS) {
