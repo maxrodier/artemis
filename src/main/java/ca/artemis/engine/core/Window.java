@@ -19,7 +19,7 @@ import ca.artemis.engine.utils.Timer;
 
 public class Window implements AutoCloseable {
     
-    private static final long RESIZE_DEBOUNCE_DELAY_MS = 10; // Delay in miliseconds before calling resize callback after window is resized
+    private static final long RESIZE_DEBOUNCE_DELAY_MS = 500; // Delay in milliseconds before calling resize callback after window is resized
 
     private final long id;
 
@@ -151,15 +151,25 @@ public class Window implements AutoCloseable {
         public Window build() {
             GLFWErrorCallback.createPrint().set();
 
-            //Currently Wayland doesn't support every features
-            this.isWaylandPlatformEnabled = GLFW.glfwPlatformSupported(GLFW.GLFW_PLATFORM_WAYLAND); 
+            // Check actual session type, not just platform support
+            String sessionType = System.getenv("XDG_SESSION_TYPE");
+            this.isWaylandPlatformEnabled = "wayland".equals(sessionType);
+            
             if(isWaylandPlatformEnabled) {
+                //Currently Wayland doesn't support every features
                 GLFW.glfwInitHint(GLFW.GLFW_PLATFORM, GLFW.GLFW_PLATFORM_WAYLAND);
                 GLFW.glfwInitHint(GLFW.GLFW_WAYLAND_LIBDECOR, GLFW.GLFW_WAYLAND_DISABLE_LIBDECOR);
-            }
-
-            if(!GLFW.glfwInit()) {
-                throw new RuntimeException("Could not intialize GLFW");
+                
+                if(!GLFW.glfwInit()) {
+                    throw new RuntimeException("Could not initialize GLFW on Wayland");
+                }
+            } else {
+                // Use X11 if Wayland is not supported or not the active session
+                GLFW.glfwInitHint(GLFW.GLFW_PLATFORM, GLFW.GLFW_PLATFORM_X11);
+                
+                if(!GLFW.glfwInit()) {
+                    throw new RuntimeException("Could not initialize GLFW on X11");
+                }
             }
 
             GLFW.glfwDefaultWindowHints();

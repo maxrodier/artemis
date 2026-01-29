@@ -29,13 +29,16 @@ public class LowPolyRenderingEngine extends RenderingEngine {
 
     private int currentFrameIndex;
 
+    private int lastWindowWidth = -1;
+    private int lastWindowHeight = -1;
+
     private LowPolyRenderingEngine() {
         this.context = LowPolyEngine.instance().getContext();
         this.entityRenderer = new EntityRenderer(context.getDevice(), context.getPhysicalDevice(), null);
         this.uiRenderer = new UiRenderer(context.getDevice(), context.getPhysicalDevice(), entityRenderer);
         this.swapchainRenderer = new SwapchainRenderer(context.getDevice(), context.getPhysicalDevice(), uiRenderer);
         
-        //TempStuff
+        // Add resize listener for window resize events
         addResizeListener(context, LowPolyEngine.instance().getWindow(), this);
     }
 
@@ -46,10 +49,10 @@ public class LowPolyRenderingEngine extends RenderingEngine {
         entityRenderer.close();
     }
 
-    //TempStuff
-    private static void addResizeListener(VulkanContext context, Window window, LowPolyRenderingEngine lowPolyRenderingEngine) {
+    private static void addResizeListener(VulkanContext context, Window window, LowPolyRenderingEngine engine) {
         window.addResizeListener(() -> {
-            //lowPolyRenderingEngine.regenerate();
+            // Trigger regeneration when window is resized
+            engine.regenerate();
         });
     }
 
@@ -84,27 +87,67 @@ public class LowPolyRenderingEngine extends RenderingEngine {
         VulkanContext context = LowPolyEngine.instance().getContext();
         Window window = LowPolyEngine.instance().getWindow();
         
-        System.out.println("Regenerate");
+        // Check if window size has actually changed
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer width = stack.callocInt(1);
+            IntBuffer height = stack.callocInt(1);
+            GLFW.glfwGetFramebufferSize(window.getId(), width, height);
+            
+            int currentWidth = width.get(0);
+            int currentHeight = height.get(0);
+            
+            // Skip regeneration if size hasn't changed
+            if (currentWidth == lastWindowWidth && currentHeight == lastWindowHeight) {
+                return;
+            }
+            
+            lastWindowWidth = currentWidth;
+            lastWindowHeight = currentHeight;
+        }
+        
+        System.out.println("Regenerating rendering resources due to resize");
 
+        // Wait for device to be idle before recreation
         VK11.vkDeviceWaitIdle(context.getDevice().getHandle());
 
-        while(window.isResizing()) {
-            try(MemoryStack stack = MemoryStack.stackPush()) {
-                IntBuffer width = stack.callocInt(1), height = stack.callocInt(1);
-                GLFW.glfwGetFramebufferSize(window.getId(), width, height);
-                while (width.get(0) == 0 || height.get(0) == 0) {
-                    width.clear(); height.clear();
-                    GLFW.glfwGetFramebufferSize(window.getId(), width, height);
-                    GLFW.glfwWaitEvents();
-                }
-            }
-            window.update();
-        }
+        // Wait for window to have valid dimensions
+        waitForValidWindowSize(window);
 
+        // Update surface support details with new window size
         context.updateSurfaceSupportDetails(window);
-        entityRenderer.regenerate();
-        uiRenderer.regenerate();
-        swapchainRenderer.regenerate();
+        
+        // Regenerate all rendering components
+        try {
+            entityRenderer.regenerate();
+            uiRenderer.regenerate();
+            swapchainRenderer.regenerate();
+            System.out.println("Successfully regenerated rendering resources");
+        } catch (Exception e) {
+            System.err.println("Failed to regenerate rendering resources: " + e.getMessage());
+            throw new RuntimeException("Resize regeneration failed", e);
+        }
+    }
+
+    private void waitForValidWindowSize(Window window) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer width = stack.callocInt(1);
+            IntBuffer height = stack.callocInt(1);
+            
+            // Keep checking until window has valid (non-zero) dimensions
+            while (!window.isCloseRequested()) {
+                width.clear();
+                height.clear();
+                GLFW.glfwGetFramebufferSize(window.getId(), width, height);
+                
+                // If dimensions are valid, break out of loop
+                if (width.get(0) > 0 && height.get(0) > 0) {
+                    break;
+                }
+                
+                // Wait for window events and check again
+                GLFW.glfwWaitEvents();
+            }
+        }
     }
 
     public VulkanContext getContext() {

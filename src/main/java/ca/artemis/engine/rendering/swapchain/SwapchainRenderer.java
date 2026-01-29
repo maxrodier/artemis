@@ -107,9 +107,12 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
         this.signalSemaphores = new ArrayList<>();
         this.inFlightFences = new ArrayList<>();
 
-        for(int i = 0; i < RenderingEngine.MAX_FRAMES_IN_FLIGHT; i++) {
+        for(int i = 0; i < framebufferObject.getImageViews().length; i++) {
             imageAvailableSemaphores.add(new VulkanSemaphore(device));
             signalSemaphores.add(new VulkanSemaphore(device));
+        }
+        
+        for(int i = 0; i < RenderingEngine.MAX_FRAMES_IN_FLIGHT; i++) {
             inFlightFences.add(new VulkanFence(device));
         }
     }
@@ -130,7 +133,7 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
         inFlightFence.reset(stack, context.getDevice());
         renderData.setImageIndex(pImageIndex.get(0));
         
-        if(result == KHRSwapchain.VK_SUBOPTIMAL_KHR) { //TODO: We wait for the semaphore to be signaled else since we don't wait for it in the render because we regenerated renderers because of a suboptiomal swapchain
+        if(result == KHRSwapchain.VK_SUBOPTIMAL_KHR) {
             LongBuffer pWaitSemaphores = stack.callocLong(1);
             pWaitSemaphores.put(0, imageAvailableSemaphores.get(renderData.getFrameIndex()).getHandle());
 
@@ -150,7 +153,6 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
     }
 
     //We need to wait for the previous render to be finished and for the image to be available
-    //QUESTION: Validate the waitdstStageMask
     //We need to render using the renderData
     @Override
     public void render(MemoryStack stack, VulkanContext context) {
@@ -166,7 +168,7 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
         pWaitDstStageMask.put(0, VK11.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
         LongBuffer pSignalSemaphores = stack.callocLong(1);
-        pSignalSemaphores.put(0, signalSemaphores.get(renderData.getFrameIndex()).getHandle());
+        pSignalSemaphores.put(0, signalSemaphores.get(renderData.getImageIndex()).getHandle());
 
         VulkanFramebuffer framebuffer = framebufferObject.getFramebuffer(renderData.getImageIndex());
         recordCommandBuffer(stack, framebuffer,  framebuffer.getWidth(), framebuffer.getHeight(), renderData.getFrameIndex());
@@ -181,7 +183,7 @@ public class SwapchainRenderer extends Renderer<SwapchainRenderData, Swapchain, 
         pImageIndex.put(0, renderData.getImageIndex());
 
         LongBuffer pSignalSemaphores = stack.callocLong(1);
-        pSignalSemaphores.put(0, signalSemaphores.get(renderData.getFrameIndex()).getHandle());
+        pSignalSemaphores.put(0, signalSemaphores.get(renderData.getImageIndex()).getHandle());
 
         VkPresentInfoKHR presentInfo = VkPresentInfoKHR.calloc(stack);
         presentInfo.sType(KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);

@@ -30,14 +30,14 @@ public class VulkanInstance {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             PointerBuffer ppRequiredExtentions = GLFWVulkan.glfwGetRequiredInstanceExtensions();
     
-    		ByteBuffer[] pEnabledLayerNames = {
-    				stack.UTF8("VK_LAYER_KHRONOS_validation")
-    		};
-    		PointerBuffer ppEnabledLayerNames = stack.callocPointer(pEnabledLayerNames.length);
-    		for(ByteBuffer pEnabledLayerName : pEnabledLayerNames) {
-    			ppEnabledLayerNames.put(pEnabledLayerName);
+            ByteBuffer[] pEnabledLayerNames = {
+                    stack.UTF8("VK_LAYER_KHRONOS_validation")
+            };
+            PointerBuffer ppEnabledLayerNames = stack.callocPointer(pEnabledLayerNames.length);
+            for(ByteBuffer pEnabledLayerName : pEnabledLayerNames) {
+                ppEnabledLayerNames.put(pEnabledLayerName);
             }
-    		ppEnabledLayerNames.flip();
+            ppEnabledLayerNames.flip();
             
             VkApplicationInfo pApplicationInfo = VkApplicationInfo.calloc(stack)
                 .sType(VK11.VK_STRUCTURE_TYPE_APPLICATION_INFO)
@@ -54,8 +54,9 @@ public class VulkanInstance {
                 .ppEnabledExtensionNames(ppRequiredExtentions);
     
             PointerBuffer pInstance = stack.callocPointer(1);
-            if(VK11.vkCreateInstance(pCreateInfo, null, pInstance) != VK11.VK_SUCCESS) {
-                throw new AssertionError("Failed to create vulkan instance");
+            int result = VK11.vkCreateInstance(pCreateInfo, null, pInstance);
+            if(result != VK11.VK_SUCCESS) {
+                throw new AssertionError("Failed to create vulkan instance. Error code: " + result);
             }
             return new VkInstance(pInstance.get(0), pCreateInfo);
         }
